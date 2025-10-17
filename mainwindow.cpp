@@ -1,35 +1,65 @@
 #include "mainwindow.h"
-
-/*
- * mainwindow.cpp:1:10: In included file: use of undeclared identifier 'MainWindow'; did you mean 'QMainWindow'?
-oledwidget.h:34:25: error occurred here
-qmainwindow.h:24:24: 'QMainWindow' declared here
- */
 #include "./ui_mainwindow.h"
-
- // <--- 【關鍵檢查點】請確保這一行存在且沒有被註解掉！
-
-// 在 mainwindow.cpp 顶部
-#include <QDir>
-#include <QDateTime>
-#include <QFile>
-#include <QTextStream>
-#include <QPainter> // <--- 把这一行加进来！
-#include <QMessageBox>
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QDialog>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QFileDialog>
-#include <QImageReader>
-#include <QImage>
-#include <QBuffer>
-#include <QCheckBox>
 
 #include "sample.h"
 #include "oledwidget.h"
 #include "ToolType.h"
+
+/*
+class MyScrollArea : public QScrollArea
+{
+public:
+    using QScrollArea::QScrollArea;
+
+protected:
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if (widget()) {
+            QApplication::sendEvent(widget(), event); // 左鍵、右鍵都傳給 OLEDWidget
+        }
+        QScrollArea::mousePressEvent(event); // 保留 QScrollArea 行為
+    }
+
+    void mouseReleaseEvent(QMouseEvent* event) override
+    {
+        if (widget()) {
+            QApplication::sendEvent(widget(), event);
+        }
+        QScrollArea::mouseReleaseEvent(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent* event) override
+    {
+        if (widget()) {
+            QApplication::sendEvent(widget(), event);
+        }
+        QScrollArea::mouseMoveEvent(event);
+    }
+};
+
+class MyScrollArea : public QScrollArea
+{
+public:
+    using QScrollArea::QScrollArea;
+
+protected:
+    void mousePressEvent(QMouseEvent* event) override {
+        if (widget()) QApplication::sendEvent(widget(), event);
+        QScrollArea::mousePressEvent(event); // 保留原本 scroll area 行為
+    }
+
+    void mouseReleaseEvent(QMouseEvent* event) override {
+        if (widget()) QApplication::sendEvent(widget(), event);
+        QScrollArea::mouseReleaseEvent(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent* event) override {
+        if (widget()) QApplication::sendEvent(widget(), event);
+        QScrollArea::mouseMoveEvent(event);
+    }
+};
+*/
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -38,42 +68,33 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // --- 建立並注入 OLEDWidget ---
-    //m_oled = new OLEDWidget(this);
     m_oled = new OLEDWidget(this);
-    /*
-     * mainwindow.cpp:48:18: Allocation of incomplete type 'OLEDWidget' (fix available)
-mainwindow.h:9:7: forward declaration of 'OLEDWidget'
-     */
 
+    scrollArea = new QScrollArea(this);
 
+    scrollArea->setWidget(m_oled);
+
+    scrollArea->setWidgetResizable(false); // 保持原始比例，不自動拉伸
+
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    scrollArea->setFrameShape(QFrame::NoFrame);
+
+    scrollArea->setStyleSheet("background: transparent;");
 
     QVBoxLayout *layout = new QVBoxLayout(ui->oledPlaceholder);
-
-
-
-
-
-
-    layout->addWidget(m_oled);
-    //mainwindow.cpp:38:23: Cannot initialize a parameter of type 'QWidget *' with an lvalue of type 'OLEDWidget *'
-    //qboxlayout.h:38:29: passing argument to parameter here
-
+    layout->addWidget(scrollArea);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
 
 
     // --- 2. 連接【功能】按鈕信號 (Clear, Export, Save, Import) ---
     //清除畫面
     connect(ui->clearButton, &QPushButton::clicked, m_oled, &OLEDWidget::clearScreen);
-    /*
-     * mainwindow.cpp:69:5: No matching member function for call to 'connect'
-     * qobject.h:209:36: candidate function not viable: no known conversion from 'void (QAbstractButton::*)(bool)' to 'const char *' for 2nd argument
-     * qobject.h:212:36: candidate function not viable: no known conversion from 'void (QAbstractButton::*)(bool)' to 'const QMetaMethod' for 2nd argument
-     * qobject.h:405:41: candidate function not viable: no known conversion from 'void (QAbstractButton::*)(bool)' to 'const char *' for 2nd argument
-     * qobject.h:230:9: candidate template ignored: substitution failure [with Func1 = void (QAbstractButton::*)(bool), Func2 = void (OLEDWidget::*)()]:
-     * no type named 'ContextType' in 'QtPrivate::ContextTypeForFunctor<void (OLEDWidget::*)()>'
-     * qobject.h:279:9: candidate function template not viable: requires 3 arguments, but 4 were provided
-     */
-    //在彈出對話框中產生程式碼
+
+    //匯出程式碼到對話框
     connect(ui->exportButton, &QPushButton::clicked, this, &MainWindow::exportData);
 
     //存檔;存檔位置在當前程式目錄之下的log檔案夾中,YYYY_MM_DD_hh_mm_ss.h
@@ -96,12 +117,10 @@ mainwindow.h:9:7: forward declaration of 'OLEDWidget'
     m_toolButtonGroup->addButton(ui->ToolFilledRectangle, Tool_FilledRectangle);
     m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
 
-    for (QAbstractButton *button : m_toolButtonGroup->buttons()) {
+    const QList<QAbstractButton*> &buttons = m_toolButtonGroup->buttons();
+    for (QAbstractButton *button : buttons) {
         button->setCheckable(true);
     }
-    /*
-     * D:\for work\temp\workshorp\PC\Qt\SH1106_GUI_Design\mainwindow.cpp:99:5: c++11 range-loop might detach Qt container (QList) [clazy-range-loop-detach]
-     */
 
     // *** 關鍵不同點：我們不直接呼叫 OLEDWidget 的方法 ***
     // *** 而是連接到 MainWindow 自己的 slot，或者直接在 lambda 中處理 ***
@@ -119,19 +138,11 @@ mainwindow.h:9:7: forward declaration of 'OLEDWidget'
 
     // 設定預設工具
     ui->ToolPen->setChecked(true);
-
-
-    //QVBoxLayout *layout = new QVBoxLayout(ui->oledPlaceholder);
-    //layout->addWidget(m_oled);
-
     layout->setContentsMargins(0, 0, 0, 0);
-
-
 
     // --- 把從 main.cpp 移過來的邏輯放在這裡 ---
     // 在程式啟動時，載入預設的範例圖片
     m_oled->setBuffer(sample_image);
-
 
     // ↓↓↓↓ 在这里加入以下代码来设置 Splitter 的初始尺寸 ↓↓↓↓
 
@@ -142,11 +153,9 @@ mainwindow.h:9:7: forward declaration of 'OLEDWidget'
     // 使用 objectName 'splitter' 来获取指向 QSplitter 的指标，并设置尺寸
     // 请确保这里的 "splitter" 和您在 .ui 文件中设置的 objectName 完全一致！
     ui->splitter->setSizes(initialSizes);
-
-
-
     // --- 設定一個合適的初始視窗大小 ---
-    resize(1024, 600);
+    resize(1024, 500);
+
 
 }
 
@@ -299,12 +308,8 @@ void MainWindow::importImage()
     // --- 关键步骤：图片处理和转换 ---
     // 将图片转换为128x64的单色图
     // Qt::MonoOnly -> dither抖动算法，效果比较好
-    // Qt::Threshold -> 阈值算法，黑白分明
+    // Qt::Threshold -> 阈值算法，黑白分
 
-
-   /* QImage monoImage = image.scaled(128, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation)
-                           .convertToFormat(QImage::Format_Mono, Qt::MonoOnly);
-    */
 
     QImage scaledImage = image.scaled(128, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
@@ -354,14 +359,92 @@ void MainWindow::importImage()
             }
         }
     }
-
-
     // 4. 将转换好的 buffer 发送到 OLEDWidget 显示
     m_oled->setBuffer(buffer);
 }
 
 
-MainWindow::~MainWindow()
+/*
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == scrollArea->viewport() && event->type() == QEvent::Wheel) {
+        QWheelEvent* wheel = static_cast<QWheelEvent*>(event);
+        if (wheel->modifiers() & Qt::ShiftModifier) {
+            //handleShiftWheel(wheel);
+           // return true; // 攔截 shift+滾輪
+        }
+        return false; // 普通滾輪交給 scrollArea
+
+    return QObject::eventFilter(obj, event);
+}
+   }*/
+
+/*
+void MainWindow::handleShiftWheel(QWheelEvent* wheel)
+{
+    if (!scrollArea) return; // 保險檢查
+
+    int delta = wheel->angleDelta().y(); // 滾輪增量
+    QScrollBar *hBar = scrollArea->horizontalScrollBar();
+    if (!hBar) return;
+
+    // 調整水平捲動位置，增量可以自己調整倍數
+    int step = delta / 2; // 可以調整滑動速度
+    hBar->setValue(hBar->value() - step); // 注意滾輪方向，負號可以視需要調整
+}
+*/
+    MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+
+
+
+
+
+/*
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::Wheel) {
+        auto *wheelEvent = static_cast<QWheelEvent*>(event);
+
+        // 確認事件發生在 scrollArea 的 viewport 上
+        if (auto *viewport = qobject_cast<QWidget*>(obj)) {
+            if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+                auto *area = qobject_cast<QScrollArea*>(viewport->parent());
+                if (!area) return false;
+
+                int delta = wheelEvent->angleDelta().y();
+                auto *hbar = area->horizontalScrollBar();
+                hbar->setValue(hbar->value() - delta / 2);
+
+                return true; // 攔截垂直滾動
+            }
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::Wheel) {
+        auto *wheelEvent = static_cast<QWheelEvent*>(event);
+        auto *area = qobject_cast<QScrollArea*>(obj);
+        if (!area)
+            return false;
+
+        if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+            // 改為水平滾動
+            int delta = wheelEvent->angleDelta().y(); // 仍然取 y 值，因為是垂直滾輪
+            QScrollBar *hbar = area->horizontalScrollBar();
+            hbar->setValue(hbar->value() - delta / 2);
+
+            return true; // ← 攔截！不要讓垂直滾動發生
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
+}
+*/

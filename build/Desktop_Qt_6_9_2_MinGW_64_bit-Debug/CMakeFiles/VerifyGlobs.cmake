@@ -71,6 +71,7 @@ set(OLD_GLOB
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_15_15_25_25.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_15_15_50_42.h"
+  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_17_10_44_42.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/sample.h"

@@ -23,6 +23,19 @@ void OLEDWidget::setScale(int s) {
     update();
 }
 
+void OLEDWidget::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        int delta = event->angleDelta().y();
+        if (delta > 0)
+            setScale(scale + 1);
+        else if (delta < 0 && scale > 1)
+            setScale(scale - 1);
+        event->accept();
+    } else {
+        QWidget::wheelEvent(event);
+    }
+}
 
 
 OLEDWidget::OLEDWidget(QWidget *parent)

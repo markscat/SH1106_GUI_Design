@@ -2,9 +2,30 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-//#include "oledwidget.h"
-#include "ToolType.h"
+
+#include <QDir>
+#include <QDateTime>
+#include <QFile>
+#include <QTextStream>
+#include <QPainter> // <--- 把这一行加进来！
+#include <QMessageBox>
+#include <QTextEdit>
+#include <QVBoxLayout>
+#include <QDialog>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QFileDialog>
+#include <QImageReader>
+#include <QImage>
+#include <QBuffer>
+#include <QCheckBox>
+#include <QScrollArea>  // ← 一定要加在最上方 include 區
+#include <QWheelEvent>
+#include <QScrollBar>
 #include <QButtonGroup> // 加入標頭檔
+
+
+#include "ToolType.h"
 
 class OLEDWidget; // 前向聲明
 
@@ -32,16 +53,17 @@ private slots:
     void saveData();
     void importImage(); // <-- 新增槽函式声明
 
+//protected:
+    //bool eventFilter(QObject *obj, QEvent *event) override;  // 👈 加這一行
 
 private:
     Ui::MainWindow *ui;
     OLEDWidget *m_oled;
-    //QButtonGroup *m_toolButtonGroup; // 用于管理工具按钮
     QButtonGroup *m_toolButtonGroup;
-
-
-
+    QScrollArea* scrollArea;   // <- 必須有這行
     ToolType m_currentTool;          // 储存当前选中的工具
+
+    //void handleShiftWheel(QWheelEvent* wheel);
 
 };
 #endif // MAINWINDOW_H

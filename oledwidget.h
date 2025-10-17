@@ -27,7 +27,7 @@ public:
     // 載入位圖陣列（MSB 優先，每列 bytes = (w+7)/8）
     void loadBitmap(const uint8_t *data, int w, int h);
 
-    // 顯示倍率 (pixel scale)
+
 
      // 設為 public slot 方便從外部呼叫
 public slots:
@@ -38,6 +38,7 @@ public slots:
 protected:
     // 新增：覆寫滑鼠事件
     void mouseReleaseEvent(QMouseEvent *event) override; // <-- 新增 release 事件
+    void wheelEvent(QWheelEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
