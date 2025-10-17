@@ -7,7 +7,7 @@
 				{
 					"build" : ".",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-Debug-028f70591872658c36bf.json",
+					"jsonFile" : "directory-.-Debug-dece644dc21a0df1b9a7.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.16"
@@ -44,7 +44,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "SH1106_GUI_Design::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-SH1106_GUI_Design-Debug-3b8e1f194e66bea23d18.json",
+					"jsonFile" : "target-SH1106_GUI_Design-Debug-c097c9a0135b9af8df64.json",
 					"name" : "SH1106_GUI_Design",
 					"projectIndex" : 0
 				},

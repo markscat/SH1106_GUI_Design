@@ -358,6 +358,12 @@
 	"HEADERS" : 
 	[
 		[
+			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h",
+			"MU",
+			"EWIEGA46WW/moc_ToolType.cpp",
+			null
+		],
+		[
 			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.h",
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",

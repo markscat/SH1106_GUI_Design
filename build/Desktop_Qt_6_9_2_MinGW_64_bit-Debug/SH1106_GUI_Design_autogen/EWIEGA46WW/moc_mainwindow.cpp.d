@@ -125,7 +125,6 @@ D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW
   C:/Qt/6.9.2/mingw_64/include/QtCore/qversiontagging.h \
   C:/Qt/6.9.2/mingw_64/include/QtCore/qxptype_traits.h \
   C:/Qt/6.9.2/mingw_64/include/QtCore/qyieldcpu.h \
-  C:/Qt/6.9.2/mingw_64/include/QtGui/QImage \
   C:/Qt/6.9.2/mingw_64/include/QtGui/qaction.h \
   C:/Qt/6.9.2/mingw_64/include/QtGui/qbitmap.h \
   C:/Qt/6.9.2/mingw_64/include/QtGui/qbrush.h \
@@ -152,8 +151,9 @@ D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW
   C:/Qt/6.9.2/mingw_64/include/QtGui/qtransform.h \
   C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs.h \
   C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+  C:/Qt/6.9.2/mingw_64/include/QtWidgets/QButtonGroup \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/QMainWindow \
-  C:/Qt/6.9.2/mingw_64/include/QtWidgets/QWidget \
+  C:/Qt/6.9.2/mingw_64/include/QtWidgets/qbuttongroup.h \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/qmainwindow.h \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/qtabwidget.h \
@@ -374,4 +374,4 @@ D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/time.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
-  D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.h
+  D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h

@@ -66,6 +66,7 @@ endif()
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.h")
 set(OLD_GLOB
+  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/include/ui_mainwindow.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h"
   "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_15_15_25_25.h"

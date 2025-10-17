@@ -151,8 +151,10 @@ SH1106_GUI_Design_autogen/timestamp: \
 	C:/Qt/6.9.2/mingw_64/include/QtGui/qtransform.h \
 	C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs.h \
 	C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+	C:/Qt/6.9.2/mingw_64/include/QtWidgets/QButtonGroup \
 	C:/Qt/6.9.2/mingw_64/include/QtWidgets/QMainWindow \
 	C:/Qt/6.9.2/mingw_64/include/QtWidgets/QWidget \
+	C:/Qt/6.9.2/mingw_64/include/QtWidgets/qbuttongroup.h \
 	C:/Qt/6.9.2/mingw_64/include/QtWidgets/qmainwindow.h \
 	C:/Qt/6.9.2/mingw_64/include/QtWidgets/qsizepolicy.h \
 	C:/Qt/6.9.2/mingw_64/include/QtWidgets/qtabwidget.h \
@@ -589,6 +591,7 @@ SH1106_GUI_Design_autogen/timestamp: \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
 	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/CMakeLists.txt \
+	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h \
 	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake \
 	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake \
 	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake \

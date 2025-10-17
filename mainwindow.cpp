@@ -1,6 +1,13 @@
 #include "mainwindow.h"
+
+/*
+ * mainwindow.cpp:1:10: In included file: use of undeclared identifier 'MainWindow'; did you mean 'QMainWindow'?
+oledwidget.h:34:25: error occurred here
+qmainwindow.h:24:24: 'QMainWindow' declared here
+ */
 #include "./ui_mainwindow.h"
 
+ // <--- 【關鍵檢查點】請確保這一行存在且沒有被註解掉！
 
 // 在 mainwindow.cpp 顶部
 #include <QDir>
@@ -12,16 +19,17 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QDialog>
-#include <QPushButton> // 我們需要一個按鈕來關閉對話方塊
+#include <QPushButton>
 #include <QVBoxLayout>
-#include "sample.h"
-#include "oledwidget.h"
 #include <QFileDialog>
 #include <QImageReader>
 #include <QImage>
 #include <QBuffer>
 #include <QCheckBox>
 
+#include "sample.h"
+#include "oledwidget.h"
+#include "ToolType.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -30,16 +38,41 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // --- 建立並注入 OLEDWidget ---
+    //m_oled = new OLEDWidget(this);
     m_oled = new OLEDWidget(this);
+    /*
+     * mainwindow.cpp:48:18: Allocation of incomplete type 'OLEDWidget' (fix available)
+mainwindow.h:9:7: forward declaration of 'OLEDWidget'
+     */
+
 
 
     QVBoxLayout *layout = new QVBoxLayout(ui->oledPlaceholder);
+
+
+
+
+
+
     layout->addWidget(m_oled);
+    //mainwindow.cpp:38:23: Cannot initialize a parameter of type 'QWidget *' with an lvalue of type 'OLEDWidget *'
+    //qboxlayout.h:38:29: passing argument to parameter here
+
     layout->setContentsMargins(0, 0, 0, 0);
 
-    // --- 連接按鈕信號 ---
+
+    // --- 2. 連接【功能】按鈕信號 (Clear, Export, Save, Import) ---
     //清除畫面
     connect(ui->clearButton, &QPushButton::clicked, m_oled, &OLEDWidget::clearScreen);
+    /*
+     * mainwindow.cpp:69:5: No matching member function for call to 'connect'
+     * qobject.h:209:36: candidate function not viable: no known conversion from 'void (QAbstractButton::*)(bool)' to 'const char *' for 2nd argument
+     * qobject.h:212:36: candidate function not viable: no known conversion from 'void (QAbstractButton::*)(bool)' to 'const QMetaMethod' for 2nd argument
+     * qobject.h:405:41: candidate function not viable: no known conversion from 'void (QAbstractButton::*)(bool)' to 'const char *' for 2nd argument
+     * qobject.h:230:9: candidate template ignored: substitution failure [with Func1 = void (QAbstractButton::*)(bool), Func2 = void (OLEDWidget::*)()]:
+     * no type named 'ContextType' in 'QtPrivate::ContextTypeForFunctor<void (OLEDWidget::*)()>'
+     * qobject.h:279:9: candidate function template not viable: requires 3 arguments, but 4 were provided
+     */
     //在彈出對話框中產生程式碼
     connect(ui->exportButton, &QPushButton::clicked, this, &MainWindow::exportData);
 
@@ -49,12 +82,71 @@ MainWindow::MainWindow(QWidget *parent)
     //匯入圖檔
     connect(ui->importButton, &QPushButton::clicked, this, &MainWindow::importImage);
 
+
+    // --- 3. 設定【繪圖工具】按鈕群組 ---`
+
+    m_toolButtonGroup = new QButtonGroup(this);
+    m_toolButtonGroup->setExclusive(true);
+
+
+    // 假設您的按鈕 objectName 分別是 penButton, lineButton 等
+    m_toolButtonGroup->addButton(ui->ToolPen, Tool_Pen);
+    m_toolButtonGroup->addButton(ui->ToolLine, Tool_Line);
+    m_toolButtonGroup->addButton(ui->ToolRectangle, Tool_Rectangle);
+    m_toolButtonGroup->addButton(ui->ToolFilledRectangle, Tool_FilledRectangle);
+    m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
+
+    for (QAbstractButton *button : m_toolButtonGroup->buttons()) {
+        button->setCheckable(true);
+    }
+    /*
+     * D:\for work\temp\workshorp\PC\Qt\SH1106_GUI_Design\mainwindow.cpp:99:5: c++11 range-loop might detach Qt container (QList) [clazy-range-loop-detach]
+     */
+
+    // *** 關鍵不同點：我們不直接呼叫 OLEDWidget 的方法 ***
+    // *** 而是連接到 MainWindow 自己的 slot，或者直接在 lambda 中處理 ***
+    connect(m_toolButtonGroup, &QButtonGroup::idClicked, this, [this](int id){
+        // MainWindow 只需要知道當前工具是什麼即可
+        // 繪圖的觸發由 OLEDWidget 自己的滑鼠事件處理
+    });
+
+    connect(m_toolButtonGroup, QOverload<int>::of(&QButtonGroup::idClicked),
+            this, [this](int id) {
+                // 在這個 lambda 函式中，我們將接收到的整數 ID
+                // 轉換回 ToolType enum，然後呼叫 OLEDWidget 的方法來設定當前工具。
+                m_oled->setCurrentTool(static_cast<ToolType>(id));
+            });
+
+    // 設定預設工具
+    ui->ToolPen->setChecked(true);
+
+
+    //QVBoxLayout *layout = new QVBoxLayout(ui->oledPlaceholder);
+    //layout->addWidget(m_oled);
+
+    layout->setContentsMargins(0, 0, 0, 0);
+
+
+
     // --- 把從 main.cpp 移過來的邏輯放在這裡 ---
     // 在程式啟動時，載入預設的範例圖片
     m_oled->setBuffer(sample_image);
 
+
+    // ↓↓↓↓ 在这里加入以下代码来设置 Splitter 的初始尺寸 ↓↓↓↓
+
+    // 创建一个 QList<int> 来存放每个区域的初始尺寸
+    QList<int> initialSizes;
+    initialSizes << 120 << 680; // 第一个数字是左区的初始宽度，第二个是右区的
+
+    // 使用 objectName 'splitter' 来获取指向 QSplitter 的指标，并设置尺寸
+    // 请确保这里的 "splitter" 和您在 .ui 文件中设置的 objectName 完全一致！
+    ui->splitter->setSizes(initialSizes);
+
+
+
     // --- 設定一個合適的初始視窗大小 ---
-    resize(800, 600);
+    resize(1024, 600);
 
 }
 
@@ -233,7 +325,7 @@ void MainWindow::importImage()
 
 
     // 6. 将绘制好内容的画布，整体转换为最终的单色格式
-    QImage monoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::MonoOnly);
+    QImage monoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::DiffuseDither);
 
     // [可选的除错步骤] 保存这张最终的画布，看看是否居中
     monoImage.save("debug_centered_mono_image.png");
