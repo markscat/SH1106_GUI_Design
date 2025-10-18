@@ -659,7 +659,11 @@ C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.h
  mdp:C:/Qt/6.9.2/mingw_64/include/QtGui/qtransform.h
  mdp:C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs.h
  mdp:C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs_win.h
+ mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/QScrollArea
  mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/QWidget
+ mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/qabstractscrollarea.h
+ mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/qframe.h
+ mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/qscrollarea.h
  mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/qsizepolicy.h
  mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/qtwidgets-config.h
  mdp:C:/Qt/6.9.2/mingw_64/include/QtWidgets/qtwidgetsexports.h

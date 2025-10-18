@@ -5,60 +5,6 @@
 #include "oledwidget.h"
 #include "ToolType.h"
 
-/*
-class MyScrollArea : public QScrollArea
-{
-public:
-    using QScrollArea::QScrollArea;
-
-protected:
-    void mousePressEvent(QMouseEvent* event) override
-    {
-        if (widget()) {
-            QApplication::sendEvent(widget(), event); // 左鍵、右鍵都傳給 OLEDWidget
-        }
-        QScrollArea::mousePressEvent(event); // 保留 QScrollArea 行為
-    }
-
-    void mouseReleaseEvent(QMouseEvent* event) override
-    {
-        if (widget()) {
-            QApplication::sendEvent(widget(), event);
-        }
-        QScrollArea::mouseReleaseEvent(event);
-    }
-
-    void mouseMoveEvent(QMouseEvent* event) override
-    {
-        if (widget()) {
-            QApplication::sendEvent(widget(), event);
-        }
-        QScrollArea::mouseMoveEvent(event);
-    }
-};
-
-class MyScrollArea : public QScrollArea
-{
-public:
-    using QScrollArea::QScrollArea;
-
-protected:
-    void mousePressEvent(QMouseEvent* event) override {
-        if (widget()) QApplication::sendEvent(widget(), event);
-        QScrollArea::mousePressEvent(event); // 保留原本 scroll area 行為
-    }
-
-    void mouseReleaseEvent(QMouseEvent* event) override {
-        if (widget()) QApplication::sendEvent(widget(), event);
-        QScrollArea::mouseReleaseEvent(event);
-    }
-
-    void mouseMoveEvent(QMouseEvent* event) override {
-        if (widget()) QApplication::sendEvent(widget(), event);
-        QScrollArea::mouseMoveEvent(event);
-    }
-};
-*/
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -363,88 +309,8 @@ void MainWindow::importImage()
     m_oled->setBuffer(buffer);
 }
 
-
-/*
-bool MainWindow::eventFilter(QObject* obj, QEvent* event)
-{
-    if (obj == scrollArea->viewport() && event->type() == QEvent::Wheel) {
-        QWheelEvent* wheel = static_cast<QWheelEvent*>(event);
-        if (wheel->modifiers() & Qt::ShiftModifier) {
-            //handleShiftWheel(wheel);
-           // return true; // 攔截 shift+滾輪
-        }
-        return false; // 普通滾輪交給 scrollArea
-
-    return QObject::eventFilter(obj, event);
-}
-   }*/
-
-/*
-void MainWindow::handleShiftWheel(QWheelEvent* wheel)
-{
-    if (!scrollArea) return; // 保險檢查
-
-    int delta = wheel->angleDelta().y(); // 滾輪增量
-    QScrollBar *hBar = scrollArea->horizontalScrollBar();
-    if (!hBar) return;
-
-    // 調整水平捲動位置，增量可以自己調整倍數
-    int step = delta / 2; // 可以調整滑動速度
-    hBar->setValue(hBar->value() - step); // 注意滾輪方向，負號可以視需要調整
-}
-*/
-    MainWindow::~MainWindow()
+MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-
-
-
-
-
-/*
-bool MainWindow::eventFilter(QObject *obj, QEvent *event)
-{
-    if (event->type() == QEvent::Wheel) {
-        auto *wheelEvent = static_cast<QWheelEvent*>(event);
-
-        // 確認事件發生在 scrollArea 的 viewport 上
-        if (auto *viewport = qobject_cast<QWidget*>(obj)) {
-            if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-                auto *area = qobject_cast<QScrollArea*>(viewport->parent());
-                if (!area) return false;
-
-                int delta = wheelEvent->angleDelta().y();
-                auto *hbar = area->horizontalScrollBar();
-                hbar->setValue(hbar->value() - delta / 2);
-
-                return true; // 攔截垂直滾動
-            }
-        }
-    }
-    return QMainWindow::eventFilter(obj, event);
-}
-
-
-bool MainWindow::eventFilter(QObject *obj, QEvent *event)
-{
-    if (event->type() == QEvent::Wheel) {
-        auto *wheelEvent = static_cast<QWheelEvent*>(event);
-        auto *area = qobject_cast<QScrollArea*>(obj);
-        if (!area)
-            return false;
-
-        if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-            // 改為水平滾動
-            int delta = wheelEvent->angleDelta().y(); // 仍然取 y 值，因為是垂直滾輪
-            QScrollBar *hbar = area->horizontalScrollBar();
-            hbar->setValue(hbar->value() - delta / 2);
-
-            return true; // ← 攔截！不要讓垂直滾動發生
-        }
-    }
-
-    return QMainWindow::eventFilter(obj, event);
-}
-*/

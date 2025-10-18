@@ -3,6 +3,7 @@
 #pragma once
 #include <QWidget>
 #include <QImage>
+#include <QScrollArea>
 #include "ToolType.h"
 
 class OLEDWidget : public QWidget {

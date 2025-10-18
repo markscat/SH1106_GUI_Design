@@ -153,7 +153,11 @@ C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug
   C:/Qt/6.9.2/mingw_64/include/QtGui/qtransform.h \
   C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs.h \
   C:/Qt/6.9.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+  C:/Qt/6.9.2/mingw_64/include/QtWidgets/QScrollArea \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/QWidget \
+  C:/Qt/6.9.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
+  C:/Qt/6.9.2/mingw_64/include/QtWidgets/qframe.h \
+  C:/Qt/6.9.2/mingw_64/include/QtWidgets/qscrollarea.h \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/qsizepolicy.h \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/qtwidgets-config.h \
   C:/Qt/6.9.2/mingw_64/include/QtWidgets/qtwidgetsexports.h \

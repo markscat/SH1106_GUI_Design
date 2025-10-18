@@ -7,6 +7,8 @@
 #include <QPainter>
 #include <QMouseEvent> // <--- 把這一行加進來！
 #include <cstring>
+#include <QScrollBar>
+
 
 #include <algorithm>
 
@@ -18,10 +20,44 @@
 
 
 void OLEDWidget::setScale(int s) {
-    scale = s > 0 ? s : 1;
+    const int minScale = 1;
+    const int maxScale = 20; // 依需求調整最大放大倍數
+    scale = std::clamp(s, minScale, maxScale);
+    //scale = s > 0 ? s : 1;
     setMinimumSize(img.width()*scale, img.height()*scale);
     update();
 }
+
+/*
+void OLEDWidget::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        auto *sa = qobject_cast<QScrollArea*>(parentWidget());
+        if (!sa) return;
+
+        // 滑鼠在 widget 上座標
+        QPointF cursorPos = event->position(); // 或 .posF() / .pos() 根據 Qt 版本
+        double oldScale = scale;
+        int delta = event->angleDelta().y();
+        if (delta > 0)
+            setScale(scale + 1);
+        else if (delta < 0)
+            setScale(scale - 1);
+
+        // 計算縮放後 scroll bar 位置
+        double scaleFactor = double(scale) / oldScale;
+        sa->horizontalScrollBar()->setValue(int((cursorPos.x() + sa->horizontalScrollBar()->value()) * scaleFactor - cursorPos.x()));
+        sa->verticalScrollBar()->setValue(int((cursorPos.y() + sa->verticalScrollBar()->value()) * scaleFactor - cursorPos.y()));
+
+        event->accept();
+    } else {
+        QWidget::wheelEvent(event);
+    }
+}
+
+
+*/
+
 
 void OLEDWidget::wheelEvent(QWheelEvent *event)
 {
@@ -80,22 +116,46 @@ void OLEDWidget::loadBitmap(const uint8_t *data, int w, int h) {
 
 
 void OLEDWidget::paintEvent(QPaintEvent *) {
+
     QPainter p(this);
     p.fillRect(rect(), Qt::darkGray); // 背景色（方便看）
     if (img.isNull()) return;
 
+    // 根據目前 widget 大小動態調整 scale
     // --- 计算 OLED 图像的显示区域 ---
     int scaled_width = img.width() * scale;
     int scaled_height = img.height() * scale;
+
+
     int x_offset = (width() - scaled_width) / 2;
     int y_offset = (height() - scaled_height) / 2;
-    QRect oled_rect(x_offset, y_offset, scaled_width, scaled_height);
 
-    p.drawImage(oled_rect, img);
+    // 逐像素繪製放大後的矩形
+    for (int y = 0; y < img.height(); ++y) {
+        for (int x = 0; x < img.width(); ++x) {
+            QColor color = QColor(img.pixelColor(x, y));
+            p.fillRect(x_offset + x*scale,
+                       y_offset + y*scale,
+                       scale, scale,
+                       color);
+        }
+    }
+
+    /*
+    // 外框
+    p.setPen(QPen(Qt::white, 1));
+    p.drawRect(x_offset, y_offset, scaled_width-1, scaled_height-1);
+    */
+
+
+    //QRect oled_rect(x_offset, y_offset, scaled_width, scaled_height);
+
+    //p.drawImage(oled_rect, img);
 
     // 1. 绘制一个清晰的白色外边框
     p.setPen(QPen(Qt::white, 1));
-    p.drawRect(oled_rect.adjusted(0, 0, -1, -1)); // adjusted 修正 1 像素偏差
+    p.drawRect(x_offset, y_offset, scaled_width-1, scaled_height-1);
+    //p.drawRect(oled_rect.adjusted(0, 0, -1, -1)); // adjusted 修正 1 像素偏差
 
     // 2. 绘制格线 (可选，但推荐)
     // 只有当放大倍数足够大时才绘制格线，避免糊成一团
@@ -259,10 +319,62 @@ void OLEDWidget::clearScreen() {
     // 將內部緩衝區全部填 0
     memset(m_buffer, 0, sizeof(m_buffer));
     updateImageFromBuffer(); // 更新顯示
-    //oledwidget.cpp:95: error: undefined reference to `OLEDWidget::updateImageFromBuffer()'
+}
+
+void OLEDWidget::mousePressEvent(QMouseEvent *event) {
+    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
+    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
+
+    // 左鍵畫圖
+    if (event->button() == Qt::LeftButton) {
+        m_startPoint = QPoint(oled_x, oled_y);
+        m_endPoint = m_startPoint;
+        m_isDrawing = true;
+
+        if (m_currentTool == Tool_Pen) {
+            setPixel(oled_x, oled_y, true);
+        }
+    }
+
+    // 右鍵「抹除」點
+    else if (event->button() == Qt::RightButton){
+        if(m_currentTool == Tool_Pen){
+            setPixel(oled_x, oled_y, false);
+            m_isDrawing = true; // 允許右鍵拖曳擦除
+        }else{
+            m_isDrawing = false;
+            m_startPoint = QPoint(-1, -1);
+            m_endPoint = QPoint(-1, -1);
+            update(); // 清掉預覽線
+        }
+
+    }
+}
+
+void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
+    if (!m_isDrawing) return;
+
+    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
+    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
+
+    if (event->buttons() & Qt::LeftButton) {
+        if (m_currentTool == Tool_Pen) {
+            drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, true);
+            m_startPoint = QPoint(oled_x, oled_y);
+        }
+    } else if (event->buttons() & Qt::RightButton) {
+        // 拖曳右鍵 → 擦除
+        drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, false);
+        m_startPoint = QPoint(oled_x, oled_y);
+    }
+
+    update();
 }
 
 
+
+
+#ifdef V25_10_18
 void OLEDWidget::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
@@ -295,8 +407,15 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
 
     update(); // 觸發 paintEvent 繪製預覽
 }
+#endif
 
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
+
+    if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton) {
+        m_isDrawing = false;
+        updateImageFromBuffer(); // 完成繪圖後，從 buffer 更新 QImage
+    }
+
     if (event->button() == Qt::LeftButton && m_isDrawing) {
         m_isDrawing = false;
 
@@ -323,8 +442,8 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
             break;
         }
 
-        updateImageFromBuffer(); // 完成繪圖後，從 buffer 更新 QImage
     }
+
 }
 
 

@@ -29,9 +29,9 @@ class Ui_MainWindow
 public:
     QWidget *centralwidget;
     QSplitter *splitter;
-    QWidget *widget;
+    QWidget *layoutWidget;
     QVBoxLayout *verticalLayout_2;
-    QWidget *widget1;
+    QWidget *widget;
     QWidget *horizontalLayoutWidget;
     QHBoxLayout *horizontalLayout_3;
     QSpacerItem *horizontalSpacer;
@@ -57,7 +57,7 @@ public:
     QSpacerItem *horizontalSpacer_9;
     QToolButton *ToolRectangle;
     QSpacerItem *horizontalSpacer_10;
-    QWidget *layoutWidget;
+    QWidget *layoutWidget1;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout;
     QPushButton *clearButton;
@@ -73,22 +73,34 @@ public:
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
         MainWindow->resize(963, 612);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(MainWindow->sizePolicy().hasHeightForWidth());
+        MainWindow->setSizePolicy(sizePolicy);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
+        sizePolicy.setHeightForWidth(centralwidget->sizePolicy().hasHeightForWidth());
+        centralwidget->setSizePolicy(sizePolicy);
+        centralwidget->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
         splitter = new QSplitter(centralwidget);
         splitter->setObjectName("splitter");
         splitter->setGeometry(QRect(0, 0, 941, 561));
+        sizePolicy.setHeightForWidth(splitter->sizePolicy().hasHeightForWidth());
+        splitter->setSizePolicy(sizePolicy);
         splitter->setOrientation(Qt::Orientation::Horizontal);
-        widget = new QWidget(splitter);
-        widget->setObjectName("widget");
-        verticalLayout_2 = new QVBoxLayout(widget);
+        layoutWidget = new QWidget(splitter);
+        layoutWidget->setObjectName("layoutWidget");
+        verticalLayout_2 = new QVBoxLayout(layoutWidget);
         verticalLayout_2->setObjectName("verticalLayout_2");
         verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-        widget1 = new QWidget(widget);
-        widget1->setObjectName("widget1");
-        horizontalLayoutWidget = new QWidget(widget1);
+        widget = new QWidget(layoutWidget);
+        widget->setObjectName("widget");
+        sizePolicy.setHeightForWidth(widget->sizePolicy().hasHeightForWidth());
+        widget->setSizePolicy(sizePolicy);
+        horizontalLayoutWidget = new QWidget(widget);
         horizontalLayoutWidget->setObjectName("horizontalLayoutWidget");
-        horizontalLayoutWidget->setGeometry(QRect(0, 30, 141, 21));
+        horizontalLayoutWidget->setGeometry(QRect(0, 30, 141, 27));
         horizontalLayout_3 = new QHBoxLayout(horizontalLayoutWidget);
         horizontalLayout_3->setObjectName("horizontalLayout_3");
         horizontalLayout_3->setContentsMargins(0, 0, 0, 0);
@@ -105,9 +117,9 @@ public:
 
         horizontalLayout_3->addItem(horizontalSpacer_2);
 
-        horizontalLayoutWidget_2 = new QWidget(widget1);
+        horizontalLayoutWidget_2 = new QWidget(widget);
         horizontalLayoutWidget_2->setObjectName("horizontalLayoutWidget_2");
-        horizontalLayoutWidget_2->setGeometry(QRect(0, 50, 141, 21));
+        horizontalLayoutWidget_2->setGeometry(QRect(0, 50, 141, 27));
         horizontalLayout_4 = new QHBoxLayout(horizontalLayoutWidget_2);
         horizontalLayout_4->setObjectName("horizontalLayout_4");
         horizontalLayout_4->setContentsMargins(0, 0, 0, 0);
@@ -124,9 +136,9 @@ public:
 
         horizontalLayout_4->addItem(horizontalSpacer_4);
 
-        horizontalLayoutWidget_3 = new QWidget(widget1);
+        horizontalLayoutWidget_3 = new QWidget(widget);
         horizontalLayoutWidget_3->setObjectName("horizontalLayoutWidget_3");
-        horizontalLayoutWidget_3->setGeometry(QRect(0, 70, 141, 21));
+        horizontalLayoutWidget_3->setGeometry(QRect(0, 70, 141, 27));
         horizontalLayout_5 = new QHBoxLayout(horizontalLayoutWidget_3);
         horizontalLayout_5->setObjectName("horizontalLayout_5");
         horizontalLayout_5->setContentsMargins(0, 0, 0, 0);
@@ -143,9 +155,9 @@ public:
 
         horizontalLayout_5->addItem(horizontalSpacer_6);
 
-        horizontalLayoutWidget_4 = new QWidget(widget1);
+        horizontalLayoutWidget_4 = new QWidget(widget);
         horizontalLayoutWidget_4->setObjectName("horizontalLayoutWidget_4");
-        horizontalLayoutWidget_4->setGeometry(QRect(0, 90, 141, 21));
+        horizontalLayoutWidget_4->setGeometry(QRect(0, 90, 141, 27));
         horizontalLayout_6 = new QHBoxLayout(horizontalLayoutWidget_4);
         horizontalLayout_6->setObjectName("horizontalLayout_6");
         horizontalLayout_6->setContentsMargins(0, 0, 0, 0);
@@ -162,9 +174,9 @@ public:
 
         horizontalLayout_6->addItem(horizontalSpacer_8);
 
-        horizontalLayoutWidget_5 = new QWidget(widget1);
+        horizontalLayoutWidget_5 = new QWidget(widget);
         horizontalLayoutWidget_5->setObjectName("horizontalLayoutWidget_5");
-        horizontalLayoutWidget_5->setGeometry(QRect(0, 110, 141, 21));
+        horizontalLayoutWidget_5->setGeometry(QRect(0, 110, 141, 27));
         horizontalLayout_7 = new QHBoxLayout(horizontalLayoutWidget_5);
         horizontalLayout_7->setObjectName("horizontalLayout_7");
         horizontalLayout_7->setContentsMargins(0, 0, 0, 0);
@@ -182,32 +194,32 @@ public:
         horizontalLayout_7->addItem(horizontalSpacer_10);
 
 
-        verticalLayout_2->addWidget(widget1);
+        verticalLayout_2->addWidget(widget);
 
-        splitter->addWidget(widget);
-        layoutWidget = new QWidget(splitter);
-        layoutWidget->setObjectName("layoutWidget");
-        verticalLayout = new QVBoxLayout(layoutWidget);
+        splitter->addWidget(layoutWidget);
+        layoutWidget1 = new QWidget(splitter);
+        layoutWidget1->setObjectName("layoutWidget1");
+        verticalLayout = new QVBoxLayout(layoutWidget1);
         verticalLayout->setObjectName("verticalLayout");
         verticalLayout->setContentsMargins(0, 0, 0, 0);
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName("horizontalLayout");
-        clearButton = new QPushButton(layoutWidget);
+        clearButton = new QPushButton(layoutWidget1);
         clearButton->setObjectName("clearButton");
 
         horizontalLayout->addWidget(clearButton);
 
-        saveButton = new QPushButton(layoutWidget);
+        saveButton = new QPushButton(layoutWidget1);
         saveButton->setObjectName("saveButton");
 
         horizontalLayout->addWidget(saveButton);
 
-        exportButton = new QPushButton(layoutWidget);
+        exportButton = new QPushButton(layoutWidget1);
         exportButton->setObjectName("exportButton");
 
         horizontalLayout->addWidget(exportButton);
 
-        importButton = new QPushButton(layoutWidget);
+        importButton = new QPushButton(layoutWidget1);
         importButton->setObjectName("importButton");
 
         horizontalLayout->addWidget(importButton);
@@ -215,17 +227,19 @@ public:
 
         verticalLayout->addLayout(horizontalLayout);
 
-        oledPlaceholder = new QWidget(layoutWidget);
+        oledPlaceholder = new QWidget(layoutWidget1);
         oledPlaceholder->setObjectName("oledPlaceholder");
+        sizePolicy.setHeightForWidth(oledPlaceholder->sizePolicy().hasHeightForWidth());
+        oledPlaceholder->setSizePolicy(sizePolicy);
 
         verticalLayout->addWidget(oledPlaceholder);
 
         verticalLayout->setStretch(1, 1);
-        splitter->addWidget(layoutWidget);
+        splitter->addWidget(layoutWidget1);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 963, 21));
+        menubar->setGeometry(QRect(0, 0, 963, 25));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName("statusbar");
