@@ -1,83 +1,16 @@
 # ninja log v6
-388	1736	7823920824282971	build.ninja	9c590229309f411a
-16	545	7823920807051340	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-407	1546	7823919736425881	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-407	1546	7823919736425881	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-407	1546	7823919736425881	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-407	1546	7823919736425881	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-1546	7946	7823919737428487	CMakeFiles/SH1106_GUI_Design.dir/SH1106_GUI_Design_autogen/mocs_compilation.cpp.obj	aaee11d861a2dd6b
-1549	7883	7823919737457010	CMakeFiles/SH1106_GUI_Design.dir/main.cpp.obj	1ff3ea31ce708515
-1552	8459	7823919737492020	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-8459	8940	7823919806559651	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-1556	6622	7823919737512555	CMakeFiles/SH1106_GUI_Design.dir/oledwidget.cpp.obj	8c89439e14c6151
-764	808	7823919641737041	CMakeFiles/clean.additional	baedbe210acaa455
-808	826	7823919642199102	clean	577b940aee94fbd7
-546	2043	7823920824282971	build.ninja	9c590229309f411a
-13	544	7823920825144243	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-558	865	7823920830555323	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-558	865	7823920830555323	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-558	865	7823920830555323	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-558	865	7823920830555323	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-866	11066	7823920833666068	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-11066	11862	7823920935668590	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-13	841	7823927362516224	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-873	1418	7823927371210039	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-873	1418	7823927371210039	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-873	1418	7823927371210039	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-873	1418	7823927371210039	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-1425	8484	7823927376721487	CMakeFiles/SH1106_GUI_Design.dir/oledwidget.cpp.obj	8c89439e14c6151
-1420	10186	7823927376678218	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-10186	10835	7823927464331103	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-24	747	7823932334324877	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-766	1150	7823932341659685	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-766	1150	7823932341659685	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-766	1150	7823932341659685	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-766	1150	7823932341659685	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-1151	9685	7823932345604956	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-9685	10581	7823932430943712	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-8	400	7823932743472510	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-19	921	7823938171360800	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-946	1464	7823938180625136	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-946	1464	7823938180625136	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-946	1464	7823938180625136	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-946	1464	7823938180625136	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-1465	10143	7823938185824076	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-10144	11104	7823938272606547	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-8	353	7823948561902134	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-363	582	7823948565484049	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-363	582	7823948565484049	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-363	582	7823948565484049	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-363	582	7823948565484049	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-583	4483	7823948567689512	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-4484	4991	7823948606696699	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-15	688	7823951450664401	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-711	1086	7823951457628541	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-711	1086	7823951457628541	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-711	1086	7823951457628541	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-711	1086	7823951457628541	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-1087	8756	7823951461393215	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-8757	9531	7823951538084277	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-13	408	7823953542962581	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-425	776	7823953547087799	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-425	776	7823953547087799	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-425	776	7823953547087799	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-425	776	7823953547087799	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-778	6887	7823953550603504	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-13	773	7823954765648896	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-794	2562	7823954789363196	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-794	2562	7823954789363196	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-794	2562	7823954789363196	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-794	2562	7823954789363196	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-2568	11408	7823954791201375	CMakeFiles/SH1106_GUI_Design.dir/main.cpp.obj	1ff3ea31ce708515
-2564	11659	7823954791153441	CMakeFiles/SH1106_GUI_Design.dir/SH1106_GUI_Design_autogen/mocs_compilation.cpp.obj	aaee11d861a2dd6b
-2573	12388	7823954791246805	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-12388	13101	7823954889399464	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-8	374	7823955324911793	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-11	383	7823958255561425	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
-395	773	7823958259399688	SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-395	773	7823958259399688	SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-395	773	7823958259399688	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	5651e460b5f22cf3
-395	773	7823958259399688	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	5651e460b5f22cf3
-774	7178	7823958263187825	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	96587504392e33c
-7178	7802	7823958327228446	SH1106_GUI_Design.exe	1c0ae0a6a0045f50
-10	439	7823958532316952	D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	667e68895d34cc70
+209	1574	7824709877171472	build.ninja	9e6c26b063502a7c
+227	1696	7824709751278057	SH1106_GUI_Design_autogen/timestamp	c5a3561239dc57e0
+227	1696	7824709751278057	SH1106_GUI_Design_autogen/mocs_compilation.cpp	c5a3561239dc57e0
+1698	7530	7824709752762676	CMakeFiles/SH1106_GUI_Design.dir/SH1106_GUI_Design_autogen/mocs_compilation.cpp.obj	bca5b5950ab36524
+1729	6215	7824709753067711	CMakeFiles/SH1106_GUI_Design.dir/oledwidget.cpp.obj	5d2a42e62c1b57f1
+1707	7181	7824709752850493	CMakeFiles/SH1106_GUI_Design.dir/main.cpp.obj	1b4df2355acc9aca
+1718	8066	7824709752959976	CMakeFiles/SH1106_GUI_Design.dir/mainwindow.cpp.obj	1cdd69c6cae6f8ce
+8066	8687	7824709816440336	SH1106_GUI_Design.exe	94a977a7f23883a2
+281	353	7824709717641306	CMakeFiles/clean.additional	baedbe210acaa455
+354	379	7824709718348309	clean	577b940aee94fbd7
+56	237	7824709864265293	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	44e6c40487613e71
+227	1696	7824709751278057	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/timestamp	c5a3561239dc57e0
+227	1696	7824709751278057	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp	c5a3561239dc57e0
+237	1681	7824709877171472	build.ninja	9e6c26b063502a7c
+38	230	7824709879981456	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs	44e6c40487613e71

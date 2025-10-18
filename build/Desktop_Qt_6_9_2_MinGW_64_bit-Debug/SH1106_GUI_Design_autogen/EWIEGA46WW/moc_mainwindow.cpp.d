@@ -1,5 +1,6 @@
-D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/EWIEGA46WW/moc_mainwindow.cpp: D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.h \
-  D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h \
+C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/EWIEGA46WW/moc_mainwindow.cpp: C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.h \
+  C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h \
+  C:/Ethan/workshop/PC/SH1106_GUI_Design/ToolType.h \
   C:/Qt/6.9.2/mingw_64/include/QtCore/QBuffer \
   C:/Qt/6.9.2/mingw_64/include/QtCore/QDateTime \
   C:/Qt/6.9.2/mingw_64/include/QtCore/QDir \
@@ -496,5 +497,4 @@ D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/time.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
-  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
-  D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h
+  C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h

@@ -1,4 +1,17 @@
 SH1106_GUI_Design_autogen/timestamp: \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/CMakeLists.txt \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/ToolType.h \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/main.cpp \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.cpp \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.h \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.cpp \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.h \
 	C:/Qt/6.9.2/mingw_64/include/QtCore/QBuffer \
 	C:/Qt/6.9.2/mingw_64/include/QtCore/QDateTime \
 	C:/Qt/6.9.2/mingw_64/include/QtCore/QDir \
@@ -712,18 +725,5 @@ SH1106_GUI_Design_autogen/timestamp: \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/vadefs.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
 	C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/CMakeLists.txt \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/main.cpp \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.cpp \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.h \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.cpp \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.h \
-	D:/for\ work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.ui \
+	C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.ui \
 	C:/Qt/Tools/CMake_64/bin/cmake.exe

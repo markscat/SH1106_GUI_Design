@@ -3,181 +3,181 @@
 cmake_policy(SET CMP0009 NEW)
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.c")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.c")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.c++")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.c++")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.cc")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.cc")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.ch")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.ch")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.cpp")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.cpp")
 set(OLD_GLOB
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.cpp"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/EWIEGA46WW/moc_mainwindow.cpp"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/EWIEGA46WW/moc_oledwidget.cpp"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/main.cpp"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.cpp"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CompilerIdCXX/CMakeCXXCompilerId.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/EWIEGA46WW/moc_mainwindow.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/EWIEGA46WW/moc_oledwidget.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/main.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.cpp"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.cxx")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.cxx")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.h")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.h")
 set(OLD_GLOB
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/include/ui_mainwindow.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_15_15_25_25.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_15_15_50_42.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_17_10_44_42.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.h"
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/sample.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/ToolType.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/include/ui_mainwindow.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_15_15_25_25.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_15_15_50_42.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_17_10_44_42.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/sample.h"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.h++")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.h++")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.hh")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.hh")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.hpp")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.hpp")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.hxx")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.hxx")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.java")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.java")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.js")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.js")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.jui")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.jui")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.qml")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.qml")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.qrc")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.qrc")
 set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.qs")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.qs")
 set(OLD_GLOB
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.qs"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.qs"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()
 
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
-file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/*.ui")
+file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.ui")
 set(OLD_GLOB
-  "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.ui"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.ui"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
+  file(TOUCH_NOCREATE "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/cmake.verify_globs")
 endif()

@@ -1,0 +1,49 @@
+# Qt Creator user settings (本地設定，不應分享)
+*.pro.user
+*.user
+
+# CMake build directory (建置結果資料夾)
+# ----------------------------------------
+# 忽略整個 build/ 目錄下的所有內容
+build/
+
+# 但「不」忽略 build/Release/ (取消忽略)
+!build/Release/
+
+# 如果 build/Release/ 下還有子目錄你不希望被忽略，也可以繼續添加類似的規則
+# 例如，如果 Release/ 下有 my_release_binary.exe 你想追蹤，但不想追蹤其他文件：
+# !build/Release/my_release_binary.exe
+
+# CMake generated files (CMake 快取和中間檔案)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CPackConfig.cmake
+CTestTestfile.cmake
+
+# Ninja build files (如果你的 CMake 使用 Ninja 作為生成器)
+.ninja_deps
+.ninja_log
+
+# Executables and libraries (可執行檔和庫檔案)
+*.exe
+*.dll
+*.lib
+*.so
+*.dylib
+
+# Object files (編譯中間產物)
+*.obj
+*.o
+*.lo
+
+# Debugging files
+*.pdb
+*.ilk
+
+# Qt specific files (Qt Designer 相關的 UI 編譯產物，通常由編譯器自動生成)
+ui_*.h
+moc_*.cpp
+qrc_*.cpp
+*.qrc.cpp # for newer Qt versions

@@ -1,19 +1,19 @@
 {
 	"AUTOGEN_COMMAND_LINE_LENGTH_MAX" : 32000,
-	"BUILD_DIR" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen",
-	"CMAKE_BINARY_DIR" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug",
-	"CMAKE_CURRENT_BINARY_DIR" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug",
-	"CMAKE_CURRENT_SOURCE_DIR" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design",
+	"BUILD_DIR" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Ethan/workshop/PC/SH1106_GUI_Design",
 	"CMAKE_EXECUTABLE" : "C:/Qt/Tools/CMake_64/bin/cmake.exe",
 	"CMAKE_LIST_FILES" : 
 	[
-		"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/CMakeLists.txt",
-		"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake",
-		"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
-		"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake",
+		"C:/Ethan/workshop/PC/SH1106_GUI_Design/CMakeLists.txt",
+		"C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake",
+		"C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
+		"C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-Initialize.cmake",
-		"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
+		"C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake",
@@ -26,7 +26,7 @@
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/CMakeCommonCompilerMacros.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU.cmake",
-		"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake",
+		"C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeRCInformation.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-windres.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX-ABI.cmake",
@@ -351,34 +351,34 @@
 		"C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6/Qt6Dependencies.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/GNUInstallDirs.cmake"
 	],
-	"CMAKE_SOURCE_DIR" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design",
+	"CMAKE_SOURCE_DIR" : "C:/Ethan/workshop/PC/SH1106_GUI_Design",
 	"CROSS_CONFIG" : false,
-	"DEP_FILE" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/deps",
+	"DEP_FILE" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/deps",
 	"DEP_FILE_RULE_NAME" : "SH1106_GUI_Design_autogen/timestamp",
 	"HEADERS" : 
 	[
 		[
-			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/ToolType.h",
+			"C:/Ethan/workshop/PC/SH1106_GUI_Design/ToolType.h",
 			"MU",
 			"EWIEGA46WW/moc_ToolType.cpp",
 			null
 		],
 		[
-			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.h",
+			"C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.h",
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",
 			null
 		],
 		[
-			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.h",
+			"C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.h",
 			"MU",
 			"EWIEGA46WW/moc_oledwidget.cpp",
 			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
-	"INCLUDE_DIR" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/include",
-	"MOC_COMPILATION_FILE" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp",
+	"INCLUDE_DIR" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/include",
+	"MOC_COMPILATION_FILE" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/mocs_compilation.cpp",
 	"MOC_DEFINITIONS" : 
 	[
 		"MINGW_HAS_SECURE_API=1",
@@ -434,34 +434,22 @@
 		"-c",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp"
 	],
-	"MOC_PREDEFS_FILE" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h",
+	"MOC_PREDEFS_FILE" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/SH1106_GUI_Design_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,
 	"MOC_SKIP" : [],
 	"MULTI_CONFIG" : false,
-	"PARALLEL" : 4,
-	"PARSE_CACHE_FILE" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/SH1106_GUI_Design_autogen.dir/ParseCache.txt",
+	"PARALLEL" : 10,
+	"PARSE_CACHE_FILE" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/SH1106_GUI_Design_autogen.dir/ParseCache.txt",
 	"QT_MOC_EXECUTABLE" : "C:/Qt/6.9.2/mingw_64/bin/moc.exe",
 	"QT_UIC_EXECUTABLE" : "C:/Qt/6.9.2/mingw_64/bin/uic.exe",
 	"QT_VERSION_MAJOR" : 6,
 	"QT_VERSION_MINOR" : 9,
-	"SETTINGS_FILE" : "D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/SH1106_GUI_Design_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE" : "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/SH1106_GUI_Design_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
-		[
-			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/main.cpp",
-			"MU",
-			null
-		],
-		[
-			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/mainwindow.cpp",
-			"MU",
-			null
-		],
-		[
-			"D:/for work/temp/workshorp/PC/Qt/SH1106_GUI_Design/oledwidget.cpp",
-			"MU",
-			null
-		]
+		[ "C:/Ethan/workshop/PC/SH1106_GUI_Design/main.cpp", "MU", null ],
+		[ "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.cpp", "MU", null ],
+		[ "C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],
