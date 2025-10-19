@@ -12,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    m_originalOledSize = ui->oledPlaceholder->size(); // 或 m_oled->sizeHint()
+
 
     // --- 建立並注入 OLEDWidget ---
     m_oled = new OLEDWidget(this);
@@ -48,6 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     //匯入圖檔
     connect(ui->importButton, &QPushButton::clicked, this, &MainWindow::importImage);
+
+    //重製繪圖框尺寸
+    connect(ui->resetOledSizeButton, &QPushButton::clicked, this, &MainWindow::resetOledPlaceholderSize);
+
 
 
     // --- 3. 設定【繪圖工具】按鈕群組 ---`
@@ -99,8 +105,9 @@ MainWindow::MainWindow(QWidget *parent)
     // 使用 objectName 'splitter' 来获取指向 QSplitter 的指标，并设置尺寸
     // 请确保这里的 "splitter" 和您在 .ui 文件中设置的 objectName 完全一致！
     ui->splitter->setSizes(initialSizes);
+
     // --- 設定一個合適的初始視窗大小 ---
-    resize(1024, 500);
+    resize(1024, 600);
 
 
 }
@@ -202,6 +209,29 @@ void MainWindow::saveData()
     }
 }
 
+
+// 實現新的槽函數
+void MainWindow::resetOledPlaceholderSize()
+{
+    if (m_oled) {
+
+    // 1. 恢復原始縮放比例
+    m_oled->setScale(1);
+
+    // 2. 恢復 m_oled 的大小為原始 128x64
+    m_oled->setFixedSize(768, 384);
+
+    // 3. 更新 scrollArea 對齊方式，保證在左上角
+    scrollArea->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+
+    // 4. 讓 layout 重新計算
+    m_oled->updateGeometry();
+    ui->oledPlaceholder->updateGeometry();
+
+
+    }
+
+}
 
 void MainWindow::importImage()
 {

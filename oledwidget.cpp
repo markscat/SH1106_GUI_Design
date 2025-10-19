@@ -1,8 +1,4 @@
 
-
-
-
-
 #include "oledwidget.h"
 #include <QPainter>
 #include <QMouseEvent> // <--- 把這一行加進來！
@@ -28,35 +24,6 @@ void OLEDWidget::setScale(int s) {
     update();
 }
 
-/*
-void OLEDWidget::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        auto *sa = qobject_cast<QScrollArea*>(parentWidget());
-        if (!sa) return;
-
-        // 滑鼠在 widget 上座標
-        QPointF cursorPos = event->position(); // 或 .posF() / .pos() 根據 Qt 版本
-        double oldScale = scale;
-        int delta = event->angleDelta().y();
-        if (delta > 0)
-            setScale(scale + 1);
-        else if (delta < 0)
-            setScale(scale - 1);
-
-        // 計算縮放後 scroll bar 位置
-        double scaleFactor = double(scale) / oldScale;
-        sa->horizontalScrollBar()->setValue(int((cursorPos.x() + sa->horizontalScrollBar()->value()) * scaleFactor - cursorPos.x()));
-        sa->verticalScrollBar()->setValue(int((cursorPos.y() + sa->verticalScrollBar()->value()) * scaleFactor - cursorPos.y()));
-
-        event->accept();
-    } else {
-        QWidget::wheelEvent(event);
-    }
-}
-
-
-*/
 
 
 void OLEDWidget::wheelEvent(QWheelEvent *event)

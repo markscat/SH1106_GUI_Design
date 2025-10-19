@@ -5,6 +5,7 @@ cmake_policy(SET CMP0009 NEW)
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.c")
 set(OLD_GLOB
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/out/build/x64-Debug/CMakeFiles/ShowIncludes/main.c"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
@@ -48,6 +49,7 @@ set(OLD_GLOB
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/main.cpp"
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.cpp"
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.cpp"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/out/build/x64-Debug/CMakeFiles/3.31.6-msvc6/CompilerIdCXX/CMakeCXXCompilerId.cpp"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
@@ -74,6 +76,7 @@ set(OLD_GLOB
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/log/2025_10_17_10_44_42.h"
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.h"
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/oledwidget.h"
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/out/build/x64-Debug/CMakeFiles/ShowIncludes/foo.h"
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/sample.h"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
@@ -175,6 +178,7 @@ endif()
 # _directory_contents at C:/Qt/6.9.2/mingw_64/lib/cmake/Qt6LinguistTools/Qt6LinguistToolsMacros.cmake:55 (file)
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Ethan/workshop/PC/SH1106_GUI_Design/*.ui")
 set(OLD_GLOB
+  "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow - 複製.ui"
   "C:/Ethan/workshop/PC/SH1106_GUI_Design/mainwindow.ui"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")

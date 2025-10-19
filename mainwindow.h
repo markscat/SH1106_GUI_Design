@@ -23,6 +23,7 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 #include <QButtonGroup> // 加入標頭檔
+#include <QSize>
 
 
 #include "ToolType.h"
@@ -49,12 +50,10 @@ public:
     ToolType getCurrentTool() const; // 提供一个给外部获取当前工具的接口
 
 private slots:
+    void resetOledPlaceholderSize(); // 新的槽函數，用於重置尺寸
     void exportData(); // 聲明槽函數
     void saveData();
     void importImage(); // <-- 新增槽函式声明
-
-//protected:
-    //bool eventFilter(QObject *obj, QEvent *event) override;  // 👈 加這一行
 
 private:
     Ui::MainWindow *ui;
@@ -62,8 +61,9 @@ private:
     QButtonGroup *m_toolButtonGroup;
     QScrollArea* scrollArea;   // <- 必須有這行
     ToolType m_currentTool;          // 储存当前选中的工具
+    QSize m_originalOledSize;; // 用於儲存 oledPlaceholder 的原始尺寸
 
-    //void handleShiftWheel(QWheelEvent* wheel);
+
 
 };
 #endif // MAINWINDOW_H

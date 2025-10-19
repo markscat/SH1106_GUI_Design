@@ -29,41 +29,38 @@ class Ui_MainWindow
 public:
     QWidget *centralwidget;
     QSplitter *splitter;
-    QWidget *layoutWidget;
-    QVBoxLayout *verticalLayout_2;
+    QWidget *ToolbarWdidget;
     QWidget *widget;
-    QWidget *horizontalLayoutWidget;
-    QHBoxLayout *horizontalLayout_3;
+    QVBoxLayout *verticalLayout;
+    QHBoxLayout *ToolLineLayout;
     QSpacerItem *horizontalSpacer;
     QToolButton *ToolLine;
     QSpacerItem *horizontalSpacer_2;
-    QWidget *horizontalLayoutWidget_2;
-    QHBoxLayout *horizontalLayout_4;
+    QHBoxLayout *ToolCircleLayout;
     QSpacerItem *horizontalSpacer_3;
     QToolButton *ToolCircle;
     QSpacerItem *horizontalSpacer_4;
-    QWidget *horizontalLayoutWidget_3;
-    QHBoxLayout *horizontalLayout_5;
+    QHBoxLayout *ToolPenLayout;
     QSpacerItem *horizontalSpacer_5;
     QToolButton *ToolPen;
     QSpacerItem *horizontalSpacer_6;
-    QWidget *horizontalLayoutWidget_4;
-    QHBoxLayout *horizontalLayout_6;
+    QHBoxLayout *ToolFilledRectangleLayout;
     QSpacerItem *horizontalSpacer_7;
     QToolButton *ToolFilledRectangle;
     QSpacerItem *horizontalSpacer_8;
-    QWidget *horizontalLayoutWidget_5;
-    QHBoxLayout *horizontalLayout_7;
+    QHBoxLayout *ToolRectangleLayout;
     QSpacerItem *horizontalSpacer_9;
     QToolButton *ToolRectangle;
     QSpacerItem *horizontalSpacer_10;
-    QWidget *layoutWidget1;
-    QVBoxLayout *verticalLayout;
-    QHBoxLayout *horizontalLayout;
+    QWidget *JobAreaWidget;
+    QWidget *layoutWidget;
+    QVBoxLayout *JobAreaLayout;
+    QHBoxLayout *FunctionLayout;
     QPushButton *clearButton;
     QPushButton *saveButton;
     QPushButton *exportButton;
     QPushButton *importButton;
+    QPushButton *resetOledSizeButton;
     QWidget *oledPlaceholder;
     QMenuBar *menubar;
     QStatusBar *statusbar;
@@ -72,7 +69,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(963, 612);
+        MainWindow->resize(1067, 593);
         QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -85,161 +82,170 @@ public:
         centralwidget->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
         splitter = new QSplitter(centralwidget);
         splitter->setObjectName("splitter");
-        splitter->setGeometry(QRect(0, 0, 941, 561));
+        splitter->setGeometry(QRect(0, 0, 1061, 551));
         sizePolicy.setHeightForWidth(splitter->sizePolicy().hasHeightForWidth());
         splitter->setSizePolicy(sizePolicy);
         splitter->setOrientation(Qt::Orientation::Horizontal);
-        layoutWidget = new QWidget(splitter);
-        layoutWidget->setObjectName("layoutWidget");
-        verticalLayout_2 = new QVBoxLayout(layoutWidget);
-        verticalLayout_2->setObjectName("verticalLayout_2");
-        verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-        widget = new QWidget(layoutWidget);
+        ToolbarWdidget = new QWidget(splitter);
+        ToolbarWdidget->setObjectName("ToolbarWdidget");
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::Expanding);
+        sizePolicy1.setHorizontalStretch(0);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(ToolbarWdidget->sizePolicy().hasHeightForWidth());
+        ToolbarWdidget->setSizePolicy(sizePolicy1);
+        widget = new QWidget(ToolbarWdidget);
         widget->setObjectName("widget");
-        sizePolicy.setHeightForWidth(widget->sizePolicy().hasHeightForWidth());
-        widget->setSizePolicy(sizePolicy);
-        horizontalLayoutWidget = new QWidget(widget);
-        horizontalLayoutWidget->setObjectName("horizontalLayoutWidget");
-        horizontalLayoutWidget->setGeometry(QRect(0, 30, 141, 27));
-        horizontalLayout_3 = new QHBoxLayout(horizontalLayoutWidget);
-        horizontalLayout_3->setObjectName("horizontalLayout_3");
-        horizontalLayout_3->setContentsMargins(0, 0, 0, 0);
+        widget->setGeometry(QRect(0, 10, 141, 201));
+        verticalLayout = new QVBoxLayout(widget);
+        verticalLayout->setObjectName("verticalLayout");
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
+        ToolLineLayout = new QHBoxLayout();
+        ToolLineLayout->setObjectName("ToolLineLayout");
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_3->addItem(horizontalSpacer);
+        ToolLineLayout->addItem(horizontalSpacer);
 
-        ToolLine = new QToolButton(horizontalLayoutWidget);
+        ToolLine = new QToolButton(widget);
         ToolLine->setObjectName("ToolLine");
 
-        horizontalLayout_3->addWidget(ToolLine);
+        ToolLineLayout->addWidget(ToolLine);
 
         horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_3->addItem(horizontalSpacer_2);
+        ToolLineLayout->addItem(horizontalSpacer_2);
 
-        horizontalLayoutWidget_2 = new QWidget(widget);
-        horizontalLayoutWidget_2->setObjectName("horizontalLayoutWidget_2");
-        horizontalLayoutWidget_2->setGeometry(QRect(0, 50, 141, 27));
-        horizontalLayout_4 = new QHBoxLayout(horizontalLayoutWidget_2);
-        horizontalLayout_4->setObjectName("horizontalLayout_4");
-        horizontalLayout_4->setContentsMargins(0, 0, 0, 0);
+
+        verticalLayout->addLayout(ToolLineLayout);
+
+        ToolCircleLayout = new QHBoxLayout();
+        ToolCircleLayout->setObjectName("ToolCircleLayout");
         horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_4->addItem(horizontalSpacer_3);
+        ToolCircleLayout->addItem(horizontalSpacer_3);
 
-        ToolCircle = new QToolButton(horizontalLayoutWidget_2);
+        ToolCircle = new QToolButton(widget);
         ToolCircle->setObjectName("ToolCircle");
 
-        horizontalLayout_4->addWidget(ToolCircle);
+        ToolCircleLayout->addWidget(ToolCircle);
 
         horizontalSpacer_4 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_4->addItem(horizontalSpacer_4);
+        ToolCircleLayout->addItem(horizontalSpacer_4);
 
-        horizontalLayoutWidget_3 = new QWidget(widget);
-        horizontalLayoutWidget_3->setObjectName("horizontalLayoutWidget_3");
-        horizontalLayoutWidget_3->setGeometry(QRect(0, 70, 141, 27));
-        horizontalLayout_5 = new QHBoxLayout(horizontalLayoutWidget_3);
-        horizontalLayout_5->setObjectName("horizontalLayout_5");
-        horizontalLayout_5->setContentsMargins(0, 0, 0, 0);
+
+        verticalLayout->addLayout(ToolCircleLayout);
+
+        ToolPenLayout = new QHBoxLayout();
+        ToolPenLayout->setObjectName("ToolPenLayout");
         horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_5->addItem(horizontalSpacer_5);
+        ToolPenLayout->addItem(horizontalSpacer_5);
 
-        ToolPen = new QToolButton(horizontalLayoutWidget_3);
+        ToolPen = new QToolButton(widget);
         ToolPen->setObjectName("ToolPen");
 
-        horizontalLayout_5->addWidget(ToolPen);
+        ToolPenLayout->addWidget(ToolPen);
 
         horizontalSpacer_6 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_5->addItem(horizontalSpacer_6);
+        ToolPenLayout->addItem(horizontalSpacer_6);
 
-        horizontalLayoutWidget_4 = new QWidget(widget);
-        horizontalLayoutWidget_4->setObjectName("horizontalLayoutWidget_4");
-        horizontalLayoutWidget_4->setGeometry(QRect(0, 90, 141, 27));
-        horizontalLayout_6 = new QHBoxLayout(horizontalLayoutWidget_4);
-        horizontalLayout_6->setObjectName("horizontalLayout_6");
-        horizontalLayout_6->setContentsMargins(0, 0, 0, 0);
+
+        verticalLayout->addLayout(ToolPenLayout);
+
+        ToolFilledRectangleLayout = new QHBoxLayout();
+        ToolFilledRectangleLayout->setObjectName("ToolFilledRectangleLayout");
         horizontalSpacer_7 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_6->addItem(horizontalSpacer_7);
+        ToolFilledRectangleLayout->addItem(horizontalSpacer_7);
 
-        ToolFilledRectangle = new QToolButton(horizontalLayoutWidget_4);
+        ToolFilledRectangle = new QToolButton(widget);
         ToolFilledRectangle->setObjectName("ToolFilledRectangle");
 
-        horizontalLayout_6->addWidget(ToolFilledRectangle);
+        ToolFilledRectangleLayout->addWidget(ToolFilledRectangle);
 
         horizontalSpacer_8 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_6->addItem(horizontalSpacer_8);
+        ToolFilledRectangleLayout->addItem(horizontalSpacer_8);
 
-        horizontalLayoutWidget_5 = new QWidget(widget);
-        horizontalLayoutWidget_5->setObjectName("horizontalLayoutWidget_5");
-        horizontalLayoutWidget_5->setGeometry(QRect(0, 110, 141, 27));
-        horizontalLayout_7 = new QHBoxLayout(horizontalLayoutWidget_5);
-        horizontalLayout_7->setObjectName("horizontalLayout_7");
-        horizontalLayout_7->setContentsMargins(0, 0, 0, 0);
+
+        verticalLayout->addLayout(ToolFilledRectangleLayout);
+
+        ToolRectangleLayout = new QHBoxLayout();
+        ToolRectangleLayout->setObjectName("ToolRectangleLayout");
         horizontalSpacer_9 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_7->addItem(horizontalSpacer_9);
+        ToolRectangleLayout->addItem(horizontalSpacer_9);
 
-        ToolRectangle = new QToolButton(horizontalLayoutWidget_5);
+        ToolRectangle = new QToolButton(widget);
         ToolRectangle->setObjectName("ToolRectangle");
 
-        horizontalLayout_7->addWidget(ToolRectangle);
+        ToolRectangleLayout->addWidget(ToolRectangle);
 
         horizontalSpacer_10 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
-        horizontalLayout_7->addItem(horizontalSpacer_10);
+        ToolRectangleLayout->addItem(horizontalSpacer_10);
 
 
-        verticalLayout_2->addWidget(widget);
+        verticalLayout->addLayout(ToolRectangleLayout);
 
-        splitter->addWidget(layoutWidget);
-        layoutWidget1 = new QWidget(splitter);
-        layoutWidget1->setObjectName("layoutWidget1");
-        verticalLayout = new QVBoxLayout(layoutWidget1);
-        verticalLayout->setObjectName("verticalLayout");
-        verticalLayout->setContentsMargins(0, 0, 0, 0);
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName("horizontalLayout");
-        clearButton = new QPushButton(layoutWidget1);
+        splitter->addWidget(ToolbarWdidget);
+        JobAreaWidget = new QWidget(splitter);
+        JobAreaWidget->setObjectName("JobAreaWidget");
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Preferred);
+        sizePolicy2.setHorizontalStretch(1);
+        sizePolicy2.setVerticalStretch(0);
+        sizePolicy2.setHeightForWidth(JobAreaWidget->sizePolicy().hasHeightForWidth());
+        JobAreaWidget->setSizePolicy(sizePolicy2);
+        layoutWidget = new QWidget(JobAreaWidget);
+        layoutWidget->setObjectName("layoutWidget");
+        layoutWidget->setGeometry(QRect(10, 10, 881, 531));
+        JobAreaLayout = new QVBoxLayout(layoutWidget);
+        JobAreaLayout->setObjectName("JobAreaLayout");
+        JobAreaLayout->setContentsMargins(0, 0, 0, 0);
+        FunctionLayout = new QHBoxLayout();
+        FunctionLayout->setObjectName("FunctionLayout");
+        clearButton = new QPushButton(layoutWidget);
         clearButton->setObjectName("clearButton");
 
-        horizontalLayout->addWidget(clearButton);
+        FunctionLayout->addWidget(clearButton);
 
-        saveButton = new QPushButton(layoutWidget1);
+        saveButton = new QPushButton(layoutWidget);
         saveButton->setObjectName("saveButton");
 
-        horizontalLayout->addWidget(saveButton);
+        FunctionLayout->addWidget(saveButton);
 
-        exportButton = new QPushButton(layoutWidget1);
+        exportButton = new QPushButton(layoutWidget);
         exportButton->setObjectName("exportButton");
 
-        horizontalLayout->addWidget(exportButton);
+        FunctionLayout->addWidget(exportButton);
 
-        importButton = new QPushButton(layoutWidget1);
+        importButton = new QPushButton(layoutWidget);
         importButton->setObjectName("importButton");
 
-        horizontalLayout->addWidget(importButton);
+        FunctionLayout->addWidget(importButton);
+
+        resetOledSizeButton = new QPushButton(layoutWidget);
+        resetOledSizeButton->setObjectName("resetOledSizeButton");
+
+        FunctionLayout->addWidget(resetOledSizeButton);
 
 
-        verticalLayout->addLayout(horizontalLayout);
+        JobAreaLayout->addLayout(FunctionLayout);
 
-        oledPlaceholder = new QWidget(layoutWidget1);
+        oledPlaceholder = new QWidget(layoutWidget);
         oledPlaceholder->setObjectName("oledPlaceholder");
         sizePolicy.setHeightForWidth(oledPlaceholder->sizePolicy().hasHeightForWidth());
         oledPlaceholder->setSizePolicy(sizePolicy);
 
-        verticalLayout->addWidget(oledPlaceholder);
+        JobAreaLayout->addWidget(oledPlaceholder);
 
-        verticalLayout->setStretch(1, 1);
-        splitter->addWidget(layoutWidget1);
+        JobAreaLayout->setStretch(1, 1);
+        splitter->addWidget(JobAreaWidget);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 963, 25));
+        menubar->setGeometry(QRect(0, 0, 1067, 25));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName("statusbar");
@@ -258,10 +264,11 @@ public:
         ToolPen->setText(QCoreApplication::translate("MainWindow", "Pen", nullptr));
         ToolFilledRectangle->setText(QCoreApplication::translate("MainWindow", "FilledRectangle", nullptr));
         ToolRectangle->setText(QCoreApplication::translate("MainWindow", "Rectangle", nullptr));
-        clearButton->setText(QCoreApplication::translate("MainWindow", "Clear", nullptr));
+        clearButton->setText(QCoreApplication::translate("MainWindow", "\346\270\205\351\231\244", nullptr));
         saveButton->setText(QCoreApplication::translate("MainWindow", "\345\255\230\346\252\224", nullptr));
-        exportButton->setText(QCoreApplication::translate("MainWindow", "Export", nullptr));
+        exportButton->setText(QCoreApplication::translate("MainWindow", "\345\214\257\345\207\272", nullptr));
         importButton->setText(QCoreApplication::translate("MainWindow", "\345\214\257\345\205\245\345\234\226\346\252\224", nullptr));
+        resetOledSizeButton->setText(QCoreApplication::translate("MainWindow", "\351\207\215\350\243\275\347\271\252\345\234\226\346\241\206\345\260\272\345\257\270", nullptr));
     } // retranslateUi
 
 };
