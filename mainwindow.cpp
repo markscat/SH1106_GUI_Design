@@ -216,18 +216,19 @@ void MainWindow::resetOledPlaceholderSize()
     if (m_oled) {
 
     // 1. 恢復原始縮放比例
-    m_oled->setScale(1);
+    m_oled->setScale(6);
 
-    // 2. 恢復 m_oled 的大小為原始 128x64
-    m_oled->setFixedSize(768, 384);
 
-    // 3. 更新 scrollArea 對齊方式，保證在左上角
-    scrollArea->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    // 2. 重置 QScrollArea 的滾軸位置到左上角 (0,0)
+    scrollArea->horizontalScrollBar()->setValue(0);
+    scrollArea->verticalScrollBar()->setValue(0);
 
-    // 4. 讓 layout 重新計算
+
+    // 3. 觸發布局更新
     m_oled->updateGeometry();
+    scrollArea->widget()->updateGeometry();
+    scrollArea->updateGeometry();
     ui->oledPlaceholder->updateGeometry();
-
 
     }
 

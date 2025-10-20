@@ -4,27 +4,21 @@
 #include <QMouseEvent> // <--- 把這一行加進來！
 #include <cstring>
 #include <QScrollBar>
-
-
 #include <algorithm>
-
 #include <cmath> // For circle drawing
-
-
-//OLEDWidget::OLEDWidget(QWidget *parent) : QWidget(parent)
-
-
 
 void OLEDWidget::setScale(int s) {
     const int minScale = 1;
     const int maxScale = 20; // 依需求調整最大放大倍數
     scale = std::clamp(s, minScale, maxScale);
     //scale = s > 0 ? s : 1;
+
+    setFixedSize(img.width() * scale, img.height() * scale);
+#ifdef V25_10_20
     setMinimumSize(img.width()*scale, img.height()*scale);
+#endif
     update();
 }
-
-
 
 void OLEDWidget::wheelEvent(QWheelEvent *event)
 {
@@ -39,8 +33,6 @@ void OLEDWidget::wheelEvent(QWheelEvent *event)
         QWidget::wheelEvent(event);
     }
 }
-
-
 OLEDWidget::OLEDWidget(QWidget *parent)
     : QWidget(parent),
     m_currentTool(Tool_Pen), // 預設為畫筆
@@ -52,7 +44,6 @@ OLEDWidget::OLEDWidget(QWidget *parent)
     setMinimumSize(img.width()*scale, img.height()*scale);
     memset(m_buffer, 0, sizeof(m_buffer)); // 初始化 buffer
 }
-
 
 // ================== 新增的 SLOT ==================
 void OLEDWidget::setCurrentTool(ToolType tool) {
@@ -107,17 +98,6 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
                        color);
         }
     }
-
-    /*
-    // 外框
-    p.setPen(QPen(Qt::white, 1));
-    p.drawRect(x_offset, y_offset, scaled_width-1, scaled_height-1);
-    */
-
-
-    //QRect oled_rect(x_offset, y_offset, scaled_width, scaled_height);
-
-    //p.drawImage(oled_rect, img);
 
     // 1. 绘制一个清晰的白色外边框
     p.setPen(QPen(Qt::white, 1));
@@ -240,35 +220,6 @@ void OLEDWidget::drawCircle(int centerX, int centerY, int radius, bool on) {
 }
 
 
-
-
-    /*
-    // 先轉為黑白 pixmap（Qt Mono 1 = 黑）
-    QPixmap px = QPixmap::fromImage(
-        img.scaled(
-            img.width()*scale,
-            img.height()*scale,
-            Qt::IgnoreAspectRatio,
-            Qt::FastTransformation ));
-*/
-
-    // 中心顯示
-    /*
-    int x = (width() - px.width())/2;
-    int y = (height() - px.height())/2;
-    p.drawPixmap(x, y, px);
-*/
-    // 可選：畫格線（取消註解可看像素邊界）
-    /*
-    p.setPen(QPen(Qt::darkGray, 1));
-    for (int i = 0; i <= img.width(); ++i)
-        p.drawLine(x + i*scale, y, x + i*scale, y + img.height()*scale);
-    for (int j = 0; j <= img.height(); ++j)
-        p.drawLine(x, y + j*scale, x + img.width()*scale, y + j*scale);
-    */
-
-
-
 void OLEDWidget::setBuffer(const uint8_t *buffer){
     // 同步内部状态
     if (buffer) {
@@ -324,6 +275,10 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
     int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
 
+    // 檢查座標是否在畫布內，避免預覽圖形畫到外面去
+    oled_x = std::clamp(oled_x, 0, img.width() - 1);
+    oled_y = std::clamp(oled_y, 0, img.height() - 1);
+
     if (event->buttons() & Qt::LeftButton) {
         if (m_currentTool == Tool_Pen) {
             drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, true);
@@ -338,53 +293,20 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     update();
 }
 
-
-
-
-#ifdef V25_10_18
-void OLEDWidget::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
-        int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
-
-        m_startPoint.setX(oled_x);
-        m_startPoint.setY(oled_y);
-        m_endPoint = m_startPoint;
-        m_isDrawing = true;
-
-        if (m_currentTool == Tool_Pen) {
-            setPixel(oled_x, oled_y, true);
-        }
-    }
-}
-
-void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
-    if (!m_isDrawing) return;
-
-    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
-    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
-    m_endPoint.setX(oled_x);
-    m_endPoint.setY(oled_y);
-
-    if (m_currentTool == Tool_Pen) {
-        // 使用 Bresenham 演算法畫線，確保連續性
-        drawLine(m_startPoint.x(), m_startPoint.y(), m_endPoint.x(), m_endPoint.y(), true);
-        m_startPoint = m_endPoint; // 更新起點
-    }
-
-    update(); // 觸發 paintEvent 繪製預覽
-}
-#endif
-
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
+    // 如果不是在繪圖狀態，就直接返回
+    if (!m_isDrawing) {
+        return;
+    }
 
-    if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton) {
+/*
+    if (event->button() == Qt::LeftButton) {
         m_isDrawing = false;
         updateImageFromBuffer(); // 完成繪圖後，從 buffer 更新 QImage
     }
-
-    if (event->button() == Qt::LeftButton && m_isDrawing) {
-        m_isDrawing = false;
+*/
+    if (event->button() == Qt::LeftButton) {
+        //m_isDrawing = false;
 
         // 除了 Pen，其他圖形在滑鼠釋放時才真正繪製到 buffer
         switch (m_currentTool) {
@@ -410,43 +332,13 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         }
 
     }
+    m_isDrawing = false;
+
+    // 最後再呼叫一次 update() 來清除預覽圖形 (藍色線)
+    // 因為此時 m_isDrawing 已經是 false，paintEvent 中的預覽繪圖邏輯不會再執行
+    update();
 
 }
-
-
-
-/*
-
-// ↓↓↓↓ 檢查並補上 mousePressEvent 函式 ↓↓↓↓
-void OLEDWidget::mousePressEvent(QMouseEvent *event) {
-    // 計算滑鼠點擊位置對應到 OLED 的 (x, y) 座標
-    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
-    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
-
-    // 左鍵點擊 -> 畫點 (點亮)
-    if (event->button() == Qt::LeftButton) {
-        setPixel(oled_x, oled_y, true);
-        //..\oledwidget.cpp:107: error: undefined reference to `OLEDWidget::setPixel(int, int, bool)'
-    }
-    // 右鍵點擊 -> 橡皮擦 (熄滅)
-    else if (event->button() == Qt::RightButton) {
-        setPixel(oled_x, oled_y, false);
-        //同上
-    }
-}
-
-// ↓↓↓↓ 檢查並補上 mouseMoveEvent 函式 ↓↓↓↓
-void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
-    // 檢查滑鼠按鍵狀態 (buttons() 返回的是狀態，不是單一事件)
-    if (event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton) {
-        // 如果按住左鍵或右鍵移動，就呼叫 press 事件的處理邏輯
-        // 這樣可以實現拖曳滑鼠來連續畫點或擦除
-        mousePressEvent(event);
-    }
-}
-*/
-
-
 // ↓↓↓↓ 把這個完整的函式實作，複製貼上到你的 oledwidget.cpp 檔案中 ↓↓↓↓
 void OLEDWidget::updateImageFromBuffer()
 {
@@ -510,3 +402,76 @@ const uint8_t* OLEDWidget::getBuffer() const
     // 這個函式的唯一任務，就是返回內部 m_buffer 陣列的地址
     return m_buffer;
 }
+
+
+
+/*
+
+// ↓↓↓↓ 檢查並補上 mousePressEvent 函式 ↓↓↓↓
+void OLEDWidget::mousePressEvent(QMouseEvent *event) {
+    // 計算滑鼠點擊位置對應到 OLED 的 (x, y) 座標
+    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
+    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
+
+    // 左鍵點擊 -> 畫點 (點亮)
+    if (event->button() == Qt::LeftButton) {
+        setPixel(oled_x, oled_y, true);
+        //..\oledwidget.cpp:107: error: undefined reference to `OLEDWidget::setPixel(int, int, bool)'
+    }
+    // 右鍵點擊 -> 橡皮擦 (熄滅)
+    else if (event->button() == Qt::RightButton) {
+        setPixel(oled_x, oled_y, false);
+        //同上
+    }
+}
+
+// ↓↓↓↓ 檢查並補上 mouseMoveEvent 函式 ↓↓↓↓
+void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
+    // 檢查滑鼠按鍵狀態 (buttons() 返回的是狀態，不是單一事件)
+    if (event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton) {
+        // 如果按住左鍵或右鍵移動，就呼叫 press 事件的處理邏輯
+        // 這樣可以實現拖曳滑鼠來連續畫點或擦除
+        mousePressEvent(event);
+    }
+}
+*
+*/
+
+
+
+
+#ifdef V25_10_18
+void OLEDWidget::mousePressEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
+        int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
+
+        m_startPoint.setX(oled_x);
+        m_startPoint.setY(oled_y);
+        m_endPoint = m_startPoint;
+        m_isDrawing = true;
+
+        if (m_currentTool == Tool_Pen) {
+            setPixel(oled_x, oled_y, true);
+        }
+    }
+}
+
+void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
+    if (!m_isDrawing) return;
+
+    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
+    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
+    m_endPoint.setX(oled_x);
+    m_endPoint.setY(oled_y);
+
+    if (m_currentTool == Tool_Pen) {
+        // 使用 Bresenham 演算法畫線，確保連續性
+        drawLine(m_startPoint.x(), m_startPoint.y(), m_endPoint.x(), m_endPoint.y(), true);
+        m_startPoint = m_endPoint; // 更新起點
+    }
+
+    update(); // 觸發 paintEvent 繪製預覽
+}
+#endif
+
