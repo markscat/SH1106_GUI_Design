@@ -1,9 +1,0 @@
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/SH1106_GUI_Design.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/list_install_components.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/install.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/install/local.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/install/strip.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/SH1106_GUI_Design_autogen_timestamp_deps.dir
-C:/Ethan/workshop/PC/SH1106_GUI_Design/build/Desktop_Qt_6_9_2_MinGW_64_bit-Debug/CMakeFiles/SH1106_GUI_Design_autogen.dir
