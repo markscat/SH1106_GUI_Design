@@ -27,6 +27,9 @@ public:
     // 載入位圖陣列（MSB 優先，每列 bytes = (w+7)/8）
     void loadBitmap(const uint8_t *data, int w, int h);
 
+    // 設定筆刷大小的函式
+    void setBrushSize(int size);
+
 
 
      // 設為 public slot 方便從外部呼叫
@@ -49,14 +52,16 @@ private:
     QImage img; // 黑白影像，用來顯示
     // 核心數據！128 * 64 / 8 = 1024 bytes
     uint8_t m_buffer[1024];
-    ToolType m_currentTool;  // 直接用 ToolType
+    //直接用 ToolType
+    ToolType m_currentTool;
 
     // 新增狀態變數
     bool m_isDrawing;
-    QPoint m_startPoint;// 儲存繪圖的起始點 (128x64 座標系)
+    // 儲存繪圖的起始點 (128x64 座標系)
+    QPoint m_startPoint;
 
-
-    QPoint m_endPoint;   // 儲存繪圖的結束點/當前點
+    // 儲存繪圖的結束點/當前點
+    QPoint m_endPoint;
     // 新增：一個從 m_buffer 更新 QImage 的內部函式
     void updateImageFromBuffer();
 
