@@ -72,23 +72,28 @@ void OLEDWidget::loadBitmap(const uint8_t *data, int w, int h) {
     update();
 }
 
-
 void OLEDWidget::paintEvent(QPaintEvent *) {
 
     QPainter p(this);
     p.fillRect(rect(), Qt::darkGray); // 背景色（方便看）
     if (img.isNull()) return;
 
-    // 根據目前 widget 大小動態調整 scale
     // --- 计算 OLED 图像的显示区域 ---
     int scaled_width = img.width() * scale;
     int scaled_height = img.height() * scale;
 
-
     int x_offset = (width() - scaled_width) / 2;
     int y_offset = (height() - scaled_height) / 2;
 
-    // 逐像素繪製放大後的矩形
+    // 绘制实际的 OLED 像素内容
+    // 這裡直接使用 p.drawImage 比逐像素繪製更有效率，如果 img 是 QImage 類型
+    // 如果 img 是 QImage，這裡可以直接寫：
+    p.drawImage(QRect(x_offset, y_offset, scaled_width, scaled_height), img);
+
+    // 如果你的 img 是透過遍歷 m_buffer 轉化來的 QImage，那上面的drawImage會更簡單
+    // 但如果 img 只是 QImage 的實例，且其內容是透過逐像素設置的，
+    // 那麼你目前逐像素繪製的迴圈也是可以的：
+    /*
     for (int y = 0; y < img.height(); ++y) {
         for (int x = 0; x < img.width(); ++x) {
             QColor color = QColor(img.pixelColor(x, y));
@@ -98,71 +103,77 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
                        color);
         }
     }
+    */
 
     // 1. 绘制一个清晰的白色外边框
     p.setPen(QPen(Qt::white, 1));
-    p.drawRect(x_offset, y_offset, scaled_width-1, scaled_height-1);
-    //p.drawRect(oled_rect.adjusted(0, 0, -1, -1)); // adjusted 修正 1 像素偏差
+    p.drawRect(x_offset, y_offset, scaled_width - 1, scaled_height - 1);
 
     // 2. 绘制格线 (可选，但推荐)
-    // 只有当放大倍数足够大时才绘制格线，避免糊成一团
     if (scale >= 4) {
-        // 设置一个半透明的灰色画笔
         QPen grid_pen(QColor(128, 128, 128, 100), 1);
         p.setPen(grid_pen);
 
-        // 画垂直线
         for (int i = 1; i < img.width(); ++i) {
             p.drawLine(x_offset + i * scale, y_offset, x_offset + i * scale, y_offset + scaled_height);
         }
-        // 画水平线
         for (int j = 1; j < img.height(); ++j) {
             p.drawLine(x_offset, y_offset + j * scale, x_offset + scaled_width, y_offset + j * scale);
         }
     }
 
+    // 【核心改動在這裡】直接用 QPainter 繪製預覽圖形
     if (m_isDrawing && m_currentTool != Tool_Pen) {
-        p.setPen(Qt::blue);
+        // 設定預覽線的樣式
+        QPen previewPen(Qt::blue, 1); // 藍色，1像素寬
+        // previewPen.setStyle(Qt::DotLine); // 可以設定虛線效果，讓預覽更明顯
+        p.setPen(previewPen);
+        p.setBrush(Qt::NoBrush); // 預覽通常不填滿
 
-        // 將 128x64 座標轉換回 Widget 座標
-        int sx = x_offset + m_startPoint.x() * scale;
-        int sy = y_offset + m_startPoint.y() * scale;
-        int ex = x_offset + m_endPoint.x() * scale;
-        int ey = y_offset + m_endPoint.y() * scale;
+        // 將 m_startPoint 和 m_endPoint 轉換為螢幕上的像素座標
+        int screen_x0 = x_offset + m_startPoint.x() * scale;
+        int screen_y0 = y_offset + m_startPoint.y() * scale;
+        int screen_x1 = x_offset + m_endPoint.x() * scale;
+        int screen_y1 = y_offset + m_endPoint.y() * scale;
+
+        // 計算矩形或圓形繪圖所需的正確座標和尺寸
+        // 確保寬度和高度為正值，從左上角開始繪製
+        int preview_x = std::min(screen_x0, screen_x1);
+        int preview_y = std::min(screen_y0, screen_y1);
+        int preview_w = std::abs(screen_x1 - screen_x0);
+        int preview_h = std::abs(screen_y1 - screen_y0);
 
         switch (m_currentTool) {
         case Tool_Line:
-            p.drawLine(sx, sy, ex, ey);
+            p.drawLine(screen_x0, screen_y0, screen_x1, screen_y1);
             break;
         case Tool_Rectangle:
+            p.drawRect(preview_x, preview_y, preview_w, preview_h);
+            break;
         case Tool_FilledRectangle:
-            p.drawRect(QRect(QPoint(sx, sy), QPoint(ex, ey)));
+            // 實心矩形的預覽可以選擇只畫邊框，或者畫半透明填充
+            p.setBrush(QColor(0, 0, 255, 50)); // 半透明藍色填充
+            p.drawRect(preview_x, preview_y, preview_w, preview_h);
+            p.setBrush(Qt::NoBrush); // 畫完後恢復不填充
             break;
         case Tool_Circle:
-        {
-            int dx = ex - sx;
-            int dy = ey - sy;
-            int radius = static_cast<int>(std::sqrt(dx*dx + dy*dy));
-            p.drawEllipse(QPoint(sx, sy), radius, radius);
-        }
-        break;
+            // 繪製橢圓，以拖曳的矩形作為外接矩形
+            p.drawEllipse(preview_x, preview_y, preview_w, preview_h);
+            break;
         default:
             break;
         }
     }
-
-
 }
 
-
 // Bresenham's line algorithm
-void OLEDWidget::drawLine(int x0, int y0, int x1, int y1, bool on) {
+void OLEDWidget::drawLine(int x0, int y0, int x1, int y1, bool on,uint8_t* buffer) {
     int dx = std::abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -std::abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int err = dx + dy, e2;
 
     for (;;) {
-        setPixel(x0, y0, on);
+        setPixel(x0, y0, on,buffer);
         if (x0 == x1 && y0 == y1) break;
         e2 = 2 * err;
         if (e2 >= dy) { err += dy; x0 += sx; }
@@ -170,7 +181,7 @@ void OLEDWidget::drawLine(int x0, int y0, int x1, int y1, bool on) {
     }
 }
 
-void OLEDWidget::drawRectangle(int x, int y, int w, int h, bool on, bool fill) {
+void OLEDWidget::drawRectangle(int x, int y, int w, int h, bool on, bool fill,uint8_t* buffer) {
     int x0 = std::min(x, x + w);
     int y0 = std::min(y, y + h);
     int x1 = std::max(x, x + w);
@@ -178,15 +189,82 @@ void OLEDWidget::drawRectangle(int x, int y, int w, int h, bool on, bool fill) {
 
     if (fill) {
         for (int i = y0; i <= y1; ++i) {
-            drawLine(x0, i, x1, i, on);
+            drawLine(x0, i, x1, i, on,buffer);
         }
     } else {
-        drawLine(x0, y0, x1, y0, on);
-        drawLine(x0, y1, x1, y1, on);
-        drawLine(x0, y0, x0, y1, on);
-        drawLine(x1, y0, x1, y1, on);
+        drawLine(x0, y0, x1, y0, on,buffer);
+        drawLine(x0, y1, x1, y1, on,buffer);
+        drawLine(x0, y0, x0, y1, on,buffer);
+        drawLine(x1, y0, x1, y1, on,buffer);
     }
 }
+
+
+// ↓↓↓↓ 在 oledwidget.cpp 中，用這個【更穩定】的版本替換掉你舊的 drawCircle 函式 ↓↓↓↓
+
+void OLEDWidget::drawCircle(const QPoint &p1, const QPoint &p2, uint8_t* buffer)
+{
+    int x0 = std::min(p1.x(), p2.x());
+    int y0 = std::min(p1.y(), p2.y());
+    int x1 = std::max(p1.x(), p2.x());
+    int y1 = std::max(p1.y(), p2.y());
+
+    // 如果寬度或高度為0，則不繪製，避免演算法出錯
+    if (x0 == x1 || y0 == y1) {
+        return;
+    }
+
+    long xc = (x0 + x1) / 2;
+    long yc = (y0 + y1) / 2;
+    long a = (x1 - x0) / 2;
+    long b = (y1 - y0) / 2;
+
+    long a2 = a * a;
+    long b2 = b * b;
+    long two_a2 = 2 * a2;
+    long two_b2 = 2 * b2;
+
+    // Region 1
+    long x = 0;
+    long y = b;
+    long p = b2 - a2 * b + (a2 / 4);
+
+    while (two_b2 * x < two_a2 * y) {
+        setPixel(xc + x, yc + y, true, buffer);
+        setPixel(xc - x, yc + y, true, buffer);
+        setPixel(xc + x, yc - y, true, buffer);
+        setPixel(xc - x, yc - y, true, buffer);
+
+        x++;
+        if (p < 0) {
+            p += two_b2 * x + b2;
+        } else {
+            y--;
+            p += two_b2 * x + b2 - two_a2 * y;
+        }
+    }
+
+    // Region 2
+    p = b2 * (x * x + x) + a2 * (y * y - y) - a2 * b2;
+    while (y >= 0) {
+        setPixel(xc + x, yc + y, true, buffer);
+        setPixel(xc - x, yc + y, true, buffer);
+        setPixel(xc + x, yc - y, true, buffer);
+        setPixel(xc - x, yc - y, true, buffer);
+
+        y--;
+        if (p > 0) {
+            p -= two_a2 * y + a2;
+        } else {
+            x++;
+            p += two_b2 * x - two_a2 * y + a2;
+        }
+    }
+}
+
+
+#ifdef org_circle_algorithm
+
 
 // Midpoint circle algorithm
 void OLEDWidget::drawCircle(int centerX, int centerY, int radius, bool on) {
@@ -218,7 +296,7 @@ void OLEDWidget::drawCircle(int centerX, int centerY, int radius, bool on) {
         }
     }
 }
-
+#endif
 
 void OLEDWidget::setBuffer(const uint8_t *buffer){
     // 同步内部状态
@@ -239,35 +317,6 @@ void OLEDWidget::clearScreen() {
     updateImageFromBuffer(); // 更新顯示
 }
 
-void OLEDWidget::mousePressEvent(QMouseEvent *event) {
-    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
-    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
-
-    // 左鍵畫圖
-    if (event->button() == Qt::LeftButton) {
-        m_startPoint = QPoint(oled_x, oled_y);
-        m_endPoint = m_startPoint;
-        m_isDrawing = true;
-
-        if (m_currentTool == Tool_Pen) {
-            setPixel(oled_x, oled_y, true);
-        }
-    }
-
-    // 右鍵「抹除」點
-    else if (event->button() == Qt::RightButton){
-        if(m_currentTool == Tool_Pen){
-            setPixel(oled_x, oled_y, false);
-            m_isDrawing = true; // 允許右鍵拖曳擦除
-        }else{
-            m_isDrawing = false;
-            m_startPoint = QPoint(-1, -1);
-            m_endPoint = QPoint(-1, -1);
-            update(); // 清掉預覽線
-        }
-
-    }
-}
 
 void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     if (!m_isDrawing) return;
@@ -279,18 +328,77 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     oled_x = std::clamp(oled_x, 0, img.width() - 1);
     oled_y = std::clamp(oled_y, 0, img.height() - 1);
 
+
+    // 🔹 新增這行，讓拖曳時即時更新 m_endPoint
+    m_endPoint = QPoint(oled_x, oled_y);
+
     if (event->buttons() & Qt::LeftButton) {
         if (m_currentTool == Tool_Pen) {
-            drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, true);
+            // 左鍵筆工具：即時畫線
+            // 從上一個點 (m_startPoint) 畫到當前點 (m_endPoint)
+            drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, true,m_buffer);
             m_startPoint = QPoint(oled_x, oled_y);
+            updateImageFromBuffer();
         }
-    } else if (event->buttons() & Qt::RightButton) {
-        // 拖曳右鍵 → 擦除
-        drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, false);
-        m_startPoint = QPoint(oled_x, oled_y);
+        // 對於其他工具 (線、矩形、圓)，只需更新 m_endPoint
+        // 實際繪製預覽線會在 paintEvent 中根據 m_startPoint 和 m_endPoint 進行
+
+    } else if (event->buttons() & Qt::RightButton ){
+
+        if (m_currentTool == Tool_Pen){
+            // 右鍵筆工具：即時擦除線
+            drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, false,m_buffer);
+            m_startPoint = m_endPoint;
+            updateImageFromBuffer();
+        }
+
+        // 對於其他工具，右鍵在 mousePressEvent 時已經被定義為取消操作，
+        // 所以這裡不需要做額外處理。如果右鍵被按著移動，應該是在取消繪圖後，
+        // 就不應該再進行繪圖邏輯。
     }
 
     update();
+}
+
+void OLEDWidget::mousePressEvent(QMouseEvent *event) {
+    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
+    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
+
+    // 限制在畫布範圍內
+    oled_x = std::clamp(oled_x, 0, img.width() - 1);
+    oled_y = std::clamp(oled_y, 0, img.height() - 1);
+
+
+    // 不論左右鍵，m_startPoint 都是第一次點擊的位置
+    m_startPoint = QPoint(oled_x, oled_y);
+    m_endPoint   = m_startPoint; // 初始時終點與起點相同
+    m_isDrawing  = true; // 點擊時就認為開始繪圖 (拖曳可能會發生)
+
+
+    // 左鍵畫圖
+    if (event->button() == Qt::LeftButton) {
+        if (m_currentTool == Tool_Pen) {
+            setPixel(oled_x, oled_y, true);
+            updateImageFromBuffer();
+        }
+    }
+    // 對於其他工具，只需設定 m_isDrawing = true 和 m_startPoint，
+    // 實際的預覽會在 mouseMoveEvent -> update() -> paintEvent 裡處理
+    // 實際繪製會在 mouseReleaseEvent 裡處理
+    else if (event->button() == Qt::RightButton){
+        if(m_currentTool == Tool_Pen){
+            setPixel(oled_x, oled_y, false);
+            updateImageFromBuffer(); // ✅ 右鍵清除也即時更新
+        }else{
+            m_isDrawing = false;
+            m_startPoint = QPoint(-1, -1);
+            m_endPoint = QPoint(-1, -1);
+            update(); // 清掉預覽線
+        }
+
+    }
+    update();
+
 }
 
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
@@ -299,36 +407,45 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         return;
     }
 
-/*
+
     if (event->button() == Qt::LeftButton) {
-        m_isDrawing = false;
-        updateImageFromBuffer(); // 完成繪圖後，從 buffer 更新 QImage
-    }
-*/
-    if (event->button() == Qt::LeftButton) {
-        //m_isDrawing = false;
+        int x0 = m_startPoint.x();
+        int y0 = m_startPoint.y();
+        int x1 = m_endPoint.x();
+        int y1 = m_endPoint.y();
 
         // 除了 Pen，其他圖形在滑鼠釋放時才真正繪製到 buffer
         switch (m_currentTool) {
         case Tool_Line:
-            drawLine(m_startPoint.x(), m_startPoint.y(), m_endPoint.x(), m_endPoint.y(), true);
+            drawLine(x0, y0, x1, y1, true, m_buffer);
             break;
         case Tool_Rectangle:
-            drawRectangle(m_startPoint.x(), m_startPoint.y(), m_endPoint.x() - m_startPoint.x(), m_endPoint.y() - m_startPoint.y(), true, false);
+            drawRectangle(x0, y0, x1 - x0, y1 - y0, true, false, m_buffer);
             break;
         case Tool_FilledRectangle:
-            drawRectangle(m_startPoint.x(), m_startPoint.y(), m_endPoint.x() - m_startPoint.x(), m_endPoint.y() - m_startPoint.y(), true, true);
+            drawRectangle(x0, y0, x1 - x0, y1 - y0, true, true, m_buffer);
             break;
         case Tool_Circle:
         {
+            drawCircle(m_startPoint, m_endPoint, m_buffer);
+            break;
+#ifdef org_circle_algorithm
+
             int dx = m_endPoint.x() - m_startPoint.x();
             int dy = m_endPoint.y() - m_startPoint.y();
             int radius = static_cast<int>(std::sqrt(dx*dx + dy*dy));
             drawCircle(m_startPoint.x(), m_startPoint.y(), radius, true);
+            break;
+#endif
         }
-        break;
         default: // 包括 Pen
             break;
+        }
+
+        // 【重要】在所有繪圖演算法執行完畢後，
+        // 只有在非畫筆工具時，才需要在這裡做一次最終的畫面更新。
+        if (m_currentTool != Tool_Pen) {
+            updateImageFromBuffer();
         }
 
     }
@@ -339,6 +456,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
     update();
 
 }
+
 // ↓↓↓↓ 把這個完整的函式實作，複製貼上到你的 oledwidget.cpp 檔案中 ↓↓↓↓
 void OLEDWidget::updateImageFromBuffer()
 {
@@ -367,8 +485,9 @@ void OLEDWidget::updateImageFromBuffer()
     update(); // 觸發 paintEvent
 }
 
-
-void OLEDWidget::setPixel(int x, int y, bool on)
+// 【实作】"高效版"，私有
+// 它只修改 buffer，不做其他任何事。
+void OLEDWidget::setPixel(int x, int y, bool on,uint8_t* buffer)
 {
     // 1. 邊界檢查，防止寫入超出範圍的數據
     if (x < 0 || x >= 128 || y < 0 || y >= 64) {
@@ -393,6 +512,17 @@ void OLEDWidget::setPixel(int x, int y, bool on)
     }
 
     // 4. 數據修改完畢後，呼叫更新函式來讓畫面產生變化
+    //updateImageFromBuffer();
+}
+
+// 【修改】"方便版"，公开
+// 它的实现是呼叫"高效版"，然后更新画面
+void OLEDWidget::setPixel(int x, int y, bool on)
+{
+    // 步骤1：呼叫高效版来修改主缓冲区 m_buffer
+    setPixel(x, y, on, m_buffer);
+
+    // 步骤2：更新整个画面
     updateImageFromBuffer();
 }
 

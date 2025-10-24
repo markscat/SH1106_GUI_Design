@@ -74,12 +74,14 @@ MainWindow::MainWindow(QWidget *parent)
         button->setCheckable(true);
     }
 
+#ifdef MabeError
     // *** 關鍵不同點：我們不直接呼叫 OLEDWidget 的方法 ***
     // *** 而是連接到 MainWindow 自己的 slot，或者直接在 lambda 中處理 ***
     connect(m_toolButtonGroup, &QButtonGroup::idClicked, this, [this](int id){
         // MainWindow 只需要知道當前工具是什麼即可
         // 繪圖的觸發由 OLEDWidget 自己的滑鼠事件處理
     });
+#endif
 
     connect(m_toolButtonGroup, QOverload<int>::of(&QButtonGroup::idClicked),
             this, [this](int id) {
@@ -241,7 +243,7 @@ void MainWindow::importImage()
         this,
         "选择一张图片",
         "", // 预设目录
-        "图片档案 (*.png *.bmp *.jpg *.jpeg)"
+        "图片档案 (*.bmp *.jpg *.jpeg)"
         );
 
     if (filePath.isEmpty()) {
@@ -287,7 +289,6 @@ void MainWindow::importImage()
     // Qt::MonoOnly -> dither抖动算法，效果比较好
     // Qt::Threshold -> 阈值算法，黑白分
 
-
     QImage scaledImage = image.scaled(128, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     // 4. 创建一个 128x64 的标准单色画布，并填充背景色（白色索引=0）
@@ -296,9 +297,6 @@ void MainWindow::importImage()
     // 5. 使用 QPainter 将缩放后的图片绘制到画布中心
 
     QPainter painter(&canvas);
-    /*
-     * mainwindow.cpp:223:14: Variable has incomplete type 'QPainter' (fix available) qwindowdefs.h:28:7: forward declaration of 'QPainter'
-     */
     int x = (canvas.width() - scaledImage.width()) / 2;
     int y = (canvas.height() - scaledImage.height()) / 2;
     // 将 scaledImage 临时转换为 RGB 来绘制，以避免颜色索引问题
