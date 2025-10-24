@@ -90,21 +90,6 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
     // 如果 img 是 QImage，這裡可以直接寫：
     p.drawImage(QRect(x_offset, y_offset, scaled_width, scaled_height), img);
 
-    // 如果你的 img 是透過遍歷 m_buffer 轉化來的 QImage，那上面的drawImage會更簡單
-    // 但如果 img 只是 QImage 的實例，且其內容是透過逐像素設置的，
-    // 那麼你目前逐像素繪製的迴圈也是可以的：
-    /*
-    for (int y = 0; y < img.height(); ++y) {
-        for (int x = 0; x < img.width(); ++x) {
-            QColor color = QColor(img.pixelColor(x, y));
-            p.fillRect(x_offset + x*scale,
-                       y_offset + y*scale,
-                       scale, scale,
-                       color);
-        }
-    }
-    */
-
     // 1. 绘制一个清晰的白色外边框
     p.setPen(QPen(Qt::white, 1));
     p.drawRect(x_offset, y_offset, scaled_width - 1, scaled_height - 1);
@@ -263,40 +248,6 @@ void OLEDWidget::drawCircle(const QPoint &p1, const QPoint &p2, uint8_t* buffer)
 }
 
 
-#ifdef org_circle_algorithm
-
-
-// Midpoint circle algorithm
-void OLEDWidget::drawCircle(int centerX, int centerY, int radius, bool on) {
-    int x = radius - 1;
-    int y = 0;
-    int dx = 1;
-    int dy = 1;
-    int err = dx - (radius << 1);
-
-    while (x >= y) {
-        setPixel(centerX + x, centerY + y, on);
-        setPixel(centerX + y, centerY + x, on);
-        setPixel(centerX - y, centerY + x, on);
-        setPixel(centerX - x, centerY + y, on);
-        setPixel(centerX - x, centerY - y, on);
-        setPixel(centerX - y, centerY - x, on);
-        setPixel(centerX + y, centerY - x, on);
-        setPixel(centerX + x, centerY - y, on);
-
-        if (err <= 0) {
-            y++;
-            err += dy;
-            dy += 2;
-        }
-        if (err > 0) {
-            x--;
-            dx += 2;
-            err += dx - (radius << 1);
-        }
-    }
-}
-#endif
 
 void OLEDWidget::setBuffer(const uint8_t *buffer){
     // 同步内部状态

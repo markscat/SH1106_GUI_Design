@@ -18,7 +18,6 @@ public:
     // 新增：設定單一像素點，這是核心繪圖函式
     void setPixel(int x, int y, bool on);
 
-
     // 新增：取得緩衝區數據，用於匯出
     const uint8_t* getBuffer() const;
 
@@ -61,10 +60,18 @@ private:
     // 新增：一個從 m_buffer 更新 QImage 的內部函式
     void updateImageFromBuffer();
 
+    int m_brushSize; // <-- 新增：筆刷大小 (1x1, 2x2, 3x3 等)
+    // 注意：這裡的 `m_brushSize` 代表的是邊長，例如 1 代表 1x1，2 代表 2x2。
+
+
+    // 【新增】这个是给内部绘图演算法用的"高效版"
+    void setPixel(int x, int y, bool on, uint8_t* buffer);
+
     // 新增繪圖函式 (基於 setPixel)
-    void drawLine(int x0, int y0, int x1, int y1, bool on);
-    void drawRectangle(int x, int y, int width, int height, bool on, bool fill);
-    void drawCircle(int centerX, int centerY, int radius, bool on); // 簡化版圓形
+    void drawLine(int x0, int y0, int x1, int y1, bool on, uint8_t* buffer);
+    void drawRectangle(int x, int y, int w, int h, bool on, bool fill, uint8_t* buffer);
+    void drawCircle(const QPoint &p1, const QPoint &p2, uint8_t* buffer);
+
     int scale = 6; // 放大倍率
 };
 
