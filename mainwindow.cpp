@@ -297,7 +297,7 @@ void MainWindow::saveData()
 
     // 3. 准备要写入的内容 (和 exportData 类似，但可以简化)setCodec
     const uint8_t* buffer = m_oled->getBuffer();
-    QString content = QString("const unsigned char image_%1[] = {\n    ").arg(timestamp);
+    //QString content = QString("const unsigned char image_%1[] = {\n    ").arg(timestamp);
     // ... (这里是和 exportData 中一样的循环，用来生成 C 阵列字串) ...
     // ... 为了简洁，省略重复代码 ...
 
