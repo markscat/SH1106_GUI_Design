@@ -13,36 +13,39 @@ void OLEDWidget::setScale(int s) {
     scale = std::clamp(s, minScale, maxScale);
     //scale = s > 0 ? s : 1;
 
+
+    qDebug() <<"==========setScale==========";
+    qDebug() << "setScale - img size:" << img.size() << "scale:" << scale;
+    qDebug() << "計算的尺寸:" << img.width() * scale << "x" << img.height() * scale;
+
     setFixedSize(img.width() * scale, img.height() * scale);
-#ifdef V25_10_20
-    setMinimumSize(img.width()*scale, img.height()*scale);
-#endif
     update();
 }
 
-void OLEDWidget::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        int delta = event->angleDelta().y();
-        if (delta > 0)
-            setScale(scale + 1);
-        else if (delta < 0 && scale > 1)
-            setScale(scale - 1);
-        event->accept();
-    } else {
-        QWidget::wheelEvent(event);
-    }
-}
 OLEDWidget::OLEDWidget(QWidget *parent)
     : QWidget(parent),
     m_currentTool(Tool_Pen), // 預設為畫筆
-    m_isDrawing(false)
+    m_isDrawing(false),m_isMovingSelection(false),
+    m_selectionBuffer(nullptr)
 {
+    qDebug() << "OLEDWidget 構造函數 - scale:" << scale;
+    qDebug() << "OLEDWidget 構造函數 - img size:" << img.size();
+
+
     // 初始為空白 128x64
     img = QImage(128, 64, QImage::Format_RGB888);
     img.fill(Qt::black);
-    setMinimumSize(img.width()*scale, img.height()*scale);
+
+    qDebug() << "初始化後 img size:" << img.size();
+
+    //setMinimumSize(img.width()*scale, img.height()*scale);
     memset(m_buffer, 0, sizeof(m_buffer)); // 初始化 buffer
+
+
+    // 🔹 初始化座標顯示用的 QLabel
+    QWidget *w = this;
+    while (w->parent()) w = w->parentWidget();
+    m_labelCoordinate = w->findChild<QLabel*>("label_coordinate");
 }
 
 // ================== 新增的 SLOT ==================
@@ -75,34 +78,86 @@ void OLEDWidget::loadBitmap(const uint8_t *data, int w, int h) {
 void OLEDWidget::paintEvent(QPaintEvent *) {
 
     QPainter p(this);
+
+    p.fillRect(rect(), Qt::red);
+
+    // 1. 繪製 widget 整個區域（紅色邊框）
+    p.setPen(QPen(Qt::red, 3));
+    p.drawRect(rect());
+
+    // 2. 繪製理論上的 128x64 網格區域（綠色邊框）
+    int scaled_width = 128 * scale;
+    int scaled_height = 64 * scale;
+    int x_offset = (width() - scaled_width) / 2;
+    int y_offset = (height() - scaled_height) / 2;
+
+    p.setPen(QPen(Qt::green, 2));
+    p.drawRect(x_offset, y_offset, scaled_width, scaled_height);
+
+    // 3. 顯示調試信息
+    p.setPen(Qt::white);
+    p.drawText(10, 20, QString("Widget: %1x%2").arg(width()).arg(height()));
+    p.drawText(10, 40, QString("Canvas: %1x%2").arg(scaled_width).arg(scaled_height));
+    p.drawText(10, 60, QString("Offset: %1,%2").arg(x_offset).arg(y_offset));
+
+
+
     p.fillRect(rect(), Qt::darkGray); // 背景色（方便看）
     if (img.isNull()) return;
 
     // --- 计算 OLED 图像的显示区域 ---
+    Q_ASSERT(img.width() == 128 && img.height() == 64);
+
+/*
     int scaled_width = img.width() * scale;
     int scaled_height = img.height() * scale;
+    //int scaled_width = 128 * scale;
+    //int scaled_height = 64 * scale;
 
     int x_offset = (width() - scaled_width) / 2;
     int y_offset = (height() - scaled_height) / 2;
-
+*/
     // 绘制实际的 OLED 像素内容
     // 這裡直接使用 p.drawImage 比逐像素繪製更有效率，如果 img 是 QImage 類型
     // 如果 img 是 QImage，這裡可以直接寫：
+
+    // 1. 繪製黑色背景（確保整個繪圖區都是黑色）
+    p.fillRect(x_offset, y_offset, scaled_width, scaled_height, Qt::black);
     p.drawImage(QRect(x_offset, y_offset, scaled_width, scaled_height), img);
 
-    // 1. 绘制一个清晰的白色外边框
+    // 2. 繪製每個像素點（根據 buffer 數據）
+    for (int x = 0; x < 128; ++x) {
+        for (int y = 0; y < 64; ++y) {
+            // 計算像素在 buffer 中的位置
+            int page = y / 8;
+            int bit_index = y % 8;
+            int byte_index = page * 128 + x;
+            bool pixelOn = (m_buffer[byte_index] & (1 << bit_index));
+
+            if (pixelOn) {
+                // 繪製亮起的像素（淺藍色）
+                p.fillRect(x_offset + x * scale,
+                           y_offset + y * scale,
+                           scale, scale,
+                           QColor(135, 206, 250));
+            }
+        }
+    }
+
+
+    // 3. 绘制一个清晰的白色外边框
     p.setPen(QPen(Qt::white, 1));
     p.drawRect(x_offset, y_offset, scaled_width - 1, scaled_height - 1);
 
-    // 2. 绘制格线 (可选，但推荐)
-    if (scale >= 4) {
+    // 4. 绘制格线 (可选，但推荐)
+    if (scale >= 2) {
         QPen grid_pen(QColor(128, 128, 128, 100), 1);
         p.setPen(grid_pen);
 
-        for (int i = 1; i < img.width(); ++i) {
+        for (int i = 0; i < img.width(); ++i) {
             p.drawLine(x_offset + i * scale, y_offset, x_offset + i * scale, y_offset + scaled_height);
         }
-        for (int j = 1; j < img.height(); ++j) {
+        for (int j = 0; j < img.height(); ++j) {
             p.drawLine(x_offset, y_offset + j * scale, x_offset + scaled_width, y_offset + j * scale);
         }
     }
@@ -110,7 +165,7 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
     // 【核心改動在這裡】直接用 QPainter 繪製預覽圖形
     if (m_isDrawing && m_currentTool != Tool_Pen) {
         // 設定預覽線的樣式
-        QPen previewPen(Qt::blue, 1); // 藍色，1像素寬
+        QPen previewPen(Qt::yellow, 2); // 藍色，1像素寬
         // previewPen.setStyle(Qt::DotLine); // 可以設定虛線效果，讓預覽更明顯
         p.setPen(previewPen);
         p.setBrush(Qt::NoBrush); // 預覽通常不填滿
@@ -268,6 +323,13 @@ void OLEDWidget::clearScreen() {
     updateImageFromBuffer(); // 更新顯示
 }
 
+void OLEDWidget::leaveEvent(QEvent *event)
+{
+    // 當滑鼠離開 widget 時，發送一個無效座標 (-1, -1)
+    emit coordinatesChanged(QPoint(-1, -1));
+    /*oledwidget.cpp:280:10: Use of undeclared identifier 'coordinatesChanged'*/
+    QWidget::leaveEvent(event);
+}
 
 void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     if (!m_isDrawing) return;
@@ -278,6 +340,9 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     // 檢查座標是否在畫布內，避免預覽圖形畫到外面去
     oled_x = std::clamp(oled_x, 0, img.width() - 1);
     oled_y = std::clamp(oled_y, 0, img.height() - 1);
+
+    // 【新增】發送信號，將當前座標廣播出去
+    emit coordinatesChanged(QPoint(oled_x, oled_y));
 
 
     // 🔹 新增這行，讓拖曳時即時更新 m_endPoint
@@ -307,6 +372,7 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
         // 所以這裡不需要做額外處理。如果右鍵被按著移動，應該是在取消繪圖後，
         // 就不應該再進行繪圖邏輯。
     }
+
 
     update();
 }
@@ -357,8 +423,6 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
     if (!m_isDrawing) {
         return;
     }
-
-
     if (event->button() == Qt::LeftButton) {
         int x0 = m_startPoint.x();
         int y0 = m_startPoint.y();
@@ -398,6 +462,22 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
     // 因為此時 m_isDrawing 已經是 false，paintEvent 中的預覽繪圖邏輯不會再執行
     update();
 
+}
+
+
+
+void OLEDWidget::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        int delta = event->angleDelta().y();
+        if (delta > 0)
+            setScale(scale + 1);
+        else if (delta < 0 && scale > 1)
+            setScale(scale - 1);
+        event->accept();
+    } else {
+        QWidget::wheelEvent(event);
+    }
 }
 
 // ↓↓↓↓ 把這個完整的函式實作，複製貼上到你的 oledwidget.cpp 檔案中 ↓↓↓↓
@@ -452,36 +532,6 @@ void OLEDWidget::setPixel(int x, int y, bool on, uint8_t* buffer)
 }
 
 
-
-
-/*
-// 【实作】"高效版"，私有
-// 它只修改 buffer，不做其他任何事。
-void OLEDWidget::setPixel(int x, int y, bool on,uint8_t* buffer)
-{
-    // 1. 邊界檢查，防止寫入超出範圍的數據
-    if (x < 0 || x >= 128 || y < 0 || y >= 64) {
-        return; // 超出範圍，直接返回，不做任何事
-    }
-
-    // 2. 計算像素在 m_buffer 緩衝區中的準確位置
-    //    SH1106 是垂直位元組模式
-    int page = y / 8;                  // 計算在哪一頁 (第幾行，每行8個像素高)
-    int bit_index = y % 8;             // 計算在該位元組的第幾個位元 (0-7)
-    int byte_index = page * 128 + x;   // 計算在1024位元組陣列中的索引
-
-    // 3. 使用位元運算來修改該位元，而不影響同一個位元組裡的其他7個像素
-    if (on) {
-        // 如果是要「點亮」像素 (on = true)
-        // 使用「位元或 OR」操作，將該位元設為 1
-        m_buffer[byte_index] |= (1 << bit_index);
-    } else {
-        // 如果是要「熄滅」像素 (on = false)
-        // 使用「位元與 AND」和「位元反向 NOT」操作，將該位元設為 0
-        m_buffer[byte_index] &= ~(1 << bit_index);
-    }
-}*/
-
 // 【修改】"方便版"，公开
 // 它的实现是呼叫"高效版"，然后更新画面
 void OLEDWidget::setPixel(int x, int y, bool on)
@@ -518,4 +568,10 @@ void OLEDWidget::setBrushSize(int size)
     if (size > 6) size = 6;
 
     m_brushSize = size;
+}
+
+// 【新增】在解構函式中釋放記憶體
+OLEDWidget::~OLEDWidget() {
+    /*oledwidget.cpp:510:13: Definition of implicitly declared destructor*/
+    delete[] m_selectionBuffer;
 }

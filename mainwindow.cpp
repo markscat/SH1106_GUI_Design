@@ -68,6 +68,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
+#include <QTimer>  // 添加這行
 #include "sample.h"
 #include "oledwidget.h"
 #include "ToolType.h"
@@ -78,18 +79,32 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
-    m_originalOledSize = ui->oledPlaceholder->size(); // 或 m_oled->sizeHint()
+     // --- 1. 初始化成員變數和 UI 設置 ---
+    m_originalOledSize = ui->oledPlaceholder->size();
+
+    // 設置 Splitter 初始尺寸
+    QList<int> initialSizes;
+
+    initialSizes << 120 << 680;
+    ui->splitter->setSizes(initialSizes);
+
+    // 設定合適的初始視窗大小
+    resize(1024, 600);
 
 
     // --- 建立並注入 OLEDWidget ---
     m_oled = new OLEDWidget(this);
+
 
     scrollArea = new QScrollArea(this);
 
     scrollArea->setWidget(m_oled);
 
     scrollArea->setWidgetResizable(false); // 保持原始比例，不自動拉伸
+
+    scrollArea->setAlignment(Qt::AlignCenter);
 
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
@@ -99,10 +114,55 @@ MainWindow::MainWindow(QWidget *parent)
 
     scrollArea->setStyleSheet("background: transparent;");
 
+    QTimer::singleShot(0, this, [this]() {
+        m_oled->setScale(6);
+    });
+
     QVBoxLayout *layout = new QVBoxLayout(ui->oledPlaceholder);
     layout->addWidget(scrollArea);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
+
+
+    // --- 3. 設定【繪圖工具】按鈕群組 ---`
+    m_toolButtonGroup = new QButtonGroup(this);
+    m_toolButtonGroup->setExclusive(true);
+
+
+    // 假設您的按鈕 objectName 分別是 penButton, lineButton 等
+    m_toolButtonGroup->addButton(ui->ToolPen, Tool_Pen);
+    m_toolButtonGroup->addButton(ui->ToolLine, Tool_Line);
+    m_toolButtonGroup->addButton(ui->ToolRectangle, Tool_Rectangle);
+    m_toolButtonGroup->addButton(ui->ToolFilledRectangle, Tool_FilledRectangle);
+    m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
+
+
+    // 設置所有按鈕為可選中狀態
+    const QList<QAbstractButton*> &buttons = m_toolButtonGroup->buttons();
+    for (QAbstractButton *button : buttons) {
+        button->setCheckable(true);
+    }
+
+    // 設定預設工具
+    ui->ToolPen->setChecked(true);
+
+    //<筆刷功能>
+    m_oled->setBrushSize(1); // 預設 1x1
+    //加入brushSizeComboBox的功能選項
+    ui->brushSizeComboBox->addItem("1x1", 1);
+    ui->brushSizeComboBox->addItem("2x2", 2);
+    ui->brushSizeComboBox->addItem("3x3", 3);
+    ui->brushSizeComboBox->addItem("4x4", 4);
+    ui->brushSizeComboBox->addItem("5x5", 5);
+    ui->brushSizeComboBox->addItem("6x6", 6);
+
+    connect(ui->brushSizeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+                int brushSize = ui->brushSizeComboBox->itemData(index).toInt();
+                m_oled->setBrushSize(brushSize);
+            });
+
+    //</筆刷功能>
 
 
     // --- 2. 連接【功能】按鈕信號 (Clear, Export, Save, Import) ---
@@ -121,76 +181,56 @@ MainWindow::MainWindow(QWidget *parent)
     //重製繪圖框尺寸
     connect(ui->resetOledSizeButton, &QPushButton::clicked, this, &MainWindow::resetOledPlaceholderSize);
 
-    //<筆刷功能>
-    m_oled->setBrushSize(1); // 預設 1x1
-    //加入brushSizeComboBox的功能選項
-    ui->brushSizeComboBox->addItem("1x1", 1);
-    ui->brushSizeComboBox->addItem("2x2", 2);
-    ui->brushSizeComboBox->addItem("3x3", 3);
-    ui->brushSizeComboBox->addItem("4x4", 4);
-    ui->brushSizeComboBox->addItem("5x5", 5);
-    ui->brushSizeComboBox->addItem("6x6", 6);
-
-    connect(ui->brushSizeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int index) {
-                int brushSize = ui->brushSizeComboBox->itemData(index).toInt();
-                m_oled->setBrushSize(brushSize);
-            });
-
-    /*C:\Ethan\workshop\PC\PC\SH1106_GUI_Design_sandbox\SH1106_GUI_Design_sandbox\mainwindow.cpp:69:
-     * error: undefined reference to `OLEDWidget::setBrushSize(int)'
-     */
-//</筆刷功能>
-
-    // --- 3. 設定【繪圖工具】按鈕群組 ---`
-    m_toolButtonGroup = new QButtonGroup(this);
-    m_toolButtonGroup->setExclusive(true);
+    // 【新增】將 OLEDWidget 的信號連接到 MainWindow 的槽
+    connect(m_oled, &OLEDWidget::coordinatesChanged, this, &MainWindow::updateCoordinateLabel);
 
 
-    // 假設您的按鈕 objectName 分別是 penButton, lineButton 等
-    m_toolButtonGroup->addButton(ui->ToolPen, Tool_Pen);
-    m_toolButtonGroup->addButton(ui->ToolLine, Tool_Line);
-    m_toolButtonGroup->addButton(ui->ToolRectangle, Tool_Rectangle);
-    m_toolButtonGroup->addButton(ui->ToolFilledRectangle, Tool_FilledRectangle);
-    m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
 
-    const QList<QAbstractButton*> &buttons = m_toolButtonGroup->buttons();
-    for (QAbstractButton *button : buttons) {
-        button->setCheckable(true);
-    }
-
-
+    // 在這個 lambda 函式中，我們將接收到的整數 ID
+    // 轉換回 ToolType enum，然後呼叫 OLEDWidget 的方法來設定當前工具。
     connect(m_toolButtonGroup, QOverload<int>::of(&QButtonGroup::idClicked),
             this, [this](int id) {
-                // 在這個 lambda 函式中，我們將接收到的整數 ID
-                // 轉換回 ToolType enum，然後呼叫 OLEDWidget 的方法來設定當前工具。
                 m_oled->setCurrentTool(static_cast<ToolType>(id));
             });
 
-    // 設定預設工具
-    ui->ToolPen->setChecked(true);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    // --- 把從 main.cpp 移過來的邏輯放在這裡 ---
-    // 在程式啟動時，載入預設的範例圖片
+
+    // --- 6. 載入預設內容 ---
     m_oled->setBuffer(sample_image);
 
     // ↓↓↓↓ 在这里加入以下代码来设置 Splitter 的初始尺寸 ↓↓↓↓
 
-    // 创建一个 QList<int> 来存放每个区域的初始尺寸
-    QList<int> initialSizes;
-    initialSizes << 120 << 680; // 第一个数字是左区的初始宽度，第二个是右区的
 
-    // 使用 objectName 'splitter' 来获取指向 QSplitter 的指标，并设置尺寸
-    // 请确保这里的 "splitter" 和您在 .ui 文件中设置的 objectName 完全一致！
-    ui->splitter->setSizes(initialSizes);
+    // --- 7. 調試信息 (可選) ---
+#ifdef Debug_Msg
+    qDebug() << "=== Mainwindow ===";
+    qDebug() << "OLEDWidget size:" << m_oled->size();
+    qDebug() << "ScrollArea size:" << scrollArea->size();
+    qDebug() << "oledPlaceholder size:" << ui->oledPlaceholder->size();
 
-    // --- 設定一個合適的初始視窗大小 ---
-    resize(1024, 600);
 
+    QTimer::singleShot(100, this, [this]() {
+        qDebug() << "=== QTimer ===";
+        qDebug() << "延遲檢查 - oledPlaceholder size:" << ui->oledPlaceholder->size();
+        qDebug() << "延遲檢查 - ScrollArea size:" << scrollArea->size();
+    });
+#endif
 
 }
 
+void MainWindow::updateCoordinateLabel(const QPoint &pos)
+{
+    // 檢查座標是否有效 (我們在 leaveEvent 中發送了 -1, -1)
+    if (pos.x() < 0 || pos.y() < 0 || pos.x() >= 128 || pos.y() >= 64) {
+        // 如果無效，顯示預設文字
+        ui->label_coordinate->setText("(x, y): --, --");
+    } else {
+        // 如果有效，格式化字串並更新 QLabel
+        QString text = QString("(x, y): %1, %2").arg(pos.x()).arg(pos.y());
+        ui->label_coordinate->setText(text);
+    }
+}
 
 void MainWindow::exportData()
 {
@@ -411,7 +451,11 @@ void MainWindow::importImage()
     }
     // 4. 将转换好的 buffer 发送到 OLEDWidget 显示
     m_oled->setBuffer(buffer);
+
+
 }
+
+
 
 MainWindow::~MainWindow()
 {

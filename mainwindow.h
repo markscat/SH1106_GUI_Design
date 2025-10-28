@@ -50,10 +50,12 @@ public:
     ToolType getCurrentTool() const; // 提供一个给外部获取当前工具的接口
 
 private slots:
-    void resetOledPlaceholderSize(); // 新的槽函數，用於重置尺寸
-    void exportData(); // 聲明槽函數
+    void resetOledPlaceholderSize();
+    void exportData();
     void saveData();
-    void importImage(); // <-- 新增槽函式声明
+    void importImage();
+    void updateCoordinateLabel(const QPoint &pos);
+
 
 private:
     Ui::MainWindow *ui;
@@ -62,7 +64,6 @@ private:
     QScrollArea* scrollArea;   // <- 必須有這行
     ToolType m_currentTool;          // 储存当前选中的工具
     QSize m_originalOledSize;; // 用於儲存 oledPlaceholder 的原始尺寸
-
 
 
 };
