@@ -408,6 +408,14 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
         // 就不應該再進行繪圖邏輯。
     }
 
+    //選取貼上
+    if (m_currentTool == Tool_SelectCopy) {
+        /*oledwidget.cpp:412:26: Use of undeclared identifier 'Tool_SelectCopy'*/
+        handleSelectCopyMove(convertToOLED(event->pos()));
+        return;
+    }
+    //選取貼上
+
     update();
 }
 
@@ -557,3 +565,44 @@ void OLEDWidget::setBrushSize(int size)
 
     m_brushSize = size;
 }
+
+/*選取複製*/
+
+void OLEDWidget::handleSelectCopyPress(const QPoint &pos)
+{
+    // 1. 清除舊選取狀態
+    m_selectedRegion = QRect(); // 清空選取框
+    m_isSelecting = true;
+
+    // 2. 記錄起始點
+    m_startPoint = pos;
+    m_endPoint = pos;
+
+    // 3. 更新畫面（可選）
+    update();
+}
+
+void OLEDWidget::handleSelectCopyMove(const QPoint &pos)
+{
+    if (!m_isSelecting)
+        return;
+
+    m_endPoint = pos;
+    update(); // 觸發 paintEvent，畫出虛線框
+}
+
+QPoint OLEDWidget::convertToOLED(const QPoint &pos)
+{
+    int x = pos.x() / scale;
+    int y = pos.y() / scale;
+
+    // 限制在 OLED 顯示範圍內
+    x = std::clamp(x, 0, DISPLAY_WIDTH - 1);
+    y = std::clamp(y, 0, DISPLAY_HEIGHT - 1);
+
+    return QPoint(x, y);
+}
+
+
+
+/*選取複製*/

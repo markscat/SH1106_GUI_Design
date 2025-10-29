@@ -58,6 +58,12 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void leaveEvent(QEvent *event) override;
 
+    //選取複製
+    void handleSelectCopyPress(const QPoint &pos);
+    void handleSelectCopyMove(const QPoint &pos);
+    QPoint convertToOLED(const QPoint &pos);
+
+    //選取複製
 
 private:
 
@@ -99,6 +105,13 @@ private:
     //座標位置
     QLabel* m_labelCoordinate = nullptr;
     //座標位置
+
+
+    //選取複製
+    bool m_isSelecting = false;
+    QRect m_selectedRegion; // 儲存選取區域（OLED 座標系）
+
+    //選取複製
 };
 
 #endif // OLEDWIDGET_H
