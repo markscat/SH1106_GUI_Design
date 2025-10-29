@@ -13,7 +13,6 @@
 #include <QVBoxLayout>
 #include <QDialog>
 #include <QPushButton>
-#include <QVBoxLayout>
 #include <QFileDialog>
 #include <QImageReader>
 #include <QImage>
@@ -50,12 +49,11 @@ public:
     ToolType getCurrentTool() const; // 提供一个给外部获取当前工具的接口
 
 private slots:
-    void resetOledPlaceholderSize();
-    void exportData();
+    void resetOledPlaceholderSize(); // 新的槽函數，用於重置尺寸
+    void exportData(); // 聲明槽函數
     void saveData();
-    void importImage();
+    void importImage(); // <-- 新增槽函式声明
     void updateCoordinateLabel(const QPoint &pos);
-
 
 private:
     Ui::MainWindow *ui;
@@ -64,7 +62,5 @@ private:
     QScrollArea* scrollArea;   // <- 必須有這行
     ToolType m_currentTool;          // 储存当前选中的工具
     QSize m_originalOledSize;; // 用於儲存 oledPlaceholder 的原始尺寸
-
-
 };
 #endif // MAINWINDOW_H

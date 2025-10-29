@@ -1,6 +1,7 @@
 #ifndef OLEDWIDGET_H
 #define OLEDWIDGET_H
 #pragma once
+
 #define RAM_PAGE_WIDTH 132       // SH1106 RAM 寬度
 #define COLUMN_OFFSET 2          // SH1106 顯示起始 column 偏移
 #define DISPLAY_WIDTH 128
@@ -15,12 +16,9 @@
 
 class OLEDWidget : public QWidget {
     Q_OBJECT
-
 public:
 
     explicit OLEDWidget(QWidget *parent = nullptr);
-    ~OLEDWidget();                                 // <<-- 【關鍵】把這一行宣告加進來！
-
 
     // 新增：清除螢幕
     void clearScreen();
@@ -40,7 +38,6 @@ public:
     // 設定筆刷大小的函式
     void setBrushSize(int size);
 
-
 signals:
     // 現在 MOC 會看到並處理這個信號了
     void coordinatesChanged(const QPoint &pos);
@@ -51,7 +48,6 @@ public slots:
     // 這個 slot 讓 MainWindow 能設定當前工具
     void setCurrentTool(ToolType tool);
     void setScale(int s);
-
 
 protected:
     // 新增：覆寫滑鼠事件
@@ -64,9 +60,12 @@ protected:
 
 
 private:
+
+
     QImage img; // 黑白影像，用來顯示
+
     // 核心數據！128 * 64 / 8 = 1024 bytes
-    uint8_t m_buffer[1024];
+
     //直接用 ToolType
     ToolType m_currentTool;
 
@@ -83,6 +82,10 @@ private:
     int m_brushSize; // <-- 新增：筆刷大小 (1x1, 2x2, 3x3 等)
     // 注意：這裡的 `m_brushSize` 代表的是邊長，例如 1 代表 1x1，2 代表 2x2。
 
+    // 实际的显示缓冲区，现在大小是 8页 * 132字节/页 = 1056 字节
+    uint8_t m_buffer[RAM_PAGE_WIDTH * (DISPLAY_HEIGHT / 8)]; // 8页 * 132字节 = 1056字节
+
+
 
     // 【新增】这个是给内部绘图演算法用的"高效版"
     void setPixel(int x, int y, bool on, uint8_t* buffer);
@@ -93,17 +96,9 @@ private:
     void drawCircle(const QPoint &p1, const QPoint &p2, uint8_t* buffer);
 
     int scale = 6; // 放大倍率
-
+    //座標位置
     QLabel* m_labelCoordinate = nullptr;
-
-
-    QRect m_selectionRect;
-    bool m_hasSelection;
-
-    // 【新增】用於移動選區的狀態變數
-    bool m_isMovingSelection;      // 標記是否正在拖動選區
-    uint8_t* m_selectionBuffer;    // 一個臨時 buffer，用來儲存被“摳下來”的選區像素
-    QPoint m_dragStartOffset;      // 記錄滑鼠按下時，滑鼠位置與選區左上角的偏移
+    //座標位置
 };
 
 #endif // OLEDWIDGET_H
