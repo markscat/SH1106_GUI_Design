@@ -95,7 +95,7 @@ private:
     void drawRectangle(int x, int y, int w, int h, bool on, bool fill, uint8_t* buffer);
     void drawCircle(const QPoint &p1, const QPoint &p2, uint8_t* buffer);
 
-    int scale = 6; // 放大倍率
+    int scale = 7; // 放大倍率
     //座標位置
     QLabel* m_labelCoordinate = nullptr;
     //座標位置

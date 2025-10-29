@@ -122,7 +122,10 @@ MainWindow::MainWindow(QWidget *parent)
     m_oled->setBuffer(sample_image);
 
     // --- 設定一個合適的初始視窗大小 ---
-    resize(1024, 600);
+    //resize(1050, 600);
+    resize(m_oled->width() + 150, m_oled->height() + 150);
+    setFixedSize(size()); // 鎖定大小，禁止拉伸
+
 }
 
 
