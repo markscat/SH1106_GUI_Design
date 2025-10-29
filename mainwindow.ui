@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1109</width>
+    <width>1064</width>
     <height>629</height>
    </rect>
   </property>
@@ -47,7 +47,7 @@
     <property name="orientation">
      <enum>Qt::Orientation::Horizontal</enum>
     </property>
-    <widget class="QWidget" name="ToolbarWdidget" native="true">
+    <widget class="QWidget" name="Toolbar_Wdidget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -60,7 +60,7 @@
        <height>0</height>
       </size>
      </property>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget2">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -69,7 +69,7 @@
         <height>310</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="ToolbarverticalLayout">
        <item>
         <layout class="QHBoxLayout" name="ToolLineLayout">
          <item>
@@ -256,7 +256,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="ToolSelectCopyComboBoxLayout">
+        <layout class="QHBoxLayout" name="Tool_pushButton_SelectCopy_Layout">
          <item>
           <spacer name="horizontalSpacer_15">
            <property name="orientation">
@@ -293,7 +293,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="ToolBrushSizeComboBoxLayout_4">
+        <layout class="QHBoxLayout" name="Tool_pushButton_SelectCut_Layout">
          <item>
           <spacer name="horizontalSpacer_17">
            <property name="orientation">
@@ -330,7 +330,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="ToolCopyComboBoxLayout">
+        <layout class="QHBoxLayout" name="Tool_pushButton_copy_Layout">
          <item>
           <spacer name="horizontalSpacer_13">
            <property name="orientation">
@@ -534,7 +534,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1109</width>
+     <width>1064</width>
      <height>25</height>
     </rect>
    </property>
