@@ -13,11 +13,6 @@ void OLEDWidget::setScale(int s) {
     scale = std::clamp(s, minScale, maxScale);
     //scale = s > 0 ? s : 1;
 
-
-    qDebug() <<"==========setScale==========";
-    qDebug() << "setScale - img size:" << img.size() << "scale:" << scale;
-    qDebug() << "計算的尺寸:" << img.width() * scale << "x" << img.height() * scale;
-
     setFixedSize(img.width() * scale, img.height() * scale);
     update();
 }
@@ -28,20 +23,19 @@ OLEDWidget::OLEDWidget(QWidget *parent)
     m_isDrawing(false),m_isMovingSelection(false),
     m_selectionBuffer(nullptr)
 {
-    qDebug() << "OLEDWidget 構造函數 - scale:" << scale;
-    qDebug() << "OLEDWidget 構造函數 - img size:" << img.size();
 
+    // 確保沒有多餘的子元件
+    setAttribute(Qt::WA_StaticContents);
+
+    // 確保接收所有滑鼠事件
+    setMouseTracking(true);
+    //grabMouse(); // 強制捕獲滑鼠
 
     // 初始為空白 128x64
     img = QImage(128, 64, QImage::Format_RGB888);
     img.fill(Qt::black);
 
-    qDebug() << "初始化後 img size:" << img.size();
-
-    //setMinimumSize(img.width()*scale, img.height()*scale);
     memset(m_buffer, 0, sizeof(m_buffer)); // 初始化 buffer
-
-
     // 🔹 初始化座標顯示用的 QLabel
     QWidget *w = this;
     while (w->parent()) w = w->parentWidget();
@@ -60,30 +54,31 @@ void OLEDWidget::loadBitmap(const uint8_t *data, int w, int h) {
     img = QImage(w, h, QImage::Format_Mono);
     img.fill(0);
 
-    int byteWidth = (w + 7) / 8;
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
-            int byteIndex = y * byteWidth + (x / 8);
+
+    for (int page = 0; page < 8; ++page) {
+        for (int x = 0; x < 128; ++x) {
+            int byteIndex = page * RAM_PAGE_WIDTH + (x + COLUMN_OFFSET);
             uint8_t byte = data[byteIndex];
-            uint8_t mask = 0x80 >> (x % 8); // MSB first
-            bool pixelOn = (byte & mask);
-            img.setPixel(x, y, pixelOn ? 1 : 0);
+            for (int bit = 0; bit < 8; ++bit) {
+                bool pixelOn = byte & (1 << bit);
+                int y = page * 8 + bit;
+                img.setPixelColor(x, y, pixelOn ? QColor(135, 206, 250) : Qt::black);
+            }
         }
     }
 
-    setMinimumSize(img.width()*scale, img.height()*scale);
     update();
 }
+
 
 void OLEDWidget::paintEvent(QPaintEvent *) {
 
     QPainter p(this);
 
-    p.fillRect(rect(), Qt::red);
+    p.fillRect(rect(), Qt::black);
 
-    // 1. 繪製 widget 整個區域（紅色邊框）
-    p.setPen(QPen(Qt::red, 3));
-    p.drawRect(rect());
+    if (img.isNull()) return;
+
 
     // 2. 繪製理論上的 128x64 網格區域（綠色邊框）
     int scaled_width = 128 * scale;
@@ -91,39 +86,9 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
     int x_offset = (width() - scaled_width) / 2;
     int y_offset = (height() - scaled_height) / 2;
 
-    p.setPen(QPen(Qt::green, 2));
+    // 3. 绘制一个清晰的白色外边框
+    p.setPen(QPen(Qt::white, 1));
     p.drawRect(x_offset, y_offset, scaled_width, scaled_height);
-
-    // 3. 顯示調試信息
-    p.setPen(Qt::white);
-    p.drawText(10, 20, QString("Widget: %1x%2").arg(width()).arg(height()));
-    p.drawText(10, 40, QString("Canvas: %1x%2").arg(scaled_width).arg(scaled_height));
-    p.drawText(10, 60, QString("Offset: %1,%2").arg(x_offset).arg(y_offset));
-
-
-
-    p.fillRect(rect(), Qt::darkGray); // 背景色（方便看）
-    if (img.isNull()) return;
-
-    // --- 计算 OLED 图像的显示区域 ---
-    Q_ASSERT(img.width() == 128 && img.height() == 64);
-
-/*
-    int scaled_width = img.width() * scale;
-    int scaled_height = img.height() * scale;
-    //int scaled_width = 128 * scale;
-    //int scaled_height = 64 * scale;
-
-    int x_offset = (width() - scaled_width) / 2;
-    int y_offset = (height() - scaled_height) / 2;
-*/
-    // 绘制实际的 OLED 像素内容
-    // 這裡直接使用 p.drawImage 比逐像素繪製更有效率，如果 img 是 QImage 類型
-    // 如果 img 是 QImage，這裡可以直接寫：
-
-    // 1. 繪製黑色背景（確保整個繪圖區都是黑色）
-    p.fillRect(x_offset, y_offset, scaled_width, scaled_height, Qt::black);
-    p.drawImage(QRect(x_offset, y_offset, scaled_width, scaled_height), img);
 
     // 2. 繪製每個像素點（根據 buffer 數據）
     for (int x = 0; x < 128; ++x) {
@@ -131,7 +96,8 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
             // 計算像素在 buffer 中的位置
             int page = y / 8;
             int bit_index = y % 8;
-            int byte_index = page * 128 + x;
+            //int byte_index = page * 128 + x;
+            int byte_index = page * RAM_PAGE_WIDTH + (x + COLUMN_OFFSET);
             bool pixelOn = (m_buffer[byte_index] & (1 << bit_index));
 
             if (pixelOn) {
@@ -143,14 +109,8 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
             }
         }
     }
-
-
-    // 3. 绘制一个清晰的白色外边框
-    p.setPen(QPen(Qt::white, 1));
-    p.drawRect(x_offset, y_offset, scaled_width - 1, scaled_height - 1);
-
     // 4. 绘制格线 (可选，但推荐)
-    if (scale >= 2) {
+    if (scale >= 4) {
         QPen grid_pen(QColor(128, 128, 128, 100), 1);
         p.setPen(grid_pen);
 
@@ -205,6 +165,7 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
         }
     }
 }
+
 
 // Bresenham's line algorithm
 void OLEDWidget::drawLine(int x0, int y0, int x1, int y1, bool on,uint8_t* buffer) {
@@ -359,18 +320,17 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
         // 對於其他工具 (線、矩形、圓)，只需更新 m_endPoint
         // 實際繪製預覽線會在 paintEvent 中根據 m_startPoint 和 m_endPoint 進行
 
-    } else if (event->buttons() & Qt::RightButton ){
+    } else if (event->buttons() == Qt::RightButton ){
 
-        if (m_currentTool == Tool_Pen){
-            // 右鍵筆工具：即時擦除線
-            drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, false,m_buffer);
-            m_startPoint = m_endPoint;
+        if (m_currentTool == Tool_Pen && m_isDrawing){
+            setPixel(oled_x, oled_y, false);
             updateImageFromBuffer();
+        } else {
+            m_isDrawing = false;
+            m_startPoint = QPoint(-1, -1);
+            m_endPoint = QPoint(-1, -1);
+            update(); // 清掉預覽線
         }
-
-        // 對於其他工具，右鍵在 mousePressEvent 時已經被定義為取消操作，
-        // 所以這裡不需要做額外處理。如果右鍵被按著移動，應該是在取消繪圖後，
-        // 就不應該再進行繪圖邏輯。
     }
 
 
@@ -484,25 +444,31 @@ void OLEDWidget::wheelEvent(QWheelEvent *event)
 void OLEDWidget::updateImageFromBuffer()
 {
     // 1. 確保 img 物件是正確的大小和格式
-    img = QImage(128, 64, QImage::Format_RGB888);
+    //img = QImage(128, 64, QImage::Format_RGB888);
+    img = QImage(DISPLAY_WIDTH, DISPLAY_HEIGHT, QImage::Format_RGB888);
+
 
     // 2. 定義像素的亮/暗顏色
     const QColor pixelOnColor = QColor(135, 206, 250); // 淺藍色
     const QColor pixelOffColor = Qt::black;
 
     // 3. 遍歷內部緩衝區 m_buffer，將數據轉換為 QImage 的像素
-    for (int page = 0; page < 8; page++) {
-        for (int x = 0; x < 128; x++) {
+    for (int page = 0; page < DISPLAY_HEIGHT/8; page++) {
+        for (int x = 0; x < DISPLAY_WIDTH; x++) {
             // 注意：是從 m_buffer 讀取，這是我們自己的數據儲存區
-            uint8_t data = m_buffer[page * 128 + x];
-            for (int bit = 0; bit < 8; bit++) {
-                bool on = data & (1 << bit);
-                int y = page * 8 + bit;
-                img.setPixelColor(x, y, on ? pixelOnColor : pixelOffColor);
+            int byte_index = page * RAM_PAGE_WIDTH + (x + COLUMN_OFFSET);
+
+            if (byte_index >= 0 && byte_index < RAM_PAGE_WIDTH * (DISPLAY_HEIGHT / 8)) {
+                uint8_t data = m_buffer[byte_index];
+
+                for (int bit = 0; bit < 8; bit++) {
+                    bool on = data & (1 << bit);
+                    int y = page * 8 + bit;
+                    img.setPixelColor(x, y, on ? pixelOnColor : pixelOffColor);
+                }
             }
         }
     }
-
     // 4. 更新 widget 的最小尺寸並觸發重繪
     setMinimumSize(img.width() * scale, img.height() * scale);
     update(); // 觸發 paintEvent
@@ -520,9 +486,11 @@ void OLEDWidget::setPixel(int x, int y, bool on, uint8_t* buffer)
             if (px >= 0 && px < 128 && py >= 0 && py < 64) {
                 int page = py / 8;
                 int bit_index = py % 8;
-                int byte_index = page * 128 + px;
+                //int byte_index = page * 128 + px;
+                int byte_index= page * RAM_PAGE_WIDTH+(px + COLUMN_OFFSET);
 
-                if (on)
+
+                if (byte_index < (8 * RAM_PAGE_WIDTH))
                     buffer[byte_index] |= (1 << bit_index);
                 else
                     buffer[byte_index] &= ~(1 << bit_index);

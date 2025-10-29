@@ -502,16 +502,6 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QWidget" name="widget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>1040</x>
-      <y>430</y>
-      <width>191</width>
-      <height>80</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>

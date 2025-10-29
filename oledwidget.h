@@ -1,6 +1,11 @@
 #ifndef OLEDWIDGET_H
 #define OLEDWIDGET_H
 #pragma once
+#define RAM_PAGE_WIDTH 132       // SH1106 RAM 寬度
+#define COLUMN_OFFSET 2          // SH1106 顯示起始 column 偏移
+#define DISPLAY_WIDTH 128
+#define DISPLAY_HEIGHT 64
+
 #include <QWidget>
 #include <QImage>
 #include <QLabel>

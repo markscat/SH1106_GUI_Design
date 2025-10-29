@@ -81,47 +81,43 @@ MainWindow::MainWindow(QWidget *parent)
 {
 
     ui->setupUi(this);
-     // --- 1. 初始化成員變數和 UI 設置 ---
-    m_originalOledSize = ui->oledPlaceholder->size();
+
+    // 1. 先設置視窗和容器
+    resize(1024, 600);
+    QList<int> initialSizes;
+    initialSizes << 120 << 680;
 
     // 設置 Splitter 初始尺寸
-    QList<int> initialSizes;
-
-    initialSizes << 120 << 680;
     ui->splitter->setSizes(initialSizes);
 
-    // 設定合適的初始視窗大小
-    resize(1024, 600);
-
-
-    // --- 建立並注入 OLEDWidget ---
-    m_oled = new OLEDWidget(this);
-
-
+   // 3. 創建滾動區域和 OLEDWidget
     scrollArea = new QScrollArea(this);
-
-    scrollArea->setWidget(m_oled);
-
     scrollArea->setWidgetResizable(false); // 保持原始比例，不自動拉伸
-
     scrollArea->setAlignment(Qt::AlignCenter);
-
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
     scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setStyleSheet("background: transparent;");//不用嗎？
 
-    scrollArea->setStyleSheet("background: transparent;");
-
-    QTimer::singleShot(0, this, [this]() {
-        m_oled->setScale(6);
-    });
-
+    // 2. 設置佈局（先建立容器結構）
     QVBoxLayout *layout = new QVBoxLayout(ui->oledPlaceholder);
     layout->addWidget(scrollArea);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
+
+
+    // --- 建立並注入 OLEDWidget ---
+    m_oled = new OLEDWidget(this);
+    scrollArea->setWidget(m_oled);
+
+
+    // 6. 延遲設置尺寸（現在容器環境正確了）
+    QTimer::singleShot(0, this, [this]() {
+        m_oled->setScale(6);
+        // 現在再獲取正確的原始尺寸
+        m_originalOledSize = ui->oledPlaceholder->size();
+    });
+
 
 
     // --- 3. 設定【繪圖工具】按鈕群組 ---`
@@ -185,7 +181,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_oled, &OLEDWidget::coordinatesChanged, this, &MainWindow::updateCoordinateLabel);
 
 
-
     // 在這個 lambda 函式中，我們將接收到的整數 ID
     // 轉換回 ToolType enum，然後呼叫 OLEDWidget 的方法來設定當前工具。
     connect(m_toolButtonGroup, QOverload<int>::of(&QButtonGroup::idClicked),
@@ -202,20 +197,14 @@ MainWindow::MainWindow(QWidget *parent)
     // ↓↓↓↓ 在这里加入以下代码来设置 Splitter 的初始尺寸 ↓↓↓↓
 
 
-    // --- 7. 調試信息 (可選) ---
-#ifdef Debug_Msg
-    qDebug() << "=== Mainwindow ===";
-    qDebug() << "OLEDWidget size:" << m_oled->size();
-    qDebug() << "ScrollArea size:" << scrollArea->size();
-    qDebug() << "oledPlaceholder size:" << ui->oledPlaceholder->size();
-
-
     QTimer::singleShot(100, this, [this]() {
-        qDebug() << "=== QTimer ===";
-        qDebug() << "延遲檢查 - oledPlaceholder size:" << ui->oledPlaceholder->size();
-        qDebug() << "延遲檢查 - ScrollArea size:" << scrollArea->size();
+        qDebug() << "oledPlaceholder 尺寸:" << ui->oledPlaceholder->size();
+        qDebug() << "ScrollArea 尺寸:" << scrollArea->size();
+        qDebug() << "OLEDWidget 尺寸:" << m_oled->size();
+
+        // 檢查佈局拉伸因子
+        qDebug() << "JobAreaLayout 拉伸因子:" << ui->JobAreaLayout->stretch(0) << ui->JobAreaLayout->stretch(1);
     });
-#endif
 
 }
 
@@ -249,7 +238,7 @@ void MainWindow::exportData()
     }
     c_array.chop(c_array.endsWith(", \n    ") ? 7 : 2);
     c_array += "\n};";
-
+/*
     // --- 使用一個新的 QDialog 來顯示結果 ---
 
     // 1. 建立一個對話方塊視窗
@@ -276,6 +265,7 @@ void MainWindow::exportData()
 
     // 5. 對話方塊關閉後，釋放記憶體
     delete exportDialog;
+    */
 }
 
 void MainWindow::saveData()
@@ -304,6 +294,23 @@ void MainWindow::saveData()
     QString c_array_content;
     QTextStream out(&c_array_content);
     out << "// Saved at: " << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n";
+    //out << QString("const unsigned char image_%1[%2] = {\n    ").arg(timestamp).arg(RAM_PAGE_WIDTH * 8);
+
+
+#define test2
+    #ifdef test2
+    out << QString("const unsigned char image_%1[%2] = {\n    ").arg(timestamp).arg(RAM_PAGE_WIDTH * 8);
+
+    for (int i = 0; i < RAM_PAGE_WIDTH * 8; ++i) {
+        out << QString("0x%1, ").arg(buffer[i], 2, 16, QChar('0'));
+        if ((i + 1) % 16 == 0 && i < RAM_PAGE_WIDTH * 8 - 1) {
+            out << "\n    ";
+        }
+    }
+
+#endif
+
+#ifdef org1
     out << QString("const unsigned char image_%1[1024] = {\n    ").arg(timestamp);
     for (int i = 0; i < 1024; ++i) {
         out << QString("0x%1, ").arg(buffer[i], 2, 16, QChar('0'));
@@ -311,6 +318,7 @@ void MainWindow::saveData()
             out << "\n    ";
         }
     }
+#endif
     out.seek(out.pos() - 2); // 移除最后多余的 ", "
     out << "\n};";
 
@@ -373,9 +381,6 @@ void MainWindow::importImage()
         QMessageBox::warning(this, "错误", "无法载入图片档案！");
         return;
     }
-
-
-
     // --- 弹出对话框，询问是否旋转 ---
     QDialog rotateDialog(this);
     rotateDialog.setWindowTitle("汇入选项");
@@ -428,7 +433,9 @@ void MainWindow::importImage()
 
     // --- 将处理好的 QImage 转换为 SH1106 的 buffer 格式 ---
     // 这是最复杂的一步，我们需要写一个转换函式
-    uint8_t buffer[1024] = {0};
+    uint8_t buffer[RAM_PAGE_WIDTH *8] = {0};
+    memset(buffer, 0x00, RAM_PAGE_WIDTH * 8); // 清空整個 SH1106 buffer
+
 
     // 遍历处理后的 monoImage 的每一个像素
     for (int y = 0; y < monoImage.height(); ++y) {
@@ -442,7 +449,9 @@ void MainWindow::importImage()
                 // 计算像素在 buffer 中的位置 (和 setPixel 逻辑一样)
                 int page = y / 8;
                 int bit_index = y % 8;
-                int byte_index = page * 128 + x;
+                //int byte_index = page * 128 + x;
+                int byte_index = page * RAM_PAGE_WIDTH + (x + COLUMN_OFFSET);
+
                 if (byte_index >= 0 && byte_index < 1024) { // 边界检查
                     buffer[byte_index] |= (1 << bit_index);
                 }
