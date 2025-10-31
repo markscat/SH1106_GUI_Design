@@ -13,7 +13,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-#ifdef org_1025
     m_originalOledSize = ui->oledPlaceholder->size(); // 或 m_oled->sizeHint()
 
     // --- 建立並注入 OLEDWidget ---
@@ -80,19 +79,26 @@ MainWindow::MainWindow(QWidget *parent)
     m_toolButtonGroup = new QButtonGroup(this);
     m_toolButtonGroup->setExclusive(true);
 
-
     // 假設您的按鈕 objectName 分別是 penButton, lineButton 等
     m_toolButtonGroup->addButton(ui->ToolPen, Tool_Pen);
     m_toolButtonGroup->addButton(ui->ToolLine, Tool_Line);
     m_toolButtonGroup->addButton(ui->ToolRectangle, Tool_Rectangle);
     m_toolButtonGroup->addButton(ui->ToolFilledRectangle, Tool_FilledRectangle);
     m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
+    //選取複製功能
+#ifdef SelectCopy
+    m_toolButtonGroup->addButton(ui->pushButton_SelectCopy, Tool_SelectCopy);
+        //ui->pushButton_SelectCopy->hide(); // 隱藏按鍵
+        //ui->pushButton_SelectCopy->setVisible(false);
 
+    m_toolButtonGroup->addButton(ui->pushButton_copy, Tool_copy);
+    m_toolButtonGroup->addButton(ui->pushButton_SelectCut, Tool_SelectCut);
+
+#endif
     const QList<QAbstractButton*> &buttons = m_toolButtonGroup->buttons();
     for (QAbstractButton *button : buttons) {
         button->setCheckable(true);
     }
-
 
     connect(m_toolButtonGroup, QOverload<int>::of(&QButtonGroup::idClicked),
             this, [this](int id) {
@@ -101,14 +107,10 @@ MainWindow::MainWindow(QWidget *parent)
                 m_oled->setCurrentTool(static_cast<ToolType>(id));
             });
 
+
     // 設定預設工具
     ui->ToolPen->setChecked(true);
     layout->setContentsMargins(0, 0, 0, 0);
-
-    // --- 把從 main.cpp 移過來的邏輯放在這裡 ---
-    // 在程式啟動時，載入預設的範例圖片
-    m_oled->setBuffer(sample_image);
-
     // ↓↓↓↓ 在这里加入以下代码来设置 Splitter 的初始尺寸 ↓↓↓↓
 
     // 创建一个 QList<int> 来存放每个区域的初始尺寸
@@ -118,8 +120,11 @@ MainWindow::MainWindow(QWidget *parent)
     // 使用 objectName 'splitter' 来获取指向 QSplitter 的指标，并设置尺寸
     // 请确保这里的 "splitter" 和您在 .ui 文件中设置的 objectName 完全一致！
     ui->splitter->setSizes(initialSizes);
-#endif
+
+
     m_oled->setBuffer(sample_image);
+
+
 
     // --- 設定一個合適的初始視窗大小 ---
     //resize(1050, 600);

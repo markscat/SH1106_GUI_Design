@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <cmath> // For circle drawing
 
+#include "config.h"
+
+
 void OLEDWidget::setScale(int s) {
     const int minScale = 1;
     const int maxScale = 20; // 依需求調整最大放大倍數
@@ -74,38 +77,17 @@ void OLEDWidget::loadBitmap(const uint8_t *data, int w, int h) {
 }
 
 
-/*
-void OLEDWidget::loadBitmap(const uint8_t *data, int w, int h) {
-    if (!data || w <= 0 || h <= 0) return;
-
-    img = QImage(w, h, QImage::Format_Mono);
-    img.fill(0);
-
-    int byteWidth = (w + 7) / 8;
-    for (int y = 0; y < h; ++y) {
-        for (int x = 0; x < w; ++x) {
-
-            int byteIndex = y * byteWidth + (x / 8);
-            uint8_t byte = data[byteIndex];
-            uint8_t mask = 0x80 >> (x % 8); // MSB first
-            bool pixelOn = (byte & mask);
-            img.setPixel(x, y, pixelOn ? 1 : 0);
-        }
-    }
-
-    setMinimumSize(img.width()*scale, img.height()*scale);
-    update();
-}
-*/
 
 void OLEDWidget::setPixel(int x, int y, bool on, uint8_t* buffer)
 {
-    //const int RAM_PAGE_WIDTH = 132;
-    //const int COLUMN_OFFSET = 2;
+
     int offset = m_brushSize / 2;
+    /*oledwidget.cpp:108:18: Invalid use of member 'm_brushSize' in static member function*/
 
     for (int dx = 0; dx < m_brushSize; ++dx) {
+        /*oledwidget.cpp:111:27: Invalid use of member 'm_brushSize' in static member function*/
         for (int dy = 0; dy < m_brushSize; ++dy) {
+            /*oledwidget.cpp:113:31: Invalid use of member 'm_brushSize' in static member function*/
             int px = x + dx - offset;
             int py = y + dy - offset;
 
@@ -146,9 +128,15 @@ void OLEDWidget::setPixel(int x, int y, bool on)
         }
     }
 
-
     // 步骤2：更新整个画面
     updateImageFromBuffer();
+}
+
+bool OLEDWidget::getPixel(int x, int y, const uint8_t *buffer)
+{
+    if (x < 0 || x >= 128 || y < 0 || y >= 64) return false;
+    int index = x + (y / 8) * 128;
+    return (buffer[index] >> (y % 8)) & 0x01;
 }
 
 void OLEDWidget::paintEvent(QPaintEvent *) {
@@ -234,8 +222,48 @@ void OLEDWidget::paintEvent(QPaintEvent *) {
             break;
         }
     }
-}
 
+#ifdef SelectCopy
+
+    if (m_isSelecting || m_selectedRegion.isValid()) {
+            qDebug() << "選取框:" << m_selectedRegion;
+        QPainter painter(this);
+
+        painter.setRenderHint(QPainter::Antialiasing, false);
+        QPen pen(Qt::yellow, 1, Qt::DashLine); // 虛線框
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+
+        QRect rect;
+
+        if (m_isSelecting) {
+            int x1 = std::min(m_startPoint.x(), m_endPoint.x());
+            int y1 = std::min(m_startPoint.y(), m_endPoint.y());
+            int x2 = std::max(m_startPoint.x(), m_endPoint.x());
+            int y2 = std::max(m_startPoint.y(), m_endPoint.y());
+            rect = QRect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+        } else {
+            rect = m_selectedRegion;
+        }
+
+        // 放大顯示（轉成 widget 座標）
+        QRect scaledRect(
+            rect.x() * scale,
+            rect.y() * scale,
+            rect.width() * scale,
+            rect.height() * scale
+            );
+
+        painter.drawRect(scaledRect);
+    }
+
+        //qDebug() << "paintEvent: drawing rect" << rect << "-> GUI:" << guiRect;
+#endif
+
+}
+#define DrawTool
+
+#ifdef DrawTool
 // Bresenham's line algorithm
 void OLEDWidget::drawLine(int x0, int y0, int x1, int y1, bool on,uint8_t* buffer) {
     int dx = std::abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
@@ -332,7 +360,7 @@ void OLEDWidget::drawCircle(const QPoint &p1, const QPoint &p2, uint8_t* buffer)
     }
 }
 
-
+#endif
 
 void OLEDWidget::setBuffer(const uint8_t *buffer){
     // 同步内部状态
@@ -367,7 +395,31 @@ void OLEDWidget::wheelEvent(QWheelEvent *event)
     }
 }
 
+//mouse 三兄弟
 void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
+    //選取貼上
+#ifdef SelectCopy
+
+
+    if (m_currentTool == Tool_SelectCopy) {
+        QPoint pos = convertToOLED(event->pos());
+
+        // 👉 右鍵拖曳選取框
+        if ((event->buttons() & Qt::RightButton) && m_isDraggingSelection) {
+            QPoint newTopLeft = pos - m_dragOffset;
+            m_selectedRegion.moveTopLeft(newTopLeft);
+            update(); // 觸發重繪
+            return;
+        }
+
+        // 👉 左鍵正在選取
+        if (event->buttons() & Qt::LeftButton) {
+            handleSelectCopyMove(pos);
+            return;
+        }
+    }
+#endif
+    //選取貼上
     if (!m_isDrawing) return;
 
     int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
@@ -407,19 +459,11 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
         // 所以這裡不需要做額外處理。如果右鍵被按著移動，應該是在取消繪圖後，
         // 就不應該再進行繪圖邏輯。
     }
-
-    //選取貼上
-    if (m_currentTool == Tool_SelectCopy) {
-        /*oledwidget.cpp:412:26: Use of undeclared identifier 'Tool_SelectCopy'*/
-        handleSelectCopyMove(convertToOLED(event->pos()));
-        return;
-    }
-    //選取貼上
-
     update();
 }
 
 void OLEDWidget::mousePressEvent(QMouseEvent *event) {
+
     int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
     int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
 
@@ -427,6 +471,32 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
     oled_x = std::clamp(oled_x, 0, img.width() - 1);
     oled_y = std::clamp(oled_y, 0, img.height() - 1);
 
+#ifdef SelectCopy
+
+    if (m_currentTool == Tool_SelectCopy) {
+        QPoint pos = convertToOLED(event->pos());
+
+        // 👉 右鍵拖曳選取框
+        if (event->button() == Qt::RightButton) {
+            if (m_selectedRegion.contains(pos)) {
+                m_dragOffset = pos - m_selectedRegion.topLeft();
+                m_dragStartRegion = m_selectedRegion;   // ✅ 記錄原始框位置
+                m_isDraggingSelection = true;
+            }
+            return;
+        }
+
+        // 👉 左鍵開始選取
+        if (event->button() == Qt::LeftButton) {
+            m_startPoint = pos;
+            m_endPoint = pos;
+            m_isSelecting = true;
+            update();
+            return;
+        }
+    }
+
+#endif
 
     // 不論左右鍵，m_startPoint 都是第一次點擊的位置
     m_startPoint = QPoint(oled_x, oled_y);
@@ -461,6 +531,65 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
 }
 
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
+
+#ifdef SelectCopy
+    if (event->button() == Qt::RightButton && m_isDraggingSelection) {
+        m_isDraggingSelection = false;
+
+        // ✅ 搬移選取區域的內容
+        QRect oldRegion = m_dragStartRegion;
+        //QRect newRegion = m_selectedRegion;
+
+        //QPoint offset = m_selectedRegion.topLeft() - oldRegion.topLeft();
+        QPoint offset = m_selectedRegion.topLeft() - m_dragStartRegion.topLeft(); // ✅ 實際移動量
+        qDebug() << "拖曳偏移量:" << offset;
+
+
+        if (offset.isNull()) {
+            update();
+            return; // 沒移動就不處理
+        }
+
+        // 建立一個暫存區域
+        QImage temp(img.size(), QImage::Format_Mono);
+        temp.fill(0);
+
+        // 複製選取區域的像素到 temp
+
+        for (int y = 0; y < oldRegion.height(); ++y) {
+            for (int x = 0; x < oldRegion.width(); ++x) {
+                int srcX = oldRegion.left() + x;
+                int srcY = oldRegion.top() + y;
+                bool pixel = getPixel(srcX, srcY, m_buffer);
+                if (pixel) {
+                    int dstX = srcX + offset.x();
+                    int dstY = srcY + offset.y();
+                    if (dstX >= 0 && dstX < img.width() && dstY >= 0 && dstY < img.height())
+                        temp.setPixel(dstX, dstY, 1);
+                }
+                setPixel(srcX, srcY, false); // 清除原位置
+            }
+        }
+        // 把 temp 貼回 buffer
+        for (int y = 0; y < img.height(); ++y) {
+            for (int x = 0; x < img.width(); ++x) {
+                if (temp.pixel(x, y)) {
+                    setPixel(x, y, true);
+                }
+            }
+        }
+
+        updateImageFromBuffer();
+        update();
+        return;
+    }
+
+
+    m_selectedRegion = QRect(m_startPoint, m_endPoint).normalized();
+
+#endif
+
+
     // 如果不是在繪圖狀態，就直接返回
     if (!m_isDrawing) {
         return;
@@ -501,12 +630,15 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
 
     }
     m_isDrawing = false;
+    //選取貼上
 
+    //選取貼上
     // 最後再呼叫一次 update() 來清除預覽圖形 (藍色線)
     // 因為此時 m_isDrawing 已經是 false，paintEvent 中的預覽繪圖邏輯不會再執行
     update();
-
 }
+
+//mouse 三兄弟
 
 
 void OLEDWidget::leaveEvent(QEvent *event)
@@ -567,7 +699,7 @@ void OLEDWidget::setBrushSize(int size)
 }
 
 /*選取複製*/
-
+#ifdef SelectCopy
 void OLEDWidget::handleSelectCopyPress(const QPoint &pos)
 {
     // 1. 清除舊選取狀態
@@ -603,6 +735,62 @@ QPoint OLEDWidget::convertToOLED(const QPoint &pos)
     return QPoint(x, y);
 }
 
+void OLEDWidget::handleSelectCopyRelease(const QPoint &pos)
+{
+    if (!m_isSelecting)
+        return;
 
+    m_endPoint = pos;
+    m_isSelecting = false;
+
+    // 計算選取區域（左上到右下）
+    int x1 = std::min(m_startPoint.x(), m_endPoint.x());
+    int y1 = std::min(m_startPoint.y(), m_endPoint.y());
+    int x2 = std::max(m_startPoint.x(), m_endPoint.x());
+    int y2 = std::max(m_startPoint.y(), m_endPoint.y());
+
+    QRect region(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+
+    // 檢查是否全黑
+    bool allBlack = true;
+
+    for (int y = y1; y <= y2; ++y) {
+        for (int x = x1; x <= x2; ++x) {
+            int page = y / 8;
+            int column = x + COLUMN_OFFSET;
+            int index = page * RAM_PAGE_WIDTH + column;
+            uint8_t byte = m_buffer[index];
+            uint8_t mask = 1 << (y % 8);
+            if (byte & mask) {
+                allBlack = false;
+                break;
+            }
+        }
+        if (!allBlack)
+            break;
+    }
+
+    if (allBlack) {
+        m_selectedRegion = QRect(); // 清除選取框
+    } else {
+        m_selectedRegion = region; // 儲存選取區域
+    }
+
+    update(); // 重新繪製，顯示或清除選取框
+}
+
+#endif
+
+#ifdef debug_select
+void OLEDWidget::verifySelectionFlow(const QString &stage)
+{
+    qDebug() << "=== [" << stage << "] ===";
+    qDebug() << "Tool:" << m_currentTool;
+    qDebug() << "isSelecting:" << m_isSelecting;
+    qDebug() << "startPoint:" << m_startPoint;
+    qDebug() << "endPoint:" << m_endPoint;
+    qDebug() << "selectedRegion:" << m_selectedRegion;
+}
+#endif
 
 /*選取複製*/
