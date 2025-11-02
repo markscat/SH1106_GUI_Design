@@ -398,10 +398,10 @@ void OLEDWidget::wheelEvent(QWheelEvent *event)
 //mouse 三兄弟
 void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     //選取貼上
-#ifdef SelectCopy
+#ifdef SelectCopy_
 
 
-    if (m_currentTool == Tool_SelectCopy) {
+    if (m_currentTool == Tool_Select) {
         QPoint pos = convertToOLED(event->pos());
 
         // 👉 右鍵拖曳選取框
@@ -414,12 +414,14 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
 
         // 👉 左鍵正在選取
         if (event->buttons() & Qt::LeftButton) {
-            handleSelectCopyMove(pos);
+            handleSelectMove(pos);
             return;
         }
     }
+
 #endif
     //選取貼上
+
     if (!m_isDrawing) return;
 
     int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
@@ -472,8 +474,15 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
     oled_y = std::clamp(oled_y, 0, img.height() - 1);
 
 #ifdef SelectCopy
+    if (m_currentTool == Tool_Select) {
+        handleSelectPress(event);
+        return;
+    }
+#endif
 
-    if (m_currentTool == Tool_SelectCopy) {
+#ifdef SelectCopy_
+
+    if (m_currentTool == Tool_Select) {
         QPoint pos = convertToOLED(event->pos());
 
         // 👉 右鍵拖曳選取框
@@ -533,6 +542,13 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
 
 #ifdef SelectCopy
+    if (m_currentTool == Tool_Select && event->button() == Qt::LeftButton) {
+        handleSelectRelease(event);
+        return;
+    }
+#endif
+
+#ifdef SelectCopy_
     if (event->button() == Qt::RightButton && m_isDraggingSelection) {
         m_isDraggingSelection = false;
 
@@ -583,7 +599,6 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         update();
         return;
     }
-
 
     m_selectedRegion = QRect(m_startPoint, m_endPoint).normalized();
 
@@ -698,30 +713,92 @@ void OLEDWidget::setBrushSize(int size)
     m_brushSize = size;
 }
 
+
 /*選取複製*/
 #ifdef SelectCopy
-void OLEDWidget::handleSelectCopyPress(const QPoint &pos)
+// === Tool_Select ===
+void OLEDWidget::handleSelectPress(QMouseEvent *event)
 {
-    // 1. 清除舊選取狀態
-    m_selectedRegion = QRect(); // 清空選取框
+    QPoint pos = convertToOLED(event->pos());
+
+    // 只接受左鍵
+    if (event->button() != Qt::LeftButton)
+        return;
+
+    // 開始新的選取
     m_isSelecting = true;
 
-    // 2. 記錄起始點
     m_startPoint = pos;
     m_endPoint = pos;
 
-    // 3. 更新畫面（可選）
+    m_selectedRegion = QRect(); // 清除舊框
     update();
 }
 
-void OLEDWidget::handleSelectCopyMove(const QPoint &pos)
+void OLEDWidget::handleSelectMove(QMouseEvent *event)
 {
     if (!m_isSelecting)
         return;
 
+    QPoint pos = convertToOLED(event->pos());
     m_endPoint = pos;
-    update(); // 觸發 paintEvent，畫出虛線框
+    update(); // 繪製虛線框
 }
+
+void OLEDWidget::handleSelectRelease(QMouseEvent *event)
+{
+    if (!m_isSelecting || event->button() != Qt::LeftButton)
+        return;
+
+    QPoint pos = convertToOLED(event->pos());
+
+    m_endPoint = pos;
+    m_isSelecting = false;
+
+    // 正規化框（確保左上角小於右下角）
+    QRect region = QRect(m_startPoint, m_endPoint).normalized();
+
+    // 避免太小的誤觸框
+    if (region.width() < 2 && region.height() < 2)
+        region = QRect();
+
+    m_selectedRegion = region;
+
+    update();
+}
+
+
+void OLEDWidget::handleCopy(){
+
+    if (!m_selectedRegion.isValid())
+        return; // 沒有選取框就不做
+
+    // 建立與選取區一樣大小的暫存區
+    m_clipboard = QImage(m_selectedRegion.size(), QImage::Format_Mono);
+    m_clipboard.fill(0);
+
+    // 將選取框內的像素複製到暫存區
+    for (int y = 0; y < m_selectedRegion.height(); ++y) {
+        for (int x = 0; x < m_selectedRegion.width(); ++x) {
+            int srcX = m_selectedRegion.left() + x;
+            int srcY = m_selectedRegion.top() + y;
+            bool pixel = getPixel(srcX, srcY, m_buffer);
+            if (pixel)
+                m_clipboard.setPixel(x, y, 1);
+        }
+    }
+
+    qDebug() << "複製完成，區域大小:" << m_selectedRegion.size();
+}
+void OLEDWidget::on_pushButton_Copy_clicked()
+{
+#ifdef SelectCopy
+    if (m_currentTool == Tool_Select) {
+        handleCopy();
+    }
+#endif
+}
+#endif
 
 QPoint OLEDWidget::convertToOLED(const QPoint &pos)
 {
@@ -735,7 +812,33 @@ QPoint OLEDWidget::convertToOLED(const QPoint &pos)
     return QPoint(x, y);
 }
 
-void OLEDWidget::handleSelectCopyRelease(const QPoint &pos)
+
+#ifdef SelectCopy_
+void OLEDWidget::handleSelectPress(const QPoint &pos)
+{
+    // 1. 清除舊選取狀態
+    m_selectedRegion = QRect(); // 清空選取框
+    m_isSelecting = true;
+
+    // 2. 記錄起始點
+    m_startPoint = pos;
+    m_endPoint = pos;
+
+    // 3. 更新畫面（可選）
+    update();
+}
+
+void OLEDWidget::handleSelectMove(const QPoint &pos)
+{
+    if (!m_isSelecting)
+        return;
+
+    m_endPoint = pos;
+    update(); // 觸發 paintEvent，畫出虛線框
+}
+
+
+void OLEDWidget::handleSelectRelease(const QPoint &pos)
 {
     if (!m_isSelecting)
         return;
@@ -779,6 +882,62 @@ void OLEDWidget::handleSelectCopyRelease(const QPoint &pos)
     update(); // 重新繪製，顯示或清除選取框
 }
 
+
+// 複製選取區到 m_copyBuffer（不改動原畫面）
+void OLEDWidget::copySelection()
+{
+    if (m_selectedRegion.isNull()) {
+        qDebug() << "copySelection: no selection";
+        return;
+    }
+
+    QRect rect = m_selectedRegion.normalized();
+    if (rect.width() <= 0 || rect.height() <= 0) {
+        qDebug() << "copySelection: empty rect";
+        return;
+    }
+
+    // 建立暫存 QImage（單色）
+    m_copyBuffer = QImage(rect.size(), QImage::Format_Mono);
+    m_copyBuffer.fill(0);
+    m_copyOrigin = rect.topLeft();
+
+    // 以你的 buffer 格式讀出像素（若你有 getPixel API 就用它）
+    for (int y = 0; y < rect.height(); ++y) {
+        for (int x = 0; x < rect.width(); ++x) {
+            int srcX = rect.left() + x;
+            int srcY = rect.top() + y;
+            bool pixel = getPixel(srcX, srcY, m_buffer); // 你已有的 helper
+            if (pixel) m_copyBuffer.setPixel(x, y, 1);
+        }
+    }
+
+    qDebug() << "copySelection: copied rect" << rect;
+}
+
+// 剪下：複製後把原位置清空
+void OLEDWidget::cutSelection()
+{
+    if (m_selectedRegion.isNull()) {
+        qDebug() << "cutSelection: no selection";
+        return;
+    }
+
+    copySelection(); // 先複製
+    QRect rect = m_selectedRegion.normalized();
+
+    // 清空原區塊（從 buffer 清為 0）
+    for (int y = rect.top(); y <= rect.bottom(); ++y) {
+        for (int x = rect.left(); x <= rect.right(); ++x) {
+            setPixel(x, y, false); // 你已有的 setPixel helper
+        }
+    }
+
+    updateImageFromBuffer();
+    update();
+
+    qDebug() << "cutSelection: cleared rect" << rect;
+}
 #endif
 
 #ifdef debug_select

@@ -65,12 +65,21 @@ protected:
     void leaveEvent(QEvent *event) override;
 
     //選取複製
-    void handleSelectCopyPress(const QPoint &pos);
-    void handleSelectCopyMove(const QPoint &pos);
-    void handleSelectCopyRelease(const QPoint &pos);
+#ifdef SelectCopy
+
+    void copySelection();
+    void cutSelection();
+
+    void handleSelectPress(QMouseEvent *event);
+    void handleSelectMove(QMouseEvent *event);
+    void handleSelectRelease(QMouseEvent *event);
+    void handleCopy();
+
+    void on_pushButton_Copy_clicked();
+
 
     QPoint convertToOLED(const QPoint &pos);
-
+#endif
     //選取複製
 
 private:
@@ -102,6 +111,10 @@ private:
     // 【新增】这个是给内部绘图演算法用的"高效版"
     void setPixel(int x, int y, bool on, uint8_t* buffer);
 
+#ifdef SelectCopy
+
+    QImage m_clipboard; // 暫存複製的區塊
+#endif
 
 #ifdef DrawTool
 
@@ -118,7 +131,8 @@ private:
 
 
     //選取複製
-    /*
+#ifdef SelectCopy
+/*
 | 變數名稱                 | 功能說明                                  |
 | ----------------------- | -----------------------------------------|
 |  m_selectedRegion       | 目前選取框的位置與大小（你原本的框）           |
@@ -128,32 +142,28 @@ private:
 |  m_dragStartRegion`     | 👉 拖曳開始那一刻的選取框位置，用來計算 offset |
 
 */
-    /**
-     * @brief 當前選取框的矩形範圍
-     */
+    /** @brief 當前選取框的矩形範圍 */
     QRect m_selectedRegion; // 儲存選取區域（OLED 座標系）
 
-    /**
-     * @brief 拖曳中滑鼠位置相對框框左上角的偏移
-     */
+    /** @brief 拖曳中滑鼠位置相對框框左上角的偏移*/
     QPoint m_dragOffset;
 
-
-    /**
-     * @brief 是否正在拖曳選取框
-     */
+    /** @brief 是否正在拖曳選取框*/
     bool m_isDraggingSelection = false;
 
-    /**
-     * @brief 是否正在用左鍵畫選取框
-     */
+    /** @brief 是否正在用左鍵畫選取框*/
     bool m_isSelecting = false;
 
-    /**
-     * @brief 拖曳開始時的選取框，用於計算偏移量
-     */
-    QRect m_dragStartRegion;   // ✅ 新增：記錄拖曳前的選取框位置
+    // ----- 新增 -----
+    /** @brief 儲存選取區的暫存圖 (Format_Mono) */
+    QImage m_copyBuffer;
 
+    /** @brief 被複製區域在原圖的位置 (左上角) */
+    QPoint m_copyOrigin;        //
+
+   // QRect m_dragStartRegion;   // ✅ 新增：記錄拖曳前的選取框位置
+
+#endif
     //選取複製
 
     void verifySelectionFlow(const QString &stage);

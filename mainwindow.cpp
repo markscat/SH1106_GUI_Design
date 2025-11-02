@@ -85,14 +85,24 @@ MainWindow::MainWindow(QWidget *parent)
     m_toolButtonGroup->addButton(ui->ToolRectangle, Tool_Rectangle);
     m_toolButtonGroup->addButton(ui->ToolFilledRectangle, Tool_FilledRectangle);
     m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
-    //選取複製功能
-#ifdef SelectCopy
-    m_toolButtonGroup->addButton(ui->pushButton_SelectCopy, Tool_SelectCopy);
-        //ui->pushButton_SelectCopy->hide(); // 隱藏按鍵
-        //ui->pushButton_SelectCopy->setVisible(false);
 
-    m_toolButtonGroup->addButton(ui->pushButton_copy, Tool_copy);
-    m_toolButtonGroup->addButton(ui->pushButton_SelectCut, Tool_SelectCut);
+    //選取複製功能
+/*
+    Tool_Select,// pushButton_Select,
+    Tool_Copy,// pushButton_Copy,
+    Tool_Cut, //pushButton_Cut,
+    Tool_Paste//pushButton_paste
+ */
+#ifdef SelectCopy
+    // 隱藏按鍵的方式
+    //ui->pushButton_Select->hide();
+    //或
+    //ui->pushButton_Select->setVisible(false);
+
+    m_toolButtonGroup->addButton(ui->pushButton_Select, Tool_Select);
+    m_toolButtonGroup->addButton(ui->pushButton_copy, Tool_Copy);
+    m_toolButtonGroup->addButton(ui->pushButton_paste, Tool_Paste);
+    m_toolButtonGroup->addButton(ui->pushButton_Cut, Tool_Cut);
 
 #endif
     const QList<QAbstractButton*> &buttons = m_toolButtonGroup->buttons();

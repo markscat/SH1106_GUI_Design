@@ -66,7 +66,7 @@
         <x>0</x>
         <y>10</y>
         <width>141</width>
-        <height>310</height>
+        <height>347</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="ToolbarverticalLayout">
@@ -256,7 +256,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="Tool_pushButton_SelectCopy_Layout">
+        <layout class="QHBoxLayout" name="Tool_pushButton_Select_Layout">
          <item>
           <spacer name="horizontalSpacer_15">
            <property name="orientation">
@@ -271,9 +271,9 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_SelectCopy">
+          <widget class="QPushButton" name="pushButton_Select">
            <property name="text">
-            <string>選取複製</string>
+            <string>選取</string>
            </property>
           </widget>
          </item>
@@ -293,7 +293,7 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="Tool_pushButton_SelectCut_Layout">
+        <layout class="QHBoxLayout" name="Tool_pushButton_Cut_Layout">
          <item>
           <spacer name="horizontalSpacer_17">
            <property name="orientation">
@@ -308,9 +308,9 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_SelectCut">
+          <widget class="QPushButton" name="pushButton_Cut">
            <property name="text">
-            <string>選取剪下</string>
+            <string>剪下</string>
            </property>
           </widget>
          </item>
@@ -330,9 +330,9 @@
         </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="Tool_pushButton_copy_Layout">
+        <layout class="QHBoxLayout" name="Tool_pushButton_Copy_Layout">
          <item>
-          <spacer name="horizontalSpacer_13">
+          <spacer name="horizontalSpacer_19">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>
            </property>
@@ -348,6 +348,43 @@
           <widget class="QPushButton" name="pushButton_copy">
            <property name="text">
             <string>複製</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_20">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="Tool_pushButton_Paste_Layout">
+         <item>
+          <spacer name="horizontalSpacer_13">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_paste">
+           <property name="text">
+            <string>貼上</string>
            </property>
           </widget>
          </item>

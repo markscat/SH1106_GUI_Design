@@ -10,11 +10,14 @@ enum ToolType {
     Tool_Circle,
 #ifdef  SelectCopy
 
-    Tool_SelectCopy,// pushButton_SelectCopy,
-    Tool_SelectCut, //pushButton_SelectCut,
-    Tool_copy //pushButton_copy
+    Tool_Select,// pushButton_Select,
+    Tool_Copy,// pushButton_Copy,
+    Tool_Cut, //pushButton_Cut,
+    Tool_Paste//pushButton_paste
 #endif
     //之后可以继续添加 Triangle 等
 };
 
 #endif // TOOLTYPE_H
+
+//SelectCopy
