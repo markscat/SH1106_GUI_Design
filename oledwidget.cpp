@@ -722,6 +722,7 @@ void OLEDWidget::setBrushSize(int size)
 
 
 /*選取複製*/
+
 #ifdef SelectCopy
 // === Tool_Select ===
 void OLEDWidget::handleSelectPress(QMouseEvent *event)
@@ -816,6 +817,143 @@ QPoint OLEDWidget::convertToOLED(const QPoint &pos)
 
     return QPoint(x, y);
 }
+
+#ifdef QMessageBox_debug
+
+
+void OLEDWidget::showBufferDataAsHeader()
+{
+    // 如果沒有選取區域，就預設整個畫面
+    QRect region = m_selectedRegion.isValid() ? m_selectedRegion :
+                       QRect(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT);
+
+    int startPage = region.top() / 8;
+    int endPage = region.bottom() / 8;
+    int startX = region.left();
+    int endX = region.right();
+
+    QString output;
+    output += QString("// SH1106 partial update data (%1x%2)\n")
+                  .arg(region.width()).arg(region.height());
+    output += "const uint8_t partialFrame[] = {\n";
+
+    for (int page = startPage; page <= endPage; ++page) {
+        output += "    ";
+        for (int x = startX; x <= endX; ++x) {
+            int byte_index = page * RAM_PAGE_WIDTH + (x + COLUMN_OFFSET);
+            if (byte_index >= 0 && byte_index < sizeof(m_buffer)) {
+                uint8_t data = m_buffer[byte_index];
+                output += QString("0x%1, ").arg(data, 2, 16, QLatin1Char('0')).toUpper();
+            } else {
+                output += "0x00, ";
+            }
+        }
+        output += "\n";
+    }
+
+    output += "};\n";
+
+    // === 顯示在視窗中 ===
+    QDialog *dialog = new QDialog(this);
+    dialog->setWindowTitle("SH1106 .h 格式輸出");
+
+    QTextEdit *textEdit = new QTextEdit(dialog);
+    textEdit->setPlainText(output);
+    textEdit->setReadOnly(true);
+    textEdit->setFont(QFont("Courier", 10));
+    textEdit->setStyleSheet("background-color: #111; color: #0F0;");
+
+    QVBoxLayout *layout = new QVBoxLayout(dialog);
+    layout->addWidget(textEdit);
+
+    QPushButton *copyButton = new QPushButton("複製到剪貼簿", dialog);
+    QPushButton *closeButton = new QPushButton("關閉", dialog);
+    layout->addWidget(copyButton);
+    layout->addWidget(closeButton);
+
+    connect(copyButton, &QPushButton::clicked, [output]() {
+        QApplication::clipboard()->setText(output);
+    });
+    connect(closeButton, &QPushButton::clicked, dialog, &QDialog::accept);
+
+    dialog->resize(500, 400);
+    dialog->exec();
+}
+
+
+#endif
+
+#ifdef QMessageBox_debug_
+void OLEDWidget::showBufferDataDebug() {
+    if (m_selectedRegion.isNull()) {
+        QMessageBox::information(this, "Debug", "目前沒有選取區域。");
+        return;
+    }
+
+    QString debugText;
+    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
+        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
+            debugText += getPixel(x, y, m_buffer) ? "1" : "0";
+        }
+        debugText += "\n";
+    }
+
+    QMessageBox::information(this, "選取區內容", debugText);
+}
+
+
+
+
+void OLEDWidget::showBufferDataDebug()
+{
+    if (m_selectedRegion.isNull()) {
+        QMessageBox::information(this, "Debug", "目前沒有選取區域。");
+        return;
+    }
+
+    QString debugText;
+    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
+        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
+            debugText += getPixel(x, y, m_buffer) ? "1" : "0";
+        }
+        debugText += "\n";
+    }
+
+    // 建立對話框
+    QDialog *dialog = new QDialog(this);
+    dialog->setWindowTitle("選取區內容");
+
+    QTextEdit *textEdit = new QTextEdit(dialog);
+    textEdit->setPlainText(debugText);
+    textEdit->setReadOnly(true);
+    textEdit->setFont(QFont("Courier", 10)); // 等寬字體
+    textEdit->setStyleSheet("background-color: white; color: black;");
+
+    QVBoxLayout *layout = new QVBoxLayout(dialog);
+    layout->addWidget(textEdit);
+
+    QPushButton *closeButton = new QPushButton("關閉", dialog);
+    connect(closeButton, &QPushButton::clicked, dialog, &QDialog::accept);
+    layout->addWidget(closeButton);
+
+    dialog->resize(400, 300);
+    dialog->exec();
+}
+#endif
+#ifdef debug_select2
+void OLEDWidget::verifySelectionFlow(const QString &stage)
+{
+    qDebug() << "=== [" << stage << "] ===";
+    qDebug() << "Tool:" << m_currentTool;
+    qDebug() << "isSelecting:" << m_isSelecting;
+    qDebug() << "startPoint:" << m_startPoint;
+    qDebug() << "endPoint:" << m_endPoint;
+    qDebug() << "selectedRegion:" << m_selectedRegion;
+}
+#endif
+
+/*選取複製*/
+
 
 
 #ifdef SelectCopy_
@@ -945,73 +1083,3 @@ void OLEDWidget::cutSelection()
 }
 #endif
 
-
-
-void OLEDWidget::showBufferDataDebug()
-{
-    if (m_selectedRegion.isNull()) {
-        QMessageBox::information(this, "Debug", "目前沒有選取區域。");
-        return;
-    }
-
-    QString debugText;
-    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
-        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
-            debugText += getPixel(x, y, m_buffer) ? "1" : "0";
-        }
-        debugText += "\n";
-    }
-
-    // 建立對話框
-    QDialog *dialog = new QDialog(this);
-    dialog->setWindowTitle("選取區內容");
-
-    QTextEdit *textEdit = new QTextEdit(dialog);
-    textEdit->setPlainText(debugText);
-    textEdit->setReadOnly(true);
-    textEdit->setFont(QFont("Courier", 10)); // 等寬字體
-    textEdit->setStyleSheet("background-color: white; color: black;");
-
-    QVBoxLayout *layout = new QVBoxLayout(dialog);
-    layout->addWidget(textEdit);
-
-    QPushButton *closeButton = new QPushButton("關閉", dialog);
-    connect(closeButton, &QPushButton::clicked, dialog, &QDialog::accept);
-    layout->addWidget(closeButton);
-
-    dialog->resize(400, 300);
-    dialog->exec();
-}
-
-
-#ifdef QMessageBox_debug_
-void OLEDWidget::showBufferDataDebug() {
-    if (m_selectedRegion.isNull()) {
-        QMessageBox::information(this, "Debug", "目前沒有選取區域。");
-        return;
-    }
-
-    QString debugText;
-    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
-        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
-            debugText += getPixel(x, y, m_buffer) ? "1" : "0";
-        }
-        debugText += "\n";
-    }
-
-    QMessageBox::information(this, "選取區內容", debugText);
-}
-#endif
-#ifdef debug_select2
-void OLEDWidget::verifySelectionFlow(const QString &stage)
-{
-    qDebug() << "=== [" << stage << "] ===";
-    qDebug() << "Tool:" << m_currentTool;
-    qDebug() << "isSelecting:" << m_isSelecting;
-    qDebug() << "startPoint:" << m_startPoint;
-    qDebug() << "endPoint:" << m_endPoint;
-    qDebug() << "selectedRegion:" << m_selectedRegion;
-}
-#endif
-
-/*選取複製*/

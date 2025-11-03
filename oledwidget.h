@@ -7,6 +7,8 @@
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 64
 
+#include <QApplication>
+#include <QClipboard>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QTextEdit>
@@ -59,7 +61,8 @@ public slots:
     void setCurrentTool(ToolType tool);
     void setScale(int s);
     void handleCopy();
-    void showBufferDataDebug();
+    //void showBufferDataDebug();
+    void showBufferDataAsHeader();
 
 
 
@@ -172,7 +175,6 @@ private:
 
 #endif
     //選取複製
-
     void verifySelectionFlow(const QString &stage);
 };
 

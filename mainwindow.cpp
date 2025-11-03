@@ -418,16 +418,9 @@ void MainWindow::importImage()
 void MainWindow::on_pushButton_Copy_clicked()
 {
       qDebug() << "[Copy按鈕] 被點擊了";
-       m_oled->handleCopy();
-      m_oled->showBufferDataDebug(); // ✅ 呼叫你的除錯視窗
-
-      /*
-    if (auto oled = qobject_cast<OLEDWidget*>(ui->oledPlaceholder)) {
-        qDebug() << "[Copy按鈕] oledPlaceholder 類型:" << oled->metaObject()->className();
-        oled->handleCopy();
-    }else {
-        qDebug() << "[Copy按鈕] qobject_cast 失敗";
-    }*/
+      m_oled->handleCopy();
+      //m_oled->showBufferDataDebug(); // ✅ 呼叫你的除錯視窗
+      m_oled->showBufferDataAsHeader();
 }
 
 MainWindow::~MainWindow()

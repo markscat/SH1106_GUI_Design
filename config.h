@@ -7,5 +7,7 @@
 
 #define DrawTool
 
+#define QMessageBox_debug
+
 
 #endif // CONFIG_H
