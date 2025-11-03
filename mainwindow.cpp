@@ -13,6 +13,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+/*
+    if (ui->oledPlaceholder) {
+        // 建立真正的 OLEDWidget
+        OLEDWidget *oled = new OLEDWidget(this); // 父 widget 設為 MainWindow
+        oled->setObjectName("oledPlaceholder");
+
+        // 把原本的 placeholder 隱藏
+        ui->oledPlaceholder->hide();
+
+        // 直接用指標替換，ui 內存取會指向 OLEDWidget
+        ui->oledPlaceholder = oled;
+    }
+*/
+
     m_originalOledSize = ui->oledPlaceholder->size(); // 或 m_oled->sizeHint()
 
     // --- 建立並注入 OLEDWidget ---
@@ -100,9 +114,10 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->pushButton_Select->setVisible(false);
 
     m_toolButtonGroup->addButton(ui->pushButton_Select, Tool_Select);
-    m_toolButtonGroup->addButton(ui->pushButton_copy, Tool_Copy);
+    m_toolButtonGroup->addButton(ui->pushButton_Copy, Tool_Copy);
     m_toolButtonGroup->addButton(ui->pushButton_paste, Tool_Paste);
     m_toolButtonGroup->addButton(ui->pushButton_Cut, Tool_Cut);
+
 
 #endif
     const QList<QAbstractButton*> &buttons = m_toolButtonGroup->buttons();
@@ -390,8 +405,6 @@ void MainWindow::importImage()
                  mainwindow.cpp:340:63: Use of undeclared identifier 'COLUMN_OFFSET'
                  */
 
-
-
                 if (byte_index >= 0 && byte_index < 1024) { // 边界检查
                     buffer[byte_index] |= (1 << bit_index);
                 }
@@ -400,6 +413,21 @@ void MainWindow::importImage()
     }
     // 4. 将转换好的 buffer 发送到 OLEDWidget 显示
     m_oled->setBuffer(buffer);
+}
+
+void MainWindow::on_pushButton_Copy_clicked()
+{
+      qDebug() << "[Copy按鈕] 被點擊了";
+       m_oled->handleCopy();
+      m_oled->showBufferDataDebug(); // ✅ 呼叫你的除錯視窗
+
+      /*
+    if (auto oled = qobject_cast<OLEDWidget*>(ui->oledPlaceholder)) {
+        qDebug() << "[Copy按鈕] oledPlaceholder 類型:" << oled->metaObject()->className();
+        oled->handleCopy();
+    }else {
+        qDebug() << "[Copy按鈕] qobject_cast 失敗";
+    }*/
 }
 
 MainWindow::~MainWindow()

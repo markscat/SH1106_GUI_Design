@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
 #include <QDir>
 #include <QDateTime>
 #include <QFile>
@@ -26,6 +25,7 @@
 
 
 #include "ToolType.h"
+#include "oledwidget.h"
 
 class OLEDWidget; // 前向聲明
 
@@ -54,6 +54,8 @@ private slots:
     void saveData();
     void importImage(); // <-- 新增槽函式声明
     void updateCoordinateLabel(const QPoint &pos);
+
+    void on_pushButton_Copy_clicked();
 
 private:
     Ui::MainWindow *ui;

@@ -345,7 +345,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_copy">
+          <widget class="QPushButton" name="pushButton_Copy">
            <property name="text">
             <string>複製</string>
            </property>
@@ -572,7 +572,7 @@
      <x>0</x>
      <y>0</y>
      <width>1064</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

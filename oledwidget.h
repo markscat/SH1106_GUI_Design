@@ -7,11 +7,15 @@
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 64
 
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QTextEdit>
 #include <QWidget>
 #include <QImage>
 #include <QLabel>
 #include <QPoint> // 確保包含了 QPoint
 #include <QScrollArea>
+#include <QMessageBox> // 如果你還保留原本的 QMessageBox 提示
 #include "ToolType.h"
 
 #include "config.h"
@@ -54,6 +58,10 @@ public slots:
     // 這個 slot 讓 MainWindow 能設定當前工具
     void setCurrentTool(ToolType tool);
     void setScale(int s);
+    void handleCopy();
+    void showBufferDataDebug();
+
+
 
 protected:
     // 新增：覆寫滑鼠事件
@@ -73,9 +81,8 @@ protected:
     void handleSelectPress(QMouseEvent *event);
     void handleSelectMove(QMouseEvent *event);
     void handleSelectRelease(QMouseEvent *event);
-    void handleCopy();
 
-    void on_pushButton_Copy_clicked();
+    //void on_pushButton_Copy_clicked();
 
 
     QPoint convertToOLED(const QPoint &pos);

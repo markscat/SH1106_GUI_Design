@@ -6,7 +6,7 @@
 #include <QScrollBar>
 #include <algorithm>
 #include <cmath> // For circle drawing
-
+#include <QMessageBox>
 #include "config.h"
 
 
@@ -398,6 +398,13 @@ void OLEDWidget::wheelEvent(QWheelEvent *event)
 //mouse 三兄弟
 void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     //選取貼上
+
+#ifdef SelectCopy
+    if (m_currentTool == Tool_Select && m_isSelecting) {
+        handleSelectMove(event);
+    }
+#endif
+
 #ifdef SelectCopy_
 
 
@@ -759,8 +766,12 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
     QRect region = QRect(m_startPoint, m_endPoint).normalized();
 
     // 避免太小的誤觸框
-    if (region.width() < 2 && region.height() < 2)
+    if (region.width() < 2 && region.height() < 2){
+         qDebug() << "[handleSelectRelease] 選取框太小，清除";
         region = QRect();
+    }else {
+        qDebug() << "[handleSelectRelease] 選取框設定為:" << region;
+    }
 
     m_selectedRegion = region;
 
@@ -769,10 +780,12 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
 
 void OLEDWidget::handleCopy(){
-
+    qDebug() << "[handleCopy] 被呼叫了";
     if (!m_selectedRegion.isValid())
+    {
+        qDebug() << "[handleCopy] 沒有選取區域，直接 return";
         return; // 沒有選取框就不做
-
+    }
     // 建立與選取區一樣大小的暫存區
     m_clipboard = QImage(m_selectedRegion.size(), QImage::Format_Mono);
     m_clipboard.fill(0);
@@ -789,14 +802,6 @@ void OLEDWidget::handleCopy(){
     }
 
     qDebug() << "複製完成，區域大小:" << m_selectedRegion.size();
-}
-void OLEDWidget::on_pushButton_Copy_clicked()
-{
-#ifdef SelectCopy
-    if (m_currentTool == Tool_Select) {
-        handleCopy();
-    }
-#endif
 }
 #endif
 
@@ -940,7 +945,64 @@ void OLEDWidget::cutSelection()
 }
 #endif
 
-#ifdef debug_select
+
+
+void OLEDWidget::showBufferDataDebug()
+{
+    if (m_selectedRegion.isNull()) {
+        QMessageBox::information(this, "Debug", "目前沒有選取區域。");
+        return;
+    }
+
+    QString debugText;
+    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
+        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
+            debugText += getPixel(x, y, m_buffer) ? "1" : "0";
+        }
+        debugText += "\n";
+    }
+
+    // 建立對話框
+    QDialog *dialog = new QDialog(this);
+    dialog->setWindowTitle("選取區內容");
+
+    QTextEdit *textEdit = new QTextEdit(dialog);
+    textEdit->setPlainText(debugText);
+    textEdit->setReadOnly(true);
+    textEdit->setFont(QFont("Courier", 10)); // 等寬字體
+    textEdit->setStyleSheet("background-color: white; color: black;");
+
+    QVBoxLayout *layout = new QVBoxLayout(dialog);
+    layout->addWidget(textEdit);
+
+    QPushButton *closeButton = new QPushButton("關閉", dialog);
+    connect(closeButton, &QPushButton::clicked, dialog, &QDialog::accept);
+    layout->addWidget(closeButton);
+
+    dialog->resize(400, 300);
+    dialog->exec();
+}
+
+
+#ifdef QMessageBox_debug_
+void OLEDWidget::showBufferDataDebug() {
+    if (m_selectedRegion.isNull()) {
+        QMessageBox::information(this, "Debug", "目前沒有選取區域。");
+        return;
+    }
+
+    QString debugText;
+    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
+        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
+            debugText += getPixel(x, y, m_buffer) ? "1" : "0";
+        }
+        debugText += "\n";
+    }
+
+    QMessageBox::information(this, "選取區內容", debugText);
+}
+#endif
+#ifdef debug_select2
 void OLEDWidget::verifySelectionFlow(const QString &stage)
 {
     qDebug() << "=== [" << stage << "] ===";
