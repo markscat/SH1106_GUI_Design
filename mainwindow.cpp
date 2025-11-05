@@ -3,6 +3,8 @@
 #include "sample.h"
 #include "oledwidget.h"
 #include "ToolType.h"
+#include "config.h"
+
 
 //#define test_1029
 #define org_1025
@@ -246,11 +248,11 @@ void MainWindow::saveData()
 
 #define test2
     #ifdef test2
-    out << QString("const unsigned char image_%1[%2] = {\n    ").arg(timestamp).arg(RAM_PAGE_WIDTH * 8);
+    out << QString("const unsigned char image_%1[%2] = {\n    ").arg(timestamp).arg(OledConfig::RAM_PAGE_WIDTH * 8);
 
-    for (int i = 0; i < RAM_PAGE_WIDTH * 8; ++i) {
+    for (int i = 0; i < OledConfig::RAM_PAGE_WIDTH * 8; ++i) {
         out << QString("0x%1, ").arg(buffer[i], 2, 16, QChar('0'));
-        if ((i + 1) % 16 == 0 && i < RAM_PAGE_WIDTH * 8 - 1) {
+        if ((i + 1) % 16 == 0 && i < OledConfig::RAM_PAGE_WIDTH * 8 - 1) {
             out << "\n    ";
         }
     }
@@ -383,8 +385,8 @@ void MainWindow::importImage()
 
     // --- 将处理好的 QImage 转换为 SH1106 的 buffer 格式 ---
     // 这是最复杂的一步，我们需要写一个转换函式
-    uint8_t buffer[RAM_PAGE_WIDTH *8] = {0};
-    memset(buffer, 0x00, RAM_PAGE_WIDTH * 8); // 清空整個 SH1106 buffer
+    uint8_t buffer[OledConfig::RAM_PAGE_WIDTH *8] = {0};
+    memset(buffer, 0x00, OledConfig::RAM_PAGE_WIDTH * 8); // 清空整個 SH1106 buffer
 
     // 遍历处理后的 monoImage 的每一个像素
     for (int y = 0; y < monoImage.height(); ++y) {
@@ -399,11 +401,7 @@ void MainWindow::importImage()
                 int page = y / 8;
                 int bit_index = y % 8;
                 //int byte_index = page * 128 + x;
-                int byte_index = page * RAM_PAGE_WIDTH + (x + COLUMN_OFFSET);
-                 /*
-                 mainwindow.cpp:340:41: Use of undeclared identifier 'RAM_PAGE_WIDTH'
-                 mainwindow.cpp:340:63: Use of undeclared identifier 'COLUMN_OFFSET'
-                 */
+                int byte_index = page * OledConfig::RAM_PAGE_WIDTH + (x + OledConfig::COLUMN_OFFSET);
 
                 if (byte_index >= 0 && byte_index < 1024) { // 边界检查
                     buffer[byte_index] |= (1 << bit_index);
@@ -419,9 +417,16 @@ void MainWindow::on_pushButton_Copy_clicked()
 {
       qDebug() << "[Copy按鈕] 被點擊了";
       m_oled->handleCopy();
-      //m_oled->showBufferDataDebug(); // ✅ 呼叫你的除錯視窗
       m_oled->showBufferDataAsHeader();
 }
+void MainWindow::on_pushButton_paste_clicked()
+{
+    QRect region = m_oled->selectedRegion();
+    if (!region.isValid()) return;
+    m_oled->pasteBlock(region);
+}
+
+
 
 MainWindow::~MainWindow()
 {

@@ -1,27 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QDir>
-#include <QDateTime>
-#include <QFile>
-#include <QTextStream>
-#include <QPainter> // <--- 把这一行加进来！
-#include <QMessageBox>
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QDialog>
-#include <QPushButton>
-#include <QFileDialog>
-#include <QImageReader>
-#include <QImage>
-#include <QBuffer>
-#include <QCheckBox>
-#include <QScrollArea>  // ← 一定要加在最上方 include 區
-#include <QWheelEvent>
-#include <QScrollBar>
-#include <QButtonGroup> // 加入標頭檔
-#include <QSize>
 
 
 #include "ToolType.h"
@@ -56,6 +35,8 @@ private slots:
     void updateCoordinateLabel(const QPoint &pos);
 
     void on_pushButton_Copy_clicked();
+    void on_pushButton_paste_clicked();
+
 
 private:
     Ui::MainWindow *ui;
