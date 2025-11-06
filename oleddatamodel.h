@@ -18,15 +18,15 @@ public:
     OledDataModel();
 
     // --- 核心 Buffer 操作 ---
-    void setPixel(int x, int y, bool on);
+    void setPixel(int x, int y, bool on,int brushSize);
 
     bool getPixel(int x, int y) const;
     void clear();
 
     // --- 底層繪圖演算法 ---
-    void drawLine(int x0, int y0, int x1, int y1, bool on);
-    void drawRectangle(int x, int y, int w, int h, bool on, bool fill);
-    void drawCircle(const QPoint &p1, const QPoint &p2);
+    void drawLine(int x0, int y0, int x1, int y1, bool on,int brushSize);
+    void drawRectangle(int x, int y, int w, int h, bool on, bool fill,int brushSize);
+    void drawCircle(const QPoint &p1, const QPoint &p2,int brushSize);
 
     // --- 資料存取 ---
     //const uint8_t* getBuffer() const;

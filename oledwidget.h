@@ -66,10 +66,13 @@ private:
     void handleSelectPress(QMouseEvent *event);
     void handleSelectMove(QMouseEvent *event);
     void handleSelectRelease(QMouseEvent *event);
-    //void startPastePreview(const uint8_t* data, int width, int height)
-    void startPastePreview(const QVector<uint8_t>& data, int width, int height);
+    //void startPastePreview(const QVector<uint8_t>& data, int width, int height);   //ok
+    void startPastePreview(const QImage& logicalImage);
     void commitPaste();
 
+    
+    
+    
     // 新增：取得緩衝區數據，用於匯出
     //理由: 此功能现在由 MainWindow 直接调用 getHardwareBuffer() 实现，OLEDWidget 不再需要返回一个可能失效的内部指针。
     //const uint8_t* getBuffer() const;
@@ -79,7 +82,7 @@ private:
     //void loadBitmap(const uint8_t *data, int w, int h);
 
     //void  pasteBlock(const QRect &region);
-
+//void startPastePreview(const uint8_t* data, int width, int height)
 
 private:
 
@@ -153,9 +156,10 @@ private:
 
     bool m_pastePreviewActive = false;
     QPoint m_pastePosition = QPoint(0, 0);
-    int m_pasteWidth = 0;
+   /* int m_pasteWidth = 0;
     int m_pasteHeight = 0;
-    QVector<uint8_t> m_pasteData;
+    QVector<uint8_t> m_pasteData;*/
+    QImage m_pastePreviewImage;
 
     // ----- 新增 -----
     /* @brief 儲存選取區的暫存圖 (Format_Mono) */

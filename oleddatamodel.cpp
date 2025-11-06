@@ -22,11 +22,36 @@ void OledDataModel::clear()
 }
 
 // 核心操作變得極其簡單！
-void OledDataModel::setPixel(int x, int y, bool on)
+void OledDataModel::setPixel(int x, int y, bool on,int brushSize = 1)
 {
-    if (x >= 0 && x < OledConfig::DISPLAY_WIDTH && y >= 0 && y < OledConfig::DISPLAY_HEIGHT) {
-        m_logical_buffer[y * OledConfig::DISPLAY_WIDTH + x] = on;
+    if (brushSize <= 1) {
+        // 单点绘制
+        // 如果笔刷大小大于 1，就画一个方块
+        if (x >= 0 && x < OledConfig::DISPLAY_WIDTH && y >= 0 && y < OledConfig::DISPLAY_HEIGHT){
+            m_logical_buffer[y * OledConfig::DISPLAY_WIDTH + x] = on;
+        }
+
+
+    }else {
+        // 计算偏移量，使得笔刷以 (x, y) 为中心
+        // 例如，3x3 的笔刷，offset 是 1。循环 dx 从 0 到 2。
+        // x + dx - offset 的范围就是 x-1, x, x+1。
+        int offset = (brushSize - 1) / 2;
+
+        // 遍历笔刷覆盖的每一个点
+        for (int dy = 0; dy < brushSize; ++dy) {
+            for (int dx = 0; dx < brushSize; ++dx) {
+                int px = x + dx - offset;
+                int py = y + dy - offset;
+
+                // 对每一个点都进行边界检查
+                if (px >= 0 && px < OledConfig::DISPLAY_WIDTH && py >= 0 && py < OledConfig::DISPLAY_HEIGHT) {
+                    m_logical_buffer[py * OledConfig::DISPLAY_WIDTH + px] = on;
+                }
+            }
+        }
     }
+
 }
 
 bool OledDataModel::getPixel(int x, int y) const
@@ -40,14 +65,14 @@ bool OledDataModel::getPixel(int x, int y) const
 
 // --- 繪圖演算法 (現在它們都直接操作邏輯 buffer) ---
 
-void OledDataModel::drawLine(int x0, int y0, int x1, int y1, bool on)
+void OledDataModel::drawLine(int x0, int y0, int x1, int y1, bool on,int brushSize)
 {
     int dx = std::abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = -std::abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int err = dx + dy, e2;
 
     for (;;) {
-        setPixel(x0, y0, on); // 直接呼叫簡單的 setPixel
+        setPixel(x0, y0, on,brushSize); // 直接呼叫簡單的 setPixel
         if (x0 == x1 && y0 == y1) break;
         e2 = 2 * err;
         if (e2 >= dy) { err += dy; x0 += sx; }
@@ -55,7 +80,7 @@ void OledDataModel::drawLine(int x0, int y0, int x1, int y1, bool on)
     }
 }
 
-void OledDataModel::drawRectangle(int x, int y, int w, int h, bool on, bool fill)
+void OledDataModel::drawRectangle(int x, int y, int w, int h, bool on, bool fill,int brushSize)
 {
     int x0 = std::min(x, x + w);
     int y0 = std::min(y, y + h);
@@ -65,19 +90,19 @@ void OledDataModel::drawRectangle(int x, int y, int w, int h, bool on, bool fill
     if (fill) {
         for (int i = y0; i <= y1; ++i) {
             for (int j = x0; j <= x1; ++j) { // 實心矩形甚至可以更簡單
-                setPixel(j, i, on);
+                setPixel(j, i, on, brushSize);
             }
         }
     } else {
-        drawLine(x0, y0, x1, y0, on);
-        drawLine(x0, y1, x1, y1, on);
-        drawLine(x0, y0, x0, y1, on);
-        drawLine(x1, y0, x1, y1, on);
+        drawLine(x0, y0, x1, y0, on,brushSize);
+        drawLine(x0, y1, x1, y1, on,brushSize);
+        drawLine(x0, y0, x0, y1, on,brushSize);
+        drawLine(x1, y0, x1, y1, on,brushSize);
     }
 }
 
 // drawCircle 保持不變，因為它也是基於 setPixel 的
-void OledDataModel::drawCircle(const QPoint &p1, const QPoint &p2)
+void OledDataModel::drawCircle(const QPoint &p1, const QPoint &p2,int brushSize)
 {
     int x0 = std::min(p1.x(), p2.x());
     int y0 = std::min(p1.y(), p2.y());

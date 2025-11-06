@@ -111,22 +111,15 @@ void OLEDWidget::handleCopy(){
     }
 
     // 步驟 2 : 從 m_model 讀取像素
-    // 我们将选区内的像素数据读取到一个临时的、直观的逻辑格式中。
-    // QImage 是一个非常好的选择，因为它就是一种逻辑格式。
+    // 让 model 把选区复制成一个逻辑图像。
 
     QImage copiedLogicalData = m_model.copyRegionToLogicalFormat(m_selectedRegion);
 
-    // 步骤 3: "將讀取資料備份，把備份的資料轉換成硬體格式"
-    // 这个转换现在由一个专门的函数来完成。
-    // 我们把上一步得到的逻辑数据传入，让它翻译成硬件格式。
+   // QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(copiedLogicalData);
 
-    QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(copiedLogicalData);
-
-    // 步骤 4: (您的第五點) 启动贴上预览模式
-    startPastePreview(hardwareData, copiedLogicalData.width(), copiedLogicalData.height());
-
+    //  步骤 2: 直接用这个逻辑图像启动贴上预览
+    startPastePreview(copiedLogicalData);
 }
-
 
 void OLEDWidget::showBufferDataAsHeader()
 {
@@ -202,389 +195,352 @@ void OLEDWidget::showBufferDataAsHeader()
 }
 
 
+void OLEDWidget::paintEvent(QPaintEvent *event) {
+
+    QWidget::paintEvent(event);
+
+    QPainter painter(this);
 
 
+    // 步骤 1: 绘制 widget 的灰色背景，方便区分显示区域
+    painter.fillRect(rect(), Qt::darkGray);
 
+    // 步骤 2: 计算 OLED 图像的显示位置和大小
+    int scaled_width = OledConfig::DISPLAY_WIDTH * scale;
+    int scaled_height = OledConfig::DISPLAY_HEIGHT * scale;
 
-void OLEDWidget::paintEvent(QPaintEvent *) {
-
-    QPainter p(this);
-    p.fillRect(rect(), Qt::darkGray); // 背景色（方便看）
-    if (img.isNull()) return;
-
-    if (m_pastePreviewActive) {
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(128,128,128,128)); // 半透明灰色
-
-        //QPainter painter(this);
-        //painter.setPen(Qt::NoPen);
-        //painter.setBrush(Qt::gray); // 半透明預覽色
-
-
-        int pages = (m_pasteHeight + 7) / 8;
-        int index = 0;
-        for (int x = 0; x < m_pasteWidth; ++x) {
-            for (int page = 0; page < pages; ++page) {
-                if (index >= m_pasteData.size()) break;
-                uint8_t byte = m_pasteData[index++];
-                for (int bit = 0; bit < 8; ++bit) {
-                    int y = m_pastePosition.y() + page*8 + bit;
-                    if (y >= OledConfig::DISPLAY_HEIGHT) break;
-                    if (byte & (1 << bit)) {
-                        p.drawRect((m_pastePosition.x()+x)*scale,y*scale,scale, scale);
-                    }
-                }
-            }
-        }
-    }
-
-    if (m_isSelecting || m_isDraggingSelection) {
-        QPen pen(Qt::green);
-        pen.setStyle(Qt::DashLine);
-        p.setPen(pen);
-        p.drawRect(m_selectedRegion);
-    }
-
-    // --- 计算 OLED 图像的显示区域 (基于 DISPLAY_WIDTH 和 DISPLAY_HEIGHT) ---
-    // OLED 屏幕的实际像素尺寸
-    int oled_pixel_width = OledConfig::DISPLAY_WIDTH;
-    int oled_pixel_height = OledConfig::DISPLAY_HEIGHT;
-
-    // --- 计算 OLED 图像的显示区域 ---
-    int scaled_width = img.width() * scale;
-    int scaled_height = img.height() * scale;
-
+    // 计算偏移量，使其在 widget 中居中显示
     int x_offset = (width() - scaled_width) / 2;
     int y_offset = (height() - scaled_height) / 2;
 
-    // 绘制实际的 OLED 像素内容
-    // 這裡直接使用 p.drawImage 比逐像素繪製更有效率，如果 img 是 QImage 類型
-    // 如果 img 是 QImage，這裡可以直接寫：
-    p.drawImage(QRect(x_offset, y_offset, scaled_width, scaled_height), img);
+    QRect targetRect(x_offset, y_offset, scaled_width, scaled_height);
 
-    // 1. 绘制一个清晰的白色外边框
-    p.setPen(QPen(Qt::white, 1));
-    p.drawRect(x_offset, y_offset, scaled_width - 1, scaled_height - 1);
 
-    // 2. 绘制格线 (可选，但推荐)
+    // 步骤 3: 绘制核心的 OLED 屏幕图像 (m_image)
+    // 这是最高效的绘制方式，一次性将缓存的 QImage "贴"上去
+    painter.drawImage(targetRect, m_image);
+
+    // 步骤 4: 绘制边框和网格线，增强视觉效果
+    // 4.1 绘制白色外边框
+    painter.setPen(QPen(Qt::white, 1));
+    // adjusted(-1, -1) 是为了让边框完全落在绘制区域内，避免被裁切
+    painter.drawRect(targetRect.adjusted(0, 0, -1, -1));// adjusted 确保边框在内侧
+
+    // 4.2 如果缩放比例足够大，绘制像素网格
     if (scale >= 4) {
-        QPen grid_pen(QColor(128, 128, 128, 100), 1);
-        p.setPen(grid_pen);
+        QPen grid_pen(QColor(128, 128, 128, 100), 1); // 半透明灰色
+        painter.setPen(grid_pen);
 
-        for (int i = 1; i < img.width(); ++i) {
-            p.drawLine(x_offset + i * scale, y_offset, x_offset + i * scale, y_offset + scaled_height);
+        // 绘制垂直线
+        for (int i = 1; i < OledConfig::DISPLAY_WIDTH; ++i) {
+            painter.drawLine(x_offset + i * scale, y_offset, x_offset + i * scale, y_offset + scaled_height);
         }
-        for (int j = 1; j < img.height(); ++j) {
-            p.drawLine(x_offset, y_offset + j * scale, x_offset + scaled_width, y_offset + j * scale);
+        // 绘制水平线
+        for (int j = 1; j < OledConfig::DISPLAY_HEIGHT; ++j) {
+            painter.drawLine(x_offset, y_offset + j * scale, x_offset + scaled_width, y_offset + j * scale);
         }
     }
 
-    // 【核心改動在這裡】直接用 QPainter 繪製預覽圖形
-    if (m_isDrawing && m_currentTool != Tool_Pen) {
-        // 設定預覽線的樣式
-        QPen previewPen(Qt::blue, 1); // 藍色，1像素寬
-        // previewPen.setStyle(Qt::DotLine); // 可以設定虛線效果，讓預覽更明顯
-        p.setPen(previewPen);
-        p.setBrush(Qt::NoBrush); // 預覽通常不填滿
+    if (m_pastePreviewActive && !m_pastePreviewImage.isNull()) {
+        // 使用 QPainter 的透明度功能，效果更好且代码更简单
+        painter.setOpacity(0.65); // 设置 65% 的不透明度
 
-        // 將 m_startPoint 和 m_endPoint 轉換為螢幕上的像素座標
-        int screen_x0 = x_offset + m_startPoint.x() * scale;
-        int screen_y0 = y_offset + m_startPoint.y() * scale;
-        int screen_x1 = x_offset + m_endPoint.x() * scale;
-        int screen_y1 = y_offset + m_endPoint.y() * scale;
+        // 计算预览图像在 widget 上的目标绘制矩形
+        const QRect previewTargetRect(
+            x_offset + m_pastePosition.x() * scale,
+            y_offset + m_pastePosition.y() * scale,
+            m_pastePreviewImage.width() * scale,
+            m_pastePreviewImage.height() * scale
+            );
 
-        // 計算矩形或圓形繪圖所需的正確座標和尺寸
-        // 確保寬度和高度為正值，從左上角開始繪製
-        int preview_x = std::min(screen_x0, screen_x1);
-        int preview_y = std::min(screen_y0, screen_y1);
-        int preview_w = std::abs(screen_x1 - screen_x0);
-        int preview_h = std::abs(screen_y1 - screen_y0);
+        // [核心简化] 直接让 QPainter 绘制整个预览 QImage，无需我们手动循环
+        painter.drawImage(previewTargetRect, m_pastePreviewImage);
+
+        painter.setOpacity(1.0); // 绘制完毕后，恢复不透明度，以免影响后续绘制
+    }
+
+    // 2.2 绘制非画笔工具的拖拽预览 (如画线、画矩形)
+    if (m_isDrawing && m_currentTool != Tool_Pen && m_currentTool != Tool_Select) {
+        QPen previewPen(Qt::cyan, 1, Qt::DotLine); // 亮蓝色虚线，更像预览
+        painter.setPen(previewPen);
+        painter.setBrush(Qt::NoBrush); // 预览通常不填充
+
+        // 将逻辑坐标的起始点和结束点转换为屏幕坐标的矩形
+        QRectF previewLogicalRect(m_startPoint, m_endPoint);
+
+        QRectF previewScreenRect(
+            x_offset + previewLogicalRect.left() * scale,
+            y_offset + previewLogicalRect.top() * scale,
+            previewLogicalRect.width() * scale,
+            previewLogicalRect.height() * scale
+            );
+
+        previewScreenRect = previewScreenRect.normalized();
 
         switch (m_currentTool) {
         case Tool_Line:
-            p.drawLine(screen_x0, screen_y0, screen_x1, screen_y1);
+            painter.drawLine(x_offset + m_startPoint.x() * scale, y_offset + m_startPoint.y() * scale,
+                             x_offset + m_endPoint.x() * scale,   y_offset + m_endPoint.y() * scale);
             break;
         case Tool_Rectangle:
-            p.drawRect(preview_x, preview_y, preview_w, preview_h);
+            painter.drawRect(previewScreenRect);
             break;
         case Tool_FilledRectangle:
-            // 實心矩形的預覽可以選擇只畫邊框，或者畫半透明填充
-            p.setBrush(QColor(0, 0, 255, 50)); // 半透明藍色填充
-            p.drawRect(preview_x, preview_y, preview_w, preview_h);
-            p.setBrush(Qt::NoBrush); // 畫完後恢復不填充
+            // 填充矩形的预览可以只画框，也可以画半透明填充
+            painter.setBrush(QColor(0, 0, 255, 50));
+            painter.drawRect(previewScreenRect);
             break;
         case Tool_Circle:
-            // 繪製橢圓，以拖曳的矩形作為外接矩形
-            p.drawEllipse(preview_x, preview_y, preview_w, preview_h);
+            painter.drawEllipse(previewScreenRect);
             break;
         default:
             break;
         }
-    }
 
-#ifdef SelectCopy
+        // 2.3 绘制选区虚线框 (最高层)
+        if (m_isSelecting || m_selectedRegion.isValid()) {
+            QPen selectionPen(Qt::yellow, 1, Qt::DashLine);
+            painter.setPen(selectionPen);
+            painter.setBrush(Qt::NoBrush);
 
-    if (m_isSelecting || m_selectedRegion.isValid()) {
-            qDebug() << "選取框:" << m_selectedRegion;
-        QPainter painter(this);
+            QRect rectToDraw = m_isSelecting ? QRect(m_startPoint, m_endPoint).normalized() : m_selectedRegion;
 
-        painter.setRenderHint(QPainter::Antialiasing, false);
-        QPen pen(Qt::yellow, 1, Qt::DashLine); // 虛線框
-        painter.setPen(pen);
-        painter.setBrush(Qt::NoBrush);
-
-        QRect rect;
-
-        if (m_isSelecting) {
-            int x1 = std::min(m_startPoint.x(), m_endPoint.x());
-            int y1 = std::min(m_startPoint.y(), m_endPoint.y());
-            int x2 = std::max(m_startPoint.x(), m_endPoint.x());
-            int y2 = std::max(m_startPoint.y(), m_endPoint.y());
-            rect = QRect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
-        } else {
-            rect = m_selectedRegion;
+            const QRect scaledRect(
+                x_offset + rectToDraw.x() * scale,
+                y_offset + rectToDraw.y() * scale,
+                rectToDraw.width() * scale,
+                rectToDraw.height() * scale
+                );
+            painter.drawRect(scaledRect);
         }
-
-        // 放大顯示（轉成 widget 座標）
-        QRect scaledRect(
-            rect.x() * scale,
-            rect.y() * scale,
-            rect.width() * scale,
-            rect.height() * scale
-            );
-
-        painter.drawRect(scaledRect);
     }
 
-        //qDebug() << "paintEvent: drawing rect" << rect << "-> GUI:" << guiRect;
-#endif
-
 }
-
-
-
-void OLEDWidget::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        int delta = event->angleDelta().y();
-        if (delta > 0)
-            setScale(scale + 1);
-        else if (delta < 0 && scale > 1)
-            setScale(scale - 1);
-        event->accept();
-    } else {
-        QWidget::wheelEvent(event);
-    }
-}
-
 //mouse 三兄弟
-void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
-
-    //選取貼上程式段開始
-#ifdef SelectCopy
-    if (m_currentTool == Tool_Select && m_isSelecting) {
-        handleSelectMove(event);
-    }
-
-    if (m_pastePreviewActive && event->buttons() & Qt::LeftButton) {
-        m_pastePosition = event->pos();
-        update();
-    }
-
-
-#endif
-
-    //選取貼上程式段結束
-
-    if (!m_isDrawing) return;
-
-    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
-    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
-
-    // 檢查座標是否在畫布內，避免預覽圖形畫到外面去
-    oled_x = std::clamp(oled_x, 0, img.width() - 1);
-    oled_y = std::clamp(oled_y, 0, img.height() - 1);
-
-    // 【新增】發送信號，將當前座標廣播出去
-    emit coordinatesChanged(QPoint(oled_x, oled_y));
-
-    // 🔹 新增這行，讓拖曳時即時更新 m_endPoint
-    m_endPoint = QPoint(oled_x, oled_y);
-
-    if (event->buttons() & Qt::LeftButton) {
-        if (m_currentTool == Tool_Pen) {
-            // 左鍵筆工具：即時畫線
-            // 從上一個點 (m_startPoint) 畫到當前點 (m_endPoint)
-            drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, true,m_buffer);
-            m_startPoint = QPoint(oled_x, oled_y);
-            updateImageFromBuffer();
-        }
-        // 對於其他工具 (線、矩形、圓)，只需更新 m_endPoint
-        // 實際繪製預覽線會在 paintEvent 中根據 m_startPoint 和 m_endPoint 進行
-
-    } else if (event->buttons() & Qt::RightButton ){
-
-        if (m_currentTool == Tool_Pen){
-            // 右鍵筆工具：即時擦除線
-            drawLine(m_startPoint.x(), m_startPoint.y(), oled_x, oled_y, false,m_buffer);
-            m_startPoint = m_endPoint;
-            updateImageFromBuffer();
-        }
-
-        // 對於其他工具，右鍵在 mousePressEvent 時已經被定義為取消操作，
-        // 所以這裡不需要做額外處理。如果右鍵被按著移動，應該是在取消繪圖後，
-        // 就不應該再進行繪圖邏輯。
-    }
-    update();
-}
 
 void OLEDWidget::mousePressEvent(QMouseEvent *event) {
 
-    int oled_x = (event->pos().x() - (width() - img.width() * scale) / 2) / scale;
-    int oled_y = (event->pos().y() - (height() - img.height() * scale) / 2) / scale;
+    // 步骤 1: 将 Qt 的 widget 坐标转换为我们的 OLED 逻辑坐标
+    const QPoint oled_pos = convertToOLED(event->pos());
 
-    // 限制在畫布範圍內
-    oled_x = std::clamp(oled_x, 0, img.width() - 1);
-    oled_y = std::clamp(oled_y, 0, img.height() - 1);
+    // 步骤 2: [高优先级] 检查是否处于“贴上预览”模式
+    if (m_pastePreviewActive) {
+        if (event->button() == Qt::LeftButton) {
+            // 如果是左键点击，确认贴上
+            commitPaste();
+        } else {
+            // 任何其他按键 (右键, 中键) 都取消贴上
+            m_pastePreviewActive = false;
+            m_pastePreviewImage = QImage(); // 清空预览图像
+            update(); // 更新画面以移除预览
+        }
+        return; // 贴上模式下，不进行其他任何绘图操作
+    }
 
-#ifdef SelectCopy
-    if (m_currentTool == Tool_Select) {
+    // 步骤 3: 根据当前选择的工具，分发事件
+    switch (m_currentTool) {
+    case Tool_Select:
+        // 选区工具的 press 事件单独处理
         handleSelectPress(event);
+        break;
+
+    case Tool_Pen:
+        // --- 画笔工具的逻辑 ---
+        m_isDrawing = true;     // 开始绘制状态
+        m_startPoint = oled_pos; // 记录起点
+        m_endPoint = oled_pos;   // 终点与起点相同
+
+        if (event->button() == Qt::LeftButton) {
+            // 左键：调用 model 画点 (应用笔刷大小)
+            // [注意] 我们需要为 OledDataModel 添加一个带笔刷的 setPixel
+            m_model.setPixel(oled_pos.x(), oled_pos.y(), true, m_brushSize);
+            updateImageFromModel(); // 数据已变，立即更新画面
+        } else if (event->button() == Qt::RightButton) {
+            // 右键：调用 model 擦除点 (应用笔刷大小)
+            m_model.setPixel(oled_pos.x(), oled_pos.y(), false, m_brushSize);
+            updateImageFromModel(); // 数据已变，立即更新画面
+        }
+        break;
+
+    case Tool_Line:
+    case Tool_Rectangle:
+    case Tool_FilledRectangle:
+    case Tool_Circle:
+        // --- 其他形状工具的逻辑 (它们的 press 逻辑都一样) ---
+        if (event->button() == Qt::LeftButton) {
+            m_isDrawing = true;     // 开始绘制状态
+            m_startPoint = oled_pos; // 记录起点
+            m_endPoint = oled_pos;   // 终点与起点相同
+            update(); // 更新一下，以便 paintEvent 可以开始画预览
+        }
+        // 对于形状工具，右键点击可以理解为“取消本次操作”，所以什么都不做
+        break;
+
+    default:
+        // 其他未知工具，不做任何事
+        break;
+    }
+
+    // 调用基类实现
+    QWidget::mousePressEvent(event);
+
+}
+
+void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
+
+
+    // 步骤 1: 坐标转换，并发射信号让 MainWindow 显示
+    const QPoint oled_pos = convertToOLED(event->pos());
+    emit coordinatesChanged(oled_pos);
+
+    // 步骤 2: [高优先级] 检查是否处于“贴上预览”模式
+    if (m_pastePreviewActive) {
+        m_pastePosition = oled_pos; // 更新预览图的左上角位置
+        update();                   // 触发重绘，让 paintEvent 画出移动后的预览
+        return;                     // 贴上模式下，不进行其他任何操作
+    }
+
+
+    // 步骤 3: 如果鼠标没有被按下（只是悬停移动），则不进行任何绘图/选区操作
+    // m_isDrawing 标志在 press 时设置，在 release 时清除
+    if (!m_isDrawing) {
+        QWidget::mouseMoveEvent(event); // 调用基类实现
         return;
     }
 
-    if (m_currentTool == Tool_Select) {
-        QPoint pos = convertToOLED(event->pos());
 
-        // 👉 右鍵拖曳選取框
-        if (event->button() == Qt::RightButton) {
-            if (m_selectedRegion.contains(pos)) {
-                m_dragOffset = pos - m_selectedRegion.topLeft();
-                m_dragStartRegion = m_selectedRegion;   // ✅ 記錄原始框位置
-                m_isDraggingSelection = true;
-            }
-            return;
+    // 步骤 4: 更新当前鼠标位置作为“终点”
+    m_endPoint = oled_pos;
+
+    // 步骤 5: 根据当前工具，分发事件
+    switch (m_currentTool) {
+    case Tool_Select:
+        // 选区工具的 move 事件单独处理
+        handleSelectMove(event);
+        break;
+
+    case Tool_Pen:
+    { // 使用花括号创建一个作用域
+        // --- 画笔工具的逻辑：实时绘制 ---
+        bool isLeftButton = event->buttons() & Qt::LeftButton;
+        bool isRightButton = event->buttons() & Qt::RightButton;
+
+        if (isLeftButton || isRightButton) {
+            // 指挥“绘图引擎”在起点和当前点之间，用指定笔刷画一条线
+            m_model.drawLine(m_startPoint.x(), m_startPoint.y(),
+                             m_endPoint.x(), m_endPoint.y(),
+                             isLeftButton,      // true 为画，false 为擦除
+                             m_brushSize);      // 使用当前笔刷大小
+
+            // 【重要】将当前点更新为下一次移动的“起点”，以形成连续轨迹
+            m_startPoint = m_endPoint;
+
+            // 数据模型已改变，立即同步视图
+            updateImageFromModel();
         }
+        break;
     }
 
-#endif
+    case Tool_Line:
+    case Tool_Rectangle:
+    case Tool_FilledRectangle:
+    case Tool_Circle:
+        // --- 其他形状工具的逻辑：只更新预览 ---
+        // 我们只需要更新 m_endPoint (前面已完成)，然后触发一次重绘。
+        // 真正的绘制逻辑在 paintEvent 中，它会根据 m_startPoint 和 m_endPoint 绘制预览线框。
+        update();
+        break;
 
-#ifdef SelectCopy_
-
-    if (m_currentTool == Tool_Select) {
-        QPoint pos = convertToOLED(event->pos());
-
-        // 👉 右鍵拖曳選取框
-        if (event->button() == Qt::RightButton) {
-            if (m_selectedRegion.contains(pos)) {
-                m_dragOffset = pos - m_selectedRegion.topLeft();
-                m_dragStartRegion = m_selectedRegion;   // ✅ 記錄原始框位置
-                m_isDraggingSelection = true;
-            }
-            return;
-        }
-
-        // 👉 左鍵開始選取
-        if (event->button() == Qt::LeftButton) {
-            m_startPoint = pos;
-            m_endPoint = pos;
-            m_isSelecting = true;
-            update();
-            return;
-        }
+    default:
+        break;
     }
 
-#endif
-
-    // 不論左右鍵，m_startPoint 都是第一次點擊的位置
-    m_startPoint = QPoint(oled_x, oled_y);
-    m_endPoint   = m_startPoint; // 初始時終點與起點相同
-    m_isDrawing  = true; // 點擊時就認為開始繪圖 (拖曳可能會發生)
-
-
-    // 左鍵畫圖
-    if (event->button() == Qt::LeftButton) {
-        if (m_currentTool == Tool_Pen) {
-            setPixel(oled_x, oled_y, true);
-            updateImageFromBuffer();
-        }
-    }
-    // 對於其他工具，只需設定 m_isDrawing = true 和 m_startPoint，
-    // 實際的預覽會在 mouseMoveEvent -> update() -> paintEvent 裡處理
-    // 實際繪製會在 mouseReleaseEvent 裡處理
-    else if (event->button() == Qt::RightButton){
-        if(m_currentTool == Tool_Pen){
-            setPixel(oled_x, oled_y, false);
-            updateImageFromBuffer(); // ✅ 右鍵清除也即時更新
-        }else{
-            m_isDrawing = false;
-            m_startPoint = QPoint(-1, -1);
-            m_endPoint = QPoint(-1, -1);
-            update(); // 清掉預覽線
-        }
-
-    }
-    update();
-
+    QWidget::mouseMoveEvent(event);
 }
 
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
 
-#ifdef SelectCopy
-    if (m_currentTool == Tool_Select && event->button() == Qt::LeftButton) {
-        handleSelectRelease(event);
-        return;
-    }
-#endif
-
-
-
-    // 如果不是在繪圖狀態，就直接返回
+    // 步骤 1: [高优先级] 检查是否正在进行绘图或选区操作
+    // 如果 m_isDrawing 为 false，说明可能只是一个简单的点击然后释放，
+    // 或者是一个被 press 事件取消的操作，直接返回即可。
     if (!m_isDrawing) {
+        QWidget::mouseReleaseEvent(event);
         return;
     }
 
+    // 步骤 2: 更新终点坐标 (确保即使用户只是点击一下没有移动，终点也是有效的)
+    const QPoint oled_pos = convertToOLED(event->pos());
+    m_endPoint = oled_pos;
 
-    if (event->button() == Qt::LeftButton) {
-        int x0 = m_startPoint.x();
-        int y0 = m_startPoint.y();
-        int x1 = m_endPoint.x();
-        int y1 = m_endPoint.y();
 
-        // 除了 Pen，其他圖形在滑鼠釋放時才真正繪製到 buffer
-        switch (m_currentTool) {
-        case Tool_Line:
-            drawLine(x0, y0, x1, y1, true, m_buffer);
-            break;
-        case Tool_Rectangle:
-            drawRectangle(x0, y0, x1 - x0, y1 - y0, true, false, m_buffer);
-            break;
-        case Tool_FilledRectangle:
-            drawRectangle(x0, y0, x1 - x0, y1 - y0, true, true, m_buffer);
-            break;
-        case Tool_Circle:
-        {
-            drawCircle(m_startPoint, m_endPoint, m_buffer);
-            break;
+    // 步骤 3: 根据当前工具，分发事件
+    switch (m_currentTool) {
+    case Tool_Select:
+        // 选区工具的 release 事件单独处理
+        handleSelectRelease(event);
+        break;
+
+    case Tool_Pen:
+        // 对于画笔工具，所有的绘制工作都在 press 和 move 事件中完成了。
+        // release 事件只需要做一件事：结束“正在绘制”的状态。
+        // 无需调用任何绘图函数。
+        break;
+
+    case Tool_Line:
+        // --- 直线工具：最终绘制 ---
+        if (event->button() == Qt::LeftButton) {
+            // 指挥“绘图引擎”在起点和终点之间，画一条 1 像素宽的线
+            m_model.drawLine(m_startPoint.x(), m_startPoint.y(),
+                             m_endPoint.x(), m_endPoint.y(),
+                             true,m_brushSize); // on=true, brushSize=1
+            updateImageFromModel(); // 数据已变，同步视图
         }
-        default: // 包括 Pen
-            break;
-        }
+        break;
 
-        // 【重要】在所有繪圖演算法執行完畢後，
-        // 只有在非畫筆工具時，才需要在這裡做一次最終的畫面更新。
-        if (m_currentTool != Tool_Pen) {
-            updateImageFromBuffer();
+    case Tool_Rectangle:
+        // --- 矩形工具：最终绘制 ---
+        if (event->button() == Qt::LeftButton) {
+            const QRect rect = QRect(m_startPoint, m_endPoint).normalized();
+            // 指挥引擎画一个不填充的、1 像素宽的矩形
+            m_model.drawRectangle(rect.x(), rect.y(), rect.width(), rect.height(),
+                                  true, false, 1); // on=true, fill=false, brushSize=1
+            updateImageFromModel();
         }
+        break;
 
+    case Tool_FilledRectangle:
+        // --- 实心矩形工具：最终绘制 ---
+        if (event->button() == Qt::LeftButton) {
+            const QRect rect = QRect(m_startPoint, m_endPoint).normalized();
+            // 指挥引擎画一个填充的、1 像素宽边框的矩形
+            m_model.drawRectangle(rect.x(), rect.y(), rect.width(), rect.height(),
+                                  true, true, 1); // on=true, fill=true, brushSize=1
+            updateImageFromModel();
+        }
+        break;
+
+    case Tool_Circle:
+        // --- 圆形工具：最终绘制 ---
+        if (event->button() == Qt::LeftButton) {
+            // 指挥引擎在起点和终点构成的矩形内，画一个 1 像素宽的椭圆
+            m_model.drawCircle(m_startPoint, m_endPoint, 1); // brushSize=1
+            updateImageFromModel();
+        }
+        break;
+
+    default:
+        break;
     }
-    m_isDrawing = false;
-    //選取貼上
 
-    //選取貼上
-    // 最後再呼叫一次 update() 來清除預覽圖形 (藍色線)
-    // 因為此時 m_isDrawing 已經是 false，paintEvent 中的預覽繪圖邏輯不會再執行
+    // 步骤 4: [重要] 无论是什么工具，在鼠标释放后，都必须结束“正在绘制”的状态
+    m_isDrawing = false;
+
+    // 步骤 5: [重要] 调用 update() 清除所有预览图形
+    // 因为 m_isDrawing 现在是 false，paintEvent 中的预览绘制逻辑将不会执行，
+    // 从而达到清除蓝色预览线框和黄色选区框（如果是正在选区）的效果。
     update();
+
+    QWidget::mouseReleaseEvent(event);
 }
 
 //mouse 三兄弟
@@ -629,6 +585,24 @@ void OLEDWidget::updateImageFromBuffer()
     setMinimumSize(img.width() * scale, img.height() * scale);
     update(); // 觸發 paintEvent
 }
+
+
+
+
+void OLEDWidget::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        int delta = event->angleDelta().y();
+        if (delta > 0)
+            setScale(scale + 1);
+        else if (delta < 0 && scale > 1)
+            setScale(scale - 1);
+        event->accept();
+    } else {
+        QWidget::wheelEvent(event);
+    }
+}
+
 
 // ↓↓↓↓ 請將這個完整的函式實作，加入到 oledwidget.cpp 檔案中 ↓↓↓↓
 const uint8_t* OLEDWidget::getBuffer() const
@@ -716,23 +690,17 @@ QPoint OLEDWidget::convertToOLED(const QPoint &pos)
 
 #ifdef Past_Function
 
-void OLEDWidget::startPastePreview(const QVector<uint8_t>& data, int width, int height)
-/*oledwidget.cpp:759:60: Passing argument to parameter 'data' here
-oledwidget.cpp:856:23: Passing argument to parameter 'data' here*/
+//private Function begin
+
+void OLEDWidget::startPastePreview(const QImage& logicalImage)
 {
+
+    if (logicalImage.isNull() || logicalImage.format() != QImage::Format_Mono) {
+        return; // 不接受无效或非单色的图像
+    }
     m_pastePreviewActive = true;
-    m_pasteWidth = width;
-    m_pasteHeight = height;
-    m_pastePosition = QPoint(0, 0);
-
-    // [关键修改]
-    // 直接将传入的 QVector 赋值给成员变量 m_pasteData
-    // QVector 会自动处理内存的复制和管理，非常安全。
-    m_pasteData = data;
-
-
-    //  m_pasteData = QVector<uint8_t>(data, data + width * ((height + 7) / 8));
-
+    m_pastePreviewImage = logicalImage; // 直接存储 QImage
+    m_pastePosition = QPoint(0, 0);   // 重置预览位置
     update();
 }
 
@@ -742,6 +710,9 @@ void OLEDWidget::keyPressEvent(QKeyEvent *event)
         confirmPasteDialog();
     }
 }
+
+//private Function End
+
 
 void OLEDWidget::confirmPasteDialog()
 {
@@ -768,30 +739,26 @@ void OLEDWidget::confirmPasteDialog()
 
 void OLEDWidget::commitPaste()
 {
-    int x0 = m_pastePosition.x();
-    int y0 = m_pastePosition.y();
-    int pages = (m_pasteHeight + 7) / 8;
-    int index = 0;
+    if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
+        return;
+    }
 
-    for (int x = 0; x < m_pasteWidth; ++x) {
-        for (int page = 0; page < pages; ++page) {
-            uint8_t byte = m_pasteData[index++];
-            for (int bit = 0; bit < 8; ++bit) {
-                int y = y0 + page * 8 + bit;
-                if (y >= OledConfig::DISPLAY_HEIGHT) continue;
-                bool pixelOn = byte & (1 << bit);
-                setPixel(x0 + x, y, pixelOn, m_buffer);
+    for (int y = 0; y < m_pastePreviewImage.height(); ++y) {
+        for (int x = 0; x < m_pastePreviewImage.width(); ++x) {
+            // 如果预览图像在该点是亮的 (颜色索引为1)
+            if (m_pastePreviewImage.pixelIndex(x, y) == 1) {
+                // 计算要写入到 m_model 的目标坐标
+                int targetX = m_pastePosition.x() + x;
+                int targetY = m_pastePosition.y() + y;
+                // 调用 m_model 的 setPixel
+                m_model.setPixel(targetX, targetY, true);
             }
         }
     }
-    qDebug() << "[貼上狀態] active:" << m_pastePreviewActive
-             << " size:" << m_pasteData.size()
-             << " pos:" << m_pastePosition
-             << " w:" << m_pasteWidth << " h:" << m_pasteHeight;
 
-    m_pastePreviewActive = false;
-    updateImageFromBuffer();
-    update();
+    m_pastePreviewActive = false; // 结束贴上模式
+    updateImageFromModel();       // 从 m_model 更新主显示图像
+
 }
 
 /*
