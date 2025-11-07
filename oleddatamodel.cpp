@@ -178,7 +178,7 @@ void OledDataModel::setFromHardwareBuffer(const uint8_t* data)
     }
 }
 
-copiedLogicalData
+
 QImage OledDataModel::copyRegionToLogicalFormat(const QRect& region) const
 {
     // 确保 region 在有效范围内

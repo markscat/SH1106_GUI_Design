@@ -546,76 +546,116 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
 //mouse 三兄弟
 
 
+void OLEDWidget::wheelEvent(QWheelEvent *event)
+{
+    // 步骤 1: 检查用户是否同时按下了 "Control" 键
+    // event->modifiers() 返回一个标志位，表示事件发生时有哪些修饰键 (Ctrl, Shift, Alt) 被按下
+    // 我们用位与 (&) 运算来检查是否包含了 Qt::ControlModifier 这个标志
+
+    if (event->modifiers() & Qt::ControlModifier) {
+
+        // 步骤 2: 获取滚轮滚动的方向和幅度
+        // event->angleDelta().y() 返回垂直方向的滚动角度。
+        // 通常，向前滚动 (放大) 是一个正值 (如 120)，向后滚动 (缩小) 是一个负值 (如 -120)。
+
+        int delta = event->angleDelta().y();
+        if (delta > 0)// 向前滚动，放大
+            setScale(scale + 1);
+        else if (delta < 0 && scale > 1)// 向后滚动，缩小
+            setScale(scale - 1);
+
+
+        // 步骤 3: “接受”这个事件
+        // event->accept() 是在告诉 Qt：“这个滚轮事件我已经处理了，
+        // 你不需要再把它传递给父 widget 或进行其他默认处理了。”
+        event->accept();
+    } else {
+
+        // 步骤 4: 如果没有按下 Ctrl 键，我们不做任何特殊处理
+        // 比如，用户可能只是想滚动外面的 QScrollArea (如果我们未来有的话)
+        // 所以，我们应该把这个事件交给基类去进行它的默认处理。
+        QWidget::wheelEvent(event);
+    }
+}
+
+
 void OLEDWidget::leaveEvent(QEvent *event)
 {
     // 當滑鼠離開 widget 時，發送一個無效座標 (-1, -1)
     emit coordinatesChanged(QPoint(-1, -1));
     QWidget::leaveEvent(event);
 }
+ // 确保包含了 QKeyEvent
 
-// ↓↓↓↓ 把這個完整的函式實作，複製貼上到你的 oledwidget.cpp 檔案中 ↓↓↓↓
-void OLEDWidget::updateImageFromBuffer()
+void OLEDWidget::keyPressEvent(QKeyEvent *event)
 {
-    // 1. 確保 img 物件是正確的大小和格式
-    img = QImage(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT, QImage::Format_RGB888);
+    // 步骤 1: [高优先级] 检查当前是否处于“贴上预览”模式
+    if (m_pastePreviewActive) {
 
-    // 2. 定義像素的亮/暗顏色
-    const QColor pixelOnColor = QColor(135, 206, 250); // 淺藍色
-    const QColor pixelOffColor = Qt::black;
+        // 步骤 2: 检查用户按下的是否是 "Escape" 键
+        if (event->key() == Qt::Key_Escape) {
 
-    // 3. 遍歷內部緩衝區 m_buffer，將數據轉換為 QImage 的像素
-    for (int page = 0; page < OledConfig::DISPLAY_HEIGHT/8; page++) {
-        for (int x = 0; x < OledConfig::DISPLAY_WIDTH; x++) {
-            // 注意：是從 m_buffer 讀取，這是我們自己的數據儲存區
-            int byte_index = page * OledConfig::RAM_PAGE_WIDTH + (x + OledConfig::COLUMN_OFFSET);
+            // 如果是，执行取消操作
+            m_pastePreviewActive = false;   // 1. 关闭贴上预览模式
+            m_pastePreviewImage = QImage(); // 2. 清空预览图像数据 (释放内存)
+            update();                       // 3. 请求重绘，让预览图从屏幕上消失
 
-            if (byte_index >= 0 && byte_index < OledConfig::RAM_PAGE_WIDTH * (OledConfig::DISPLAY_HEIGHT / 8)) {
-                uint8_t data = m_buffer[byte_index];
-
-                for (int bit = 0; bit < 8; bit++) {
-                    bool on = data & (1 << bit);
-                    int y = page * 8 + bit;
-                    img.setPixelColor(x, y, on ? pixelOnColor : pixelOffColor);
-                }
-            }
+            event->accept(); // 4. "消费"掉这个事件，表示我们已经处理了它
+            return;          // 5. 直接返回，不再进行其他处理
         }
     }
 
-    // 4. 更新 widget 的最小尺寸並觸發重繪
-    setMinimumSize(img.width() * scale, img.height() * scale);
-    update(); // 觸發 paintEvent
+    // 步骤 3: 如果不是我们关心的特殊情况，就把事件交给基类处理
+    // 这很重要，因为基类可能会处理其他按键，比如 Tab 键的焦点切换等
+    QWidget::keyPressEvent(event);
 }
 
 
 
+// =================================================================
+// 【updateImageFromModel 】
+// 职责: 将 OledDataModel (m_model) 中存储的逻辑像素数据，
+//       同步/渲染到 QImage (m_image) 这个用于显示的图像缓存上。
+// =================================================================
+void OLEDWidget::updateImageFromModel(){
+    const QColor pixelOnColor = QColor(135, 206, 250); // 淺藍色
+    const QColor pixelOffColor = Qt::black;
 
-void OLEDWidget::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        int delta = event->angleDelta().y();
-        if (delta > 0)
-            setScale(scale + 1);
-        else if (delta < 0 && scale > 1)
-            setScale(scale - 1);
-        event->accept();
-    } else {
-        QWidget::wheelEvent(event);
+    // 安全检查：确保 m_image 已经被正确初始化
+    // (虽然我们的构造函数保证了这一点，但这是一个好的防御性编程习惯)
+    if (m_image.isNull()) {
+        m_image = QImage(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT, QImage::Format_RGB888);
     }
+
+
+    // 使用两层 for 循环，遍历屏幕上的每一个像素坐标 (x, y)
+    for (int y = 0; y < OledConfig::DISPLAY_HEIGHT; ++y) {
+        for (int x = 0; x < OledConfig::DISPLAY_WIDTH; ++x) {
+
+            // 步骤 1: 从数据模型查询该点的状态 (是亮是暗？)
+            // m_model.getPixel(x, y) 返回一个 bool 值
+            bool isPixelOn = m_model.getPixel(x, y);
+
+            // 步骤 2: 根据查询结果，在 m_image 的相同坐标位置上设置颜色
+            if (isPixelOn) {
+                m_image.setPixelColor(x, y, pixelOnColor);
+            } else {
+                m_image.setPixelColor(x, y, pixelOffColor);
+            }
+
+            // 上面的 if/else 可以简化为一行三元表达式，效果完全相同:
+            // m_image.setPixelColor(x, y, isPixelOn ? pixelOnColor : pixelOffColor);
+        }
+    }
+
+    // 步骤 3: 请求重绘
+    // 在更新完 m_image 的所有像素后，调用 update() 来通知 Qt：
+    // “我的画面内容已经准备好了，请在下一个刷新周期调用我的 paintEvent()！”
+    update();
 }
 
+/*
 
-// ↓↓↓↓ 請將這個完整的函式實作，加入到 oledwidget.cpp 檔案中 ↓↓↓↓
-const uint8_t* OLEDWidget::getBuffer() const
-{
-    // 這個函式的唯一任務，就是返回內部 m_buffer 陣列的地址
-    return m_buffer;
-}
-
-
-
-/*選取複製*/
-
-#ifdef SelectCopy
 // === Tool_Select ===
 void OLEDWidget::handleSelectPress(QMouseEvent *event)
 {
@@ -670,124 +710,246 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
     update();
 }
-
-
-#endif
+*/
 
 QPoint OLEDWidget::convertToOLED(const QPoint &pos)
 {
-    int x = pos.x() / scale;
-    int y = pos.y() / scale;
 
-    // 限制在 OLED 顯示範圍內
-    x = std::clamp(x, 0, OledConfig::DISPLAY_WIDTH - 1);
-    y = std::clamp(y, 0, OledConfig::DISPLAY_HEIGHT - 1);
 
-    return QPoint(x, y);
+    // 步骤 1: 计算 OLED 图像在 widget 中居中显示的几何信息
+    // [注意] 这部分计算逻辑必须与 paintEvent() 中的完全一致！
+    const int scaled_width = OledConfig::DISPLAY_WIDTH * scale;
+    const int scaled_height = OledConfig::DISPLAY_HEIGHT * scale;
+    const int x_offset = (width() - scaled_width) / 2;
+    const int y_offset = (height() - scaled_height) / 2;
+
+    // 步骤 2: 将窗口坐标减去偏移量，得到在缩放后图像上的相对坐标
+    int relative_x = pos.x() - x_offset;
+    int relative_y = pos.y() - y_offset;
+
+
+    // 步骤 3: 将相对坐标除以缩放比例，得到最终的 OLED 逻辑坐标
+    int oled_x = relative_x / scale;
+    int oled_y = relative_y / scale;
+
+
+    // 步骤 4: [重要] 边界限制 (Clamping)
+    // 即使鼠标点击在灰色背景区域（绘图区之外），
+    // 我们也应该将坐标限制在有效的 OLED 范围内 (0-127, 0-63)。
+    // 这可以防止后续的绘图操作访问到无效的坐标。
+    oled_x = std::clamp(oled_x, 0, OledConfig::DISPLAY_WIDTH - 1);
+    oled_y = std::clamp(oled_y, 0, OledConfig::DISPLAY_HEIGHT - 1);
+
+    // 步骤 5: 返回计算出的逻辑坐标
+    return QPoint(oled_x, oled_y);
 }
 
 
-
-#ifdef Past_Function
-
-//private Function begin
-
-void OLEDWidget::startPastePreview(const QImage& logicalImage)
+void OLEDWidget::handleSelectPress(QMouseEvent *event)
 {
+    // 步骤 1: 检查是否是鼠标左键按下的事件
+    // 通常，我们只用左键来开始一个新的选区。
+    if (event->button() == Qt::LeftButton) {
 
-    if (logicalImage.isNull() || logicalImage.format() != QImage::Format_Mono) {
-        return; // 不接受无效或非单色的图像
+        // 步骤 2: 开启“正在选择”模式
+        // 这个布尔标志位 m_isSelecting 非常重要，
+        // 它会告诉 mouseMoveEvent 和 paintEvent 当前正处于选区绘制状态。
+        m_isSelecting = true;
+
+        // 步骤 3: 转换坐标并记录选区的“起始点”
+        const QPoint oled_pos = convertToOLED(event->pos());
+        m_startPoint = oled_pos;
+
+        // 步骤 4: 同时将“结束点”也设置为起始点
+        // 因为在刚按下的瞬间，选区是一个 0x0 大小的点。
+        m_endPoint = oled_pos;
+
+        // 步骤 5: 清除上一次的旧选区
+        // m_selectedRegion 存储的是已经“确定”的选区。
+        // 一旦开始一个新的选区操作，旧的就应该作废。
+        m_selectedRegion = QRect(); // QRect() 创建一个无效的矩形
+
+        // 步骤 6: 请求重绘
+        // 调用 update() 会让 paintEvent 被触发，
+        // paintEvent 会根据 m_isSelecting = true 来绘制一个（目前还看不见的）黄色的虚线框。
+        update();
+
+        // 步骤 7: 接受事件
+        event->accept();
     }
-    m_pastePreviewActive = true;
-    m_pastePreviewImage = logicalImage; // 直接存储 QImage
-    m_pastePosition = QPoint(0, 0);   // 重置预览位置
-    update();
+    // 如果是右键或其他按键，我们什么都不做，事件会继续传递
 }
 
-void OLEDWidget::keyPressEvent(QKeyEvent *event)
+void OLEDWidget::handleSelectMove(QMouseEvent *event)
 {
-    if (m_pastePreviewActive && event->key() == Qt::Key_Return) {
-        confirmPasteDialog();
-    }
-}
-
-//private Function End
-
-
-void OLEDWidget::confirmPasteDialog()
-{
-    QDialog *dialog = new QDialog(this);
-    dialog->setWindowTitle("確認貼上");
-
-    QLabel *label = new QLabel("是否確定要貼上這塊資料？", dialog);
-    QPushButton *yesButton = new QPushButton("確定", dialog);
-    QPushButton *noButton = new QPushButton("取消", dialog);
-
-    QVBoxLayout *layout = new QVBoxLayout(dialog);
-    layout->addWidget(label);
-    layout->addWidget(yesButton);
-    layout->addWidget(noButton);
-
-    connect(yesButton, &QPushButton::clicked, [this, dialog]() {
-        commitPaste();
-        dialog->accept();
-    });
-    connect(noButton, &QPushButton::clicked, dialog, &QDialog::reject);
-
-    dialog->exec();
-}
-
-void OLEDWidget::commitPaste()
-{
-    if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
+    // 步骤 1: 安全检查
+    // 确保我们只在“正在选择”的状态下执行此逻辑。
+    // 这个检查虽然在 mouseMoveEvent 的调用处已经做过，
+    // 但在函数内部再做一次，是一种更安全的防御性编程。
+    if (!m_isSelecting) {
         return;
     }
 
+    // 步骤 2: 获取当前鼠标的 OLED 逻辑坐标
+    const QPoint oled_pos = convertToOLED(event->pos());
+
+    // 步骤 3: 更新选区的“结束点”
+    // m_startPoint 在 handleSelectPress 时已经固定下来，我们不去动它。
+    // 我们只需要不断地更新 m_endPoint 即可。
+    m_endPoint = oled_pos;
+
+    // 步骤 4: 请求重绘以更新预览
+    // 这是整个函数最关键的一步。
+    // 调用 update() 会触发 paintEvent。
+    // paintEvent 会看到 m_isSelecting 是 true，
+    // 然后它会使用最新的 m_startPoint 和 m_endPoint
+    // 来绘制一个动态变化的黄色虚线矩形。
+    // 这就为用户提供了实时的视觉反馈。
+    update();
+
+    // 步骤 5: 接受事件
+    event->accept();
+}
+
+void OLEDWidget::handleSelectRelease(QMouseEvent *event)
+{
+    // 步骤 1: 安全检查
+    // 确保我们是在“正在选择”的状态下松开【鼠标左键】。
+    // 如果不是，或者松开的是右键，则忽略此事件。
+    if (!m_isSelecting || event->button() != Qt::LeftButton) {
+        return;
+    }
+
+    // 步骤 2: 关闭“正在选择”模式
+    // 这是关键的状态清理步骤。将开关关闭，
+    // mouseMoveEvent 就不会再响应选区逻辑了。
+    m_isSelecting = false;
+
+    // 步骤 3: 获取最终的鼠标位置并更新“结束点”
+    const QPoint oled_pos = convertToOLED(event->pos());
+    m_endPoint = oled_pos;
+
+    // 步骤 4: 计算并“固化”最终的选区矩形
+    // 使用 QRect 的构造函数和 .normalized() 来创建一个有效的矩形。
+    // .normalized() 能确保矩形的左上角坐标值总是小于右下角坐标值，
+    // 即使你是从右下往左上拖动鼠标来创建选区的。
+    QRect finalRegion = QRect(m_startPoint, m_endPoint).normalized();
+
+    // 步骤 5: [重要] 有效性检查
+    // 如果用户只是点击了一下就松开，或者拖动范围太小，
+    // 我们应该认为这是一个无效的选区，直接丢弃它。
+    // 这样可以避免后续的复制等操作处理一个 1x1 或 0x0 的无效区域。
+    if (finalRegion.width() < 2 || finalRegion.height() < 2) {
+        // 如果区域太小，我们就创建一个无效的 QRect，相当于清除了选区。
+        m_selectedRegion = QRect();
+        qDebug() << "[Select] Region too small, selection cleared.";
+    } else {
+        // 如果区域有效，就将其保存在 m_selectedRegion 成员变量中。
+        // m_selectedRegion 现在存储了这次操作的最终成果。
+        m_selectedRegion = finalRegion;
+        qDebug() << "[Select] Final region set to:" << m_selectedRegion;
+    }
+
+    // 步骤 6: 请求最后一次重绘
+    // 这次 update() 调用有两个目的：
+    // 1. 因为 m_isSelecting 已经是 false，paintEvent 将不再根据 start/endPoint
+    //    绘制动态的虚线框，清除了“过程”中的预览。
+    // 2. 如果我们得到了一个有效的 m_selectedRegion，paintEvent 会根据它
+    //    绘制一个“固化”的黄色虚线框，向用户展示最终的选区结果。
+    // 3. 如果选区无效，m_selectedRegion 为空，paintEvent 将不会画任何框。
+    update();
+
+    event->accept();
+}
+
+// 在 oledwidget.cpp 中
+
+void OLEDWidget::startPastePreview(const QImage &logicalImage)
+{
+    // 步骤 1: 安全检查
+    // 检查传入的 QImage 是否有效，并且是我们期望的内部逻辑格式 (Format_Mono)。
+    // 这是一个好的防御性编程习惯。
+    if (logicalImage.isNull() || logicalImage.format() != QImage::Format_Mono) {
+        qDebug() << "[Paste] startPastePreview received invalid or non-mono image. Aborting.";
+        // 如果数据无效，就确保我们不会进入贴上模式
+        m_pastePreviewActive = false;
+        m_pastePreviewImage = QImage(); // 清空可能存在的旧数据
+        return;
+    }
+
+    // 步骤 2: 开启“贴上预览”模式
+    // 这是“总开关”，告诉其他事件处理器（如 paintEvent, mouseMoveEvent）
+    // 当前正处于特殊的贴上模式。
+    m_pastePreviewActive = true;
+
+    // 步骤 3: 保存预览图像数据
+    // 我们直接将传入的 logicalImage 存储到成员变量 m_pastePreviewImage 中。
+    // QImage 是隐式共享的 (implicitly shared)，所以这个赋值操作非常快，
+    // 它只复制了图像的元数据和一个指向数据块的指针。
+    m_pastePreviewImage = logicalImage;
+    qDebug() << "[Paste] Starting paste preview with image size:" << m_pastePreviewImage.size();
+
+
+    // 步骤 4: 初始化预览图像的显示位置
+    // 通常，我们让预览图像一开始出现在屏幕的左上角 (0, 0)。
+    // 在 mouseMoveEvent 中，这个位置会跟随鼠标实时更新。
+    m_pastePosition = QPoint(0, 0);
+
+    // 步骤 5: 请求重绘
+    // 调用 update() 会触发 paintEvent。
+    // paintEvent 会检查到 m_pastePreviewActive 为 true，
+    // 然后调用我们之前写好的逻辑，在 (0, 0) 位置首次绘制出半透明的 m_pastePreviewImage。
+    update();
+}
+
+
+
+// 在 oledwidget.cpp 中
+
+void OLEDWidget::commitPaste()
+{
+    // 步骤 1: 安全检查
+    // 确保我们确实处于贴上模式，并且有有效的预览图像数据。
+    if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
+        qDebug() << "[Paste] commitPaste called in invalid state. Aborting.";
+        return;
+    }
+
+    qDebug() << "[Paste] Committing paste at position:" << m_pastePosition;
+
+    // 步骤 2: 遍历预览图像的每一个像素
+    // 我们需要将 m_pastePreviewImage 中的像素，一个一个地“复制”到 m_model 中。
     for (int y = 0; y < m_pastePreviewImage.height(); ++y) {
         for (int x = 0; x < m_pastePreviewImage.width(); ++x) {
-            // 如果预览图像在该点是亮的 (颜色索引为1)
+
+            // 步骤 3: 检查预览图像在该点是否有像素 (是否为亮色)
+            // .pixelIndex() 对于单色图 (Format_Mono) 来说，
+            // 返回 1 代表前景色 (亮)，返回 0 代表背景色 (暗)。
             if (m_pastePreviewImage.pixelIndex(x, y) == 1) {
-                // 计算要写入到 m_model 的目标坐标
+
+                // 步骤 4: 如果有像素，计算它在主数据模型 m_model 中的目标坐标
                 int targetX = m_pastePosition.x() + x;
                 int targetY = m_pastePosition.y() + y;
-                // 调用 m_model 的 setPixel
-                m_model.setPixel(targetX, targetY, true);
+
+                // 步骤 5: [核心] 调用 m_model 的 setPixel，将数据写入核心模型
+                // 我们不需要关心 setPixel 内部是怎么实现的，只需要相信它能
+                // 正确地在 (targetX, targetY) 位置上点亮一个像素。
+                // 这里的笔刷大小应为 1，因为我们是逐像素复制。
+                m_model.setPixel(targetX, targetY, true, 1);
             }
         }
     }
 
-    m_pastePreviewActive = false; // 结束贴上模式
-    updateImageFromModel();       // 从 m_model 更新主显示图像
+    // 步骤 6: [重要] 结束并清理贴上模式
+    m_pastePreviewActive = false;
+    m_pastePreviewImage = QImage(); // 清空预览图像数据，释放内存
 
+    // 步骤 7: [重要] 从数据模型更新主显示图像
+    // 因为我们刚刚通过多次 setPixel 修改了 m_model，
+    // 所以必须调用 updateImageFromModel() 来将这些改动同步到 m_image 上。
+    updateImageFromModel();
 }
 
-/*
-void OLEDWidget::pasteBlock(const QRect &region)
-{
-    int x0 = region.left();
-    int y0 = region.top();
-    int w = region.width();
-    int h = region.height();
-    int pages = (h + 7) / 8;
 
-    QVector<uint8_t> blockData;
-    for (int x = x0; x < x0 + w; ++x) {
-        for (int page = 0; page < pages; ++page) {
-            uint8_t byte = 0;
-            for (int bit = 0; bit < 8; ++bit) {
-                int y = y0 + page * 8 + bit;
-                if (y >= y0 + h) break;
-                if (getPixel(x, y)) byte |= (1 << bit);
-            }
-            blockData.append(byte);
-        }
-    }
-
-    startPastePreview(blockData.data(), w, h);
-    commitPaste();
-}
-*/
-
-#endif
 
 

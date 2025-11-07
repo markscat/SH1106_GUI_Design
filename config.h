@@ -8,7 +8,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPoint> // 確保包含了 QPoint
-
+#include <QKeyEvent>
 #include <QMainWindow>
 #include <QDir>
 #include <QDateTime>
