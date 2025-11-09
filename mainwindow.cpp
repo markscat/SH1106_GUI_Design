@@ -77,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent)
                 m_oled->setBrushSize(brushSize);
             });
 
-//</筆刷功能>
+    //</筆刷功能>
 
     // --- 3. 設定【繪圖工具】按鈕群組 ---`
     m_toolButtonGroup = new QButtonGroup(this);
@@ -342,17 +342,33 @@ void MainWindow::importImage()
     // ... (QTransform 旋转的代码) ...
     QImage scaledImage = image.scaled(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT,
                                       Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+
+    //1107修改
+/*
+    QImage scaledImage = image.scaled(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT,
+                                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+*/
+    //1107修改
+
+
     QImage canvas(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT, QImage::Format_RGB32);
+
     canvas.fill(Qt::white);
+
     QPainter painter(&canvas);
+
     painter.drawImage((canvas.width() - scaledImage.width()) / 2,
                       (canvas.height() - scaledImage.height()) / 2,
                       scaledImage);
+
     painter.end();
 
     // 步骤 4: [关键] 将处理好的画布，转换为我们系统内部标准的【单色逻辑格式】
     // 这一步是 MainWindow 的核心职责：把“外来图片”变成“自己人”。
-    QImage logicalMonoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::DiffuseDither);
+    //QImage logicalMonoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::DiffuseDither);
+    QImage logicalMonoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
+
 
     // 步骤 5: [新流程] 调用 OledDataModel 的【静态工具函数】进行格式转换
     // 我们把准备好的“逻辑图”交给“专家”去翻译成“硬件格式”。
@@ -396,137 +412,6 @@ void MainWindow::on_pushButton_paste_clicked()
     */
 }
 
-/*
-void MainWindow::resetOledPlaceholderSize()
-{
-    if (m_oled) {
-
-    // 1. 恢復原始縮放比例
-    m_oled->setScale(6);
-
-
-    // 2. 重置 QScrollArea 的滾軸位置到左上角 (0,0)
-    scrollArea->horizontalScrollBar()->setValue(0);
-    scrollArea->verticalScrollBar()->setValue(0);
-
-
-    // 3. 觸發布局更新
-    m_oled->updateGeometry();
-    scrollArea->widget()->updateGeometry();
-    scrollArea->updateGeometry();
-    ui->oledPlaceholder->updateGeometry();
-
-    }
-
-}
-
-void MainWindow::importImage()
-{
-    // 1. 打开一个档案选择对话框
-    QString filePath = QFileDialog::getOpenFileName(
-        this,
-        "选择一张图片",
-        "", // 预设目录
-        "图片档案 (*.bmp *.jpg *.jpeg)"
-        );
-
-    if (filePath.isEmpty()) {
-        return; // 用户取消了选择
-    }
-
-    // 2. 读取图片
-    QImage image;
-    if (!image.load(filePath)) {
-        QMessageBox::warning(this, "错误", "无法载入图片档案！");
-        return;
-    }
-    // --- 弹出对话框，询问是否旋转 ---
-    QDialog rotateDialog(this);
-    rotateDialog.setWindowTitle("汇入选项");
-    QVBoxLayout layout(&rotateDialog);
-    QCheckBox *rotateCheckbox = new QCheckBox("将图片旋转90度 (用于竖屏)", &rotateDialog);
-    QPushButton *okButton = new QPushButton("确定", &rotateDialog);
-
-    connect(okButton, &QPushButton::clicked, &rotateDialog, &QDialog::accept);
-    layout.addWidget(rotateCheckbox);
-    layout.addWidget(okButton);
-
-    bool rotate = false;
-    if (rotateDialog.exec() == QDialog::Accepted) {
-        rotate = rotateCheckbox->isChecked();
-    }
-
-    // 如果需要旋转
-    if (rotate) {
-        QTransform transform;
-        transform.rotate(90);
-        image = image.transformed(transform); // <-- 对原始 image 进行旋转
-    }
-
-    // --- 关键步骤：图片处理和转换 ---
-    // 将图片转换为128x64的单色图
-    // Qt::MonoOnly -> dither抖动算法，效果比较好
-    // Qt::Threshold -> 阈值算法，黑白分
-
-    QImage scaledImage = image.scaled(128, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    // 4. 创建一个 128x64 的标准单色画布，并填充背景色（白色索引=0）
-    QImage canvas(128, 64, QImage::Format_Mono);
-    canvas.fill(0); // 0 = 白色
-    // 5. 使用 QPainter 将缩放后的图片绘制到画布中心
-
-    QPainter painter(&canvas);
-    int x = (canvas.width() - scaledImage.width()) / 2;
-    int y = (canvas.height() - scaledImage.height()) / 2;
-    // 将 scaledImage 临时转换为 RGB 来绘制，以避免颜色索引问题
-    painter.drawImage(x, y, scaledImage.convertToFormat(QImage::Format_RGB32));
-    painter.end(); // 结束绘制，非常重要！
-
-
-    // 6. 将绘制好内容的画布，整体转换为最终的单色格式
-    QImage monoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::DiffuseDither);
-
-    // [可选的除错步骤] 保存这张最终的画布，看看是否居中
-    monoImage.save("debug_centered_mono_image.png");
-
-
-    // --- 将处理好的 QImage 转换为 SH1106 的 buffer 格式 ---
-    // 这是最复杂的一步，我们需要写一个转换函式
-    uint8_t buffer[OledConfig::RAM_PAGE_WIDTH *8] = {0};
-    memset(buffer, 0x00, OledConfig::RAM_PAGE_WIDTH * 8); // 清空整個 SH1106 buffer
-
-    // 遍历处理后的 monoImage 的每一个像素
-    for (int y = 0; y < monoImage.height(); ++y) {
-        for (int x = 0; x < monoImage.width(); ++x) {
-
-            int colorIndex = monoImage.pixelIndex(x, y);
-
-            bool pixelIsOn = (colorIndex == 1);
-
-            if (pixelIsOn) {
-                // 计算像素在 buffer 中的位置 (和 setPixel 逻辑一样)
-                int page = y / 8;
-                int bit_index = y % 8;
-                //int byte_index = page * 128 + x;
-                int byte_index = page * OledConfig::RAM_PAGE_WIDTH + (x + OledConfig::COLUMN_OFFSET);
-
-                if (byte_index >= 0 && byte_index < 1024) { // 边界检查
-                    buffer[byte_index] |= (1 << bit_index);
-                }
-            }
-        }
-    }
-    // 4. 将转换好的 buffer 发送到 OLEDWidget 显示
-    m_oled->setBuffer(buffer);
-}
-
-void MainWindow::on_pushButton_paste_clicked()
-{
-    QRect region = m_oled->selectedRegion();
-    if (!region.isValid()) return;
-    m_oled->pasteBlock(region);
-}
-*/
 
 MainWindow::~MainWindow()
 {

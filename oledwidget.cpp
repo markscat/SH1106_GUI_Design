@@ -29,6 +29,12 @@ OLEDWidget::OLEDWidget(QWidget *parent)
     m_image.fill(Qt::black); // 填充背景色
 
     setScale(7); // 呼叫 setScale 來設定尺寸和縮放
+
+#ifdef modify_1107
+    // 新增的 m_pixelScale，用於控制內部像素顯示，初始化為 1 (1:1 顯示)
+    m_pixelScale = 1;
+#endif
+
     setFocusPolicy(Qt::StrongFocus); // 允許接收鍵盤事件
 }
 
@@ -43,6 +49,13 @@ void OLEDWidget::setScale(int s) {
     update();
 }
 
+
+void OLEDWidget::setPixelScale(int newPixelScale) {
+    if (newPixelScale > 0 && newPixelScale != m_pixelScale) {
+        m_pixelScale = newPixelScale;
+        update(); // 重新繪製
+    }
+}
 
 // ↓↓↓↓ 檢查並補上 clearScreen 函式 ↓↓↓↓
 void OLEDWidget::clearScreen() {
@@ -200,20 +213,31 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
     QWidget::paintEvent(event);
 
     QPainter painter(this);
+    //int ScaleMultiple=1;
 
 
     // 步骤 1: 绘制 widget 的灰色背景，方便区分显示区域
     painter.fillRect(rect(), Qt::darkGray);
 
     // 步骤 2: 计算 OLED 图像的显示位置和大小
+    /*1107修改 開始*/
     int scaled_width = OledConfig::DISPLAY_WIDTH * scale;
     int scaled_height = OledConfig::DISPLAY_HEIGHT * scale;
+
+    //int scaled_width = OledConfig::DISPLAY_WIDTH * ScaleMultiple;
+    //int scaled_height = OledConfig::DISPLAY_HEIGHT * ScaleMultiple;
+
+    /*1107修改 結尾*/
 
     // 计算偏移量，使其在 widget 中居中显示
     int x_offset = (width() - scaled_width) / 2;
     int y_offset = (height() - scaled_height) / 2;
 
     QRect targetRect(x_offset, y_offset, scaled_width, scaled_height);
+
+    /*1107修改 開始*/
+    painter.drawImage(targetRect, m_image);
+    /*1107修改 結束*/
 
 
     // 步骤 3: 绘制核心的 OLED 屏幕图像 (m_image)
@@ -714,7 +738,6 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
 QPoint OLEDWidget::convertToOLED(const QPoint &pos)
 {
-
 
     // 步骤 1: 计算 OLED 图像在 widget 中居中显示的几何信息
     // [注意] 这部分计算逻辑必须与 paintEvent() 中的完全一致！

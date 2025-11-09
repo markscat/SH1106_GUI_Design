@@ -21,6 +21,14 @@ public:
 
     void setScale(int s);
 
+#ifdef modify_1107
+    // [新增] 設置內部像素顯示縮放的方法 (如果你需要動態切換 1:1 和其他縮放)
+    void setPixelScale(int newPixelScale);
+
+    // [新增] 獲取當前內部像素顯示縮放的方法 (如果需要)
+    int pixelScale() const { return m_pixelScale; }
+#endif
+
     void setBrushSize(int size);
 
     // setBuffer，用於未來載入檔案
@@ -62,6 +70,9 @@ private:
 
     int scale = 7; // 放大倍率
 
+#ifdef modify_1107
+    int m_pixelScale = 1; // 新增：用於控制內部像素的顯示縮放 (例如，初始化為 1)
+#endif
     //直接用 ToolType
     ToolType m_currentTool;
 

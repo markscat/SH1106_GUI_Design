@@ -148,6 +148,8 @@ std::vector<uint8_t> OledDataModel::getHardwareBuffer() const
                 int page = y / 8;
                 int bit_index = y % 8;
                 int byte_index = page * OledConfig::RAM_PAGE_WIDTH + (x + OledConfig::COLUMN_OFFSET);
+                //int byte_index = page * OledConfig::RAM_PAGE_WIDTH + x;
+
                 if (byte_index < hardware_buffer.size()) {
                     hardware_buffer[byte_index] |= (1 << bit_index);
                 }
@@ -166,7 +168,10 @@ void OledDataModel::setFromHardwareBuffer(const uint8_t* data)
 
     for (int page = 0; page < (OledConfig::DISPLAY_HEIGHT / 8); ++page) {
         for (int x = 0; x < OledConfig::DISPLAY_WIDTH; ++x) {
+
             int byte_index = page * OledConfig::RAM_PAGE_WIDTH + (x + OledConfig::COLUMN_OFFSET);
+            //int byte_index = page * OledConfig::RAM_PAGE_WIDTH + x;
+
             uint8_t byte = data[byte_index];
             for (int bit = 0; bit < 8; ++bit) {
                 if ((byte >> bit) & 0x01) {
@@ -220,17 +225,24 @@ QVector<uint8_t> OledDataModel::convertLogicalToHardwareFormat(const QImage& log
     int pages = (h + 7) / 8;
 
     for (int page = 0; page < pages; ++page) {
+        for (int x = 0; x < OledConfig::COLUMN_OFFSET; ++x) {
+            hardwareData.append(0x00);
+        }
         for (int x = 0; x < w; ++x) {
             uint8_t byte = 0;
             for (int bit = 0; bit < 8; ++bit) {
                 int currentY = page * 8 + bit;
                 if (currentY < h) {
-                    if (logicalImage.pixelIndex(x, currentY) == 1) {
+                    if (logicalImage.pixelIndex(x, currentY) == 0) {
                         byte |= (1 << bit);
                     }
                 }
             }
             hardwareData.append(byte);
+        }
+        int filled = OledConfig::COLUMN_OFFSET + w;
+        for (int x = filled; x < OledConfig::RAM_PAGE_WIDTH; ++x) {
+            hardwareData.append(0x00);
         }
     }
     return hardwareData;

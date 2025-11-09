@@ -44,6 +44,7 @@ constexpr int  DISPLAY_HEIGHT  = 64;
 // SH1106 的 RAM 是 132x64，所以頁寬是 132。
 // 如果是 SSD1306，它的 RAM 是 128x64，那這個值就是 128。
 constexpr int RAM_PAGE_WIDTH = 132;
+//constexpr int RAM_PAGE_WIDTH = 128;
 
 // 這是顯示區域在 RAM 中的起始欄位偏移。
 // SH1106 的 128 像素寬的顯示區域通常是從 RAM 的第 2 欄開始的。
@@ -51,11 +52,8 @@ constexpr int RAM_PAGE_WIDTH = 132;
 constexpr int  COLUMN_OFFSET =  2;
 
 }
-#define SelectCopy
 
-#define debug_select
-
-#define DrawTool
+#define modify_1107
 
 #define QMessageBox_debug
 
