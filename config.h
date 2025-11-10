@@ -32,6 +32,9 @@
 #include <QScrollBar>
 #include <QMessageBox>
 
+#include <QTransform>
+#include <QPixmap>
+
 
 // --- 硬體模擬常數 (Hardware Simulation Constants) ---
 namespace OledConfig {
@@ -52,8 +55,9 @@ constexpr int RAM_PAGE_WIDTH = 132;
 constexpr int  COLUMN_OFFSET =  2;
 
 }
+#define importDialog_case2
 
-#define modify_1107
+#define modify_1107_
 
 #define QMessageBox_debug
 

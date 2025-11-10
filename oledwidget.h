@@ -21,6 +21,8 @@ public:
 
     void setScale(int s);
 
+     QImage getCurrentImage() const;
+
 #ifdef modify_1107
     // [新增] 設置內部像素顯示縮放的方法 (如果你需要動態切換 1:1 和其他縮放)
     void setPixelScale(int newPixelScale);

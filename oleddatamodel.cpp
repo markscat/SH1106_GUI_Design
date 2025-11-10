@@ -116,16 +116,16 @@ void OledDataModel::drawCircle(const QPoint &p1, const QPoint &p2,int brushSize)
     long x = 0, y = b;
     long p = b2 - a2 * b + (a2 / 4);
     while (two_b2 * x < two_a2 * y) {
-        setPixel(xc + x, yc + y, true); setPixel(xc - x, yc + y, true);
-        setPixel(xc + x, yc - y, true); setPixel(xc - x, yc - y, true);
+        setPixel(xc + x, yc + y, true,brushSize); setPixel(xc - x, yc + y, true,brushSize);
+        setPixel(xc + x, yc - y, true,brushSize); setPixel(xc - x, yc - y, true,brushSize);
         x++;
         if (p < 0) { p += two_b2 * x + b2; }
         else { y--; p += two_b2 * x + b2 - two_a2 * y; }
     }
     p = b2 * (x * x + x) + a2 * (y * y - y) - a2 * b2;
     while (y >= 0) {
-        setPixel(xc + x, yc + y, true); setPixel(xc - x, yc + y, true);
-        setPixel(xc + x, yc - y, true); setPixel(xc - x, yc - y, true);
+        setPixel(xc + x, yc + y, true,brushSize); setPixel(xc - x, yc + y, true,brushSize);
+        setPixel(xc + x, yc - y, true,brushSize); setPixel(xc - x, yc - y, true,brushSize);
         y--;
         if (p > 0) { p -= two_a2 * y + a2; }
         else { x++; p += two_b2 * x - two_a2 * y + a2; }

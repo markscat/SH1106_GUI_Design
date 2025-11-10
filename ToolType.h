@@ -8,13 +8,12 @@ enum ToolType {
     Tool_Rectangle,
     Tool_FilledRectangle,
     Tool_Circle,
-#ifdef  SelectCopy
 
     Tool_Select,// pushButton_Select,
     Tool_Copy,// pushButton_Copy,
     Tool_Cut, //pushButton_Cut,
     Tool_Paste//pushButton_paste
-#endif
+
     //之后可以继续添加 Triangle 等
 };
 

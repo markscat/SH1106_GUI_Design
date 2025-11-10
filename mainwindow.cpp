@@ -331,11 +331,70 @@ void MainWindow::importImage()
     if (filePath.isEmpty()) return;
 
     // 步骤 2: 读取图片 (逻辑不变)
-    QImage image;
-    if (!image.load(filePath)) {
+    QImage originalImage;
+    if (!originalImage.load(filePath)) {
         QMessageBox::warning(this, "错误", "无法载入图片档案！");
         return;
     }
+
+    // 步骤 3: [新流程] 弹出我们的自定义对话框，让用户进行设置
+    ImageImportDialog importDialog(originalImage, this);
+
+    // .exec() 会阻塞程序，直到用户点击 OK 或 Cancel
+    if (importDialog.exec() == QDialog::Accepted) {
+        // 用户点击了 "OK"，我们从对话框中获取处理好的图片
+        QImage processedImage = importDialog.getProcessedImage();
+
+        // ----------------------------------------------------------------
+        // 从这里开始，是我们原有的后续处理逻辑，但操作对象变成了 processedImage
+        // ----------------------------------------------------------------
+
+        // 步骤 4: 将处理好的图片转换为单色逻辑格式
+        // 注意：这里不再需要创建 canvas 和 painter 来居中了，
+        // 因为用户可能希望图片直接贴在某个位置。
+        // 一个更好的做法是，直接将这个 processedImage 交给 OLEDWidget 的“贴上”功能。
+
+        // 4a. 转换为单色图 (阈值抖动，黑白分明)
+        QImage monoImage = processedImage.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
+
+        // [建议] 步骤 5: 启动 OLEDWidget 的“贴上预览”模式
+        // 这会让用户体验更好，可以自己决定把图贴在哪里。
+        // 您需要在 OLEDWidget 中增加一个类似 `beginPaste(const QImage& image)` 的 public 函数。
+ #ifdef importDialog_case1
+        //m_oled->beginPaste(monoImage); // <<--- 理想的实现方式
+#endif
+
+
+        // --- 如果您还没有“贴上”功能，可以使用以下替代方案 (直接覆盖整个画面) ---
+        // 1. 创建一个符合 OLED 尺寸的空白画布
+#ifdef importDialog_case2
+        QImage currentCanvas = m_oled->getCurrentImage().copy();
+
+
+        QImage canvas(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT, QImage::Format_Mono);
+        canvas.fill(0); // 填充黑色 (熄灭)
+
+        // 2. 将处理好的单色图画到画布左上角
+        QPainter painter(&canvas);
+        painter.drawImage(0, 0, monoImage);
+        painter.end();
+
+        // 3. 后续流程不变
+        QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(canvas);
+        if (!hardwareData.isEmpty()) {
+            m_oled->setBuffer(hardwareData.constData());
+        } else {
+            QMessageBox::warning(this, "错误", "图片转换失败！");
+        }
+        // --- 替代方案结束 ---
+
+#endif
+
+    }
+    // 如果用户点击了 "Cancel"，importDialog.exec() 返回 QDialog::Rejected，
+    // if 块不执行，函数自然结束，什么也不做。
+
+#ifdef org_code_1107
 
     // 步骤 3: 图片预处理 (缩放、居中、旋转等，逻辑不变)
     // ... (弹出旋转对话框的代码) ...
@@ -382,6 +441,8 @@ void MainWindow::importImage()
     } else {
         QMessageBox::warning(this, "错误", "图片转换失败！");
     }
+
+#endif
 }
 
 

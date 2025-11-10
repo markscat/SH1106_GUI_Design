@@ -49,6 +49,7 @@ void OLEDWidget::setScale(int s) {
     update();
 }
 
+#ifdef modify_1107
 
 void OLEDWidget::setPixelScale(int newPixelScale) {
     if (newPixelScale > 0 && newPixelScale != m_pixelScale) {
@@ -56,6 +57,7 @@ void OLEDWidget::setPixelScale(int newPixelScale) {
         update(); // 重新繪製
     }
 }
+#endif
 
 // ↓↓↓↓ 檢查並補上 clearScreen 函式 ↓↓↓↓
 void OLEDWidget::clearScreen() {
@@ -527,7 +529,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
             const QRect rect = QRect(m_startPoint, m_endPoint).normalized();
             // 指挥引擎画一个不填充的、1 像素宽的矩形
             m_model.drawRectangle(rect.x(), rect.y(), rect.width(), rect.height(),
-                                  true, false, 1); // on=true, fill=false, brushSize=1
+                                  true, false, m_brushSize); // on=true, fill=false, brushSize=1
             updateImageFromModel();
         }
         break;
@@ -538,7 +540,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
             const QRect rect = QRect(m_startPoint, m_endPoint).normalized();
             // 指挥引擎画一个填充的、1 像素宽边框的矩形
             m_model.drawRectangle(rect.x(), rect.y(), rect.width(), rect.height(),
-                                  true, true, 1); // on=true, fill=true, brushSize=1
+                                  true, true, m_brushSize); // on=true, fill=true, brushSize=1
             updateImageFromModel();
         }
         break;
@@ -547,7 +549,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         // --- 圆形工具：最终绘制 ---
         if (event->button() == Qt::LeftButton) {
             // 指挥引擎在起点和终点构成的矩形内，画一个 1 像素宽的椭圆
-            m_model.drawCircle(m_startPoint, m_endPoint, 1); // brushSize=1
+            m_model.drawCircle(m_startPoint, m_endPoint, m_brushSize); // brushSize=1
             updateImageFromModel();
         }
         break;
@@ -642,6 +644,7 @@ void OLEDWidget::keyPressEvent(QKeyEvent *event)
 //       同步/渲染到 QImage (m_image) 这个用于显示的图像缓存上。
 // =================================================================
 void OLEDWidget::updateImageFromModel(){
+
     const QColor pixelOnColor = QColor(135, 206, 250); // 淺藍色
     const QColor pixelOffColor = Qt::black;
 
@@ -973,6 +976,10 @@ void OLEDWidget::commitPaste()
     updateImageFromModel();
 }
 
-
+QImage OLEDWidget::getCurrentImage() const
+{
+    // m_image 是您用來在 paintEvent 中繪圖的那個 QImage
+    return m_image;
+}
 
 

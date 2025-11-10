@@ -5,6 +5,11 @@
 
 #include "ToolType.h"
 #include "oledwidget.h"
+#include "imageimportdialog.h"
+#include "oleddatamodel.h"
+#include "config.h"
+
+
 
 class OLEDWidget; // 前向聲明
 

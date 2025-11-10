@@ -3,8 +3,9 @@
 
 
 #include <cstdint> // for uint8_t
-#include "config.h"
 #include <vector> // 使用 std::vector<bool> 更安全、更靈活
+#include "config.h"
+
 
 
 // 包含 DISPLAY_WIDTH, RAM_PAGE_WIDTH 等常數
