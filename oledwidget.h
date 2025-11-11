@@ -6,6 +6,7 @@
 #include "ToolType.h"
 #include "config.h"
 #include "oleddatamodel.h"
+#include "oleddataconverter.h"
 
 class OLEDWidget : public QWidget {
     Q_OBJECT
@@ -43,6 +44,12 @@ public:
     // --- 工具 & 状态查询 ---
     void setCurrentTool(ToolType tool);
     QRect selectedRegion() const { return m_selectedRegion;}
+
+    /**
+     * @brief 從一個邏輯格式的 QImage 更新整個 OLED 顯示內容。
+     * @param image 來源圖片，必須是 QImage::Format_Mono 格式。
+     */
+    void updateOledFromImage(const QImage& image);
 
 
 // --- 公开槽 (Public Slots, 响应 UI 信号) ---

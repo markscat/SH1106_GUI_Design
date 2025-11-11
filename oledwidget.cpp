@@ -95,7 +95,17 @@ void OLEDWidget::setBuffer(const uint8_t *buffer){
     updateImageFromModel();
 }
 
-
+/**
+ * @brief 取得符合硬體格式的顯示緩衝區。
+ *
+ * 這是一個方便的包裝函式（wrapper function），作為 `OLEDWidget`（View）對外的介面，
+ * 用於取得底層資料模型（Model）所產生的硬體緩衝區。
+ * 實際的格式轉換邏輯由 `m_model` 物件處理，此處僅做轉發呼叫。
+ * 這樣設計符合 Model-View 的職責分離原則。
+ *
+ * @return std::vector<uint8_t> 一個包含可以直接寫入 OLED 硬體的原始資料緩衝區。
+ * @see OledDataModel::getHardwareBuffer() const
+ */
 std::vector<uint8_t> OLEDWidget::getHardwareBuffer() const
 {
     // 直接返回从数据模型翻译过来的硬体 buffer
@@ -103,6 +113,18 @@ std::vector<uint8_t> OLEDWidget::getHardwareBuffer() const
 }
 
 // ================== 新增的 SLOT ==================
+/**
+ * @brief [SLOT] 設定目前使用的繪圖或互動工具。
+ *
+ * 這是一個 Qt 的槽（Slot），設計用來接收來自工具列按鈕或其他 UI 元件的訊號。
+ * 當使用者點選不同的工具（如畫筆、橡皮擦、選取工具）時，這個槽會被呼叫，
+ * 並更新內部狀態 `m_currentTool`。
+ *
+ * 這個狀態變數會直接影響滑鼠事件（如 `mousePressEvent`, `mouseMoveEvent`）的行為，
+ * 從而決定使用者在畫布上的操作是進行繪製、擦除還是選取。
+ *
+ * @param[in] tool 要被啟用的新工具類型（來自 `ToolType` enum）。
+ */
 void OLEDWidget::setCurrentTool(ToolType tool) {
     m_currentTool = tool;
 /*
@@ -116,6 +138,21 @@ void OLEDWidget::setCurrentTool(ToolType tool) {
 }
 
 
+/**
+ * @brief [SLOT] 處理「複製」操作的槽函數。
+ *
+ * 當使用者觸發複製動作時（例如透過選單或快捷鍵），此槽函數會被呼叫。
+ * 它的主要工作是從資料模型 `m_model` 中，將目前選取區域 (`m_selectedRegion`) 的像素資料
+ * 複製成一個獨立的、邏輯格式的 QImage。
+ *
+ * @note 此函數的行為是「複製並立即準備貼上」。它不會將資料存放到系統的剪貼簿，
+ *       而是直接呼叫 `startPastePreview()`，讓使用者可以立刻看到複製內容的預覽並移動它。
+ *       如果當前沒有有效的選取區域，此函數將不會執行任何操作。
+ *
+ * @see OledDataModel::copyRegionToLogicalFormat()
+ * @see startPastePreview()
+ * @see handlePaste()
+ */
 void OLEDWidget::handleCopy(){
 
     // 步驟 1: 檢查是否有有效的選取區域
@@ -136,6 +173,22 @@ void OLEDWidget::handleCopy(){
     startPastePreview(copiedLogicalData);
 }
 
+/**
+ * @brief [SLOT] 將像素資料轉換為 C/C++ 標頭檔陣列格式並顯示。
+ *
+ * 這是一個工具性槽函數，主要提供給開發者使用，以便將畫面上的圖形快速轉換為
+ * 可用於嵌入式系統（如 Arduino, ESP32 等）的原始位元組陣列。
+ *
+ * 此函數會根據當前是否存在有效選取區 (`m_selectedRegion`) 來決定匯出的範圍：
+ * - 如果有選取區，則只轉換選取區內的像素。
+ * - 如果沒有選取區，則轉換整個畫面的像素。
+ *
+ * 轉換完成後，結果會被格式化成一個 C 語言的 `const unsigned char` 陣列，
+ * 並在一個彈出視窗中顯示，方便使用者複製貼上。
+ *
+ * @see OledDataModel::copyRegionToLogicalFormat()
+ * @see OledDataModel::convertLogicalToHardwareFormat()
+ */
 void OLEDWidget::showBufferDataAsHeader()
 {
     // 步骤 1: 确定要导出的区域 (有选区就用选区，否则用整个屏幕)
@@ -637,12 +690,21 @@ void OLEDWidget::keyPressEvent(QKeyEvent *event)
 }
 
 
-
-// =================================================================
-// 【updateImageFromModel 】
-// 职责: 将 OledDataModel (m_model) 中存储的逻辑像素数据，
-//       同步/渲染到 QImage (m_image) 这个用于显示的图像缓存上。
-// =================================================================
+/**
+ * @brief 根據資料模型（OledDataModel）的狀態，重新生成用於顯示的 QImage 緩衝區。
+ *
+ * 此函數扮演著將資料模型層的邏輯狀態（像素的開/關）轉換為視圖層的視覺呈現（像素的顏色）的關鍵角色。
+ * 它會遍歷顯示器上的每一個像素點，逐一向資料模型 `m_model` 查詢該點的狀態。
+ * 根據查詢結果（true 為亮，false 為暗），在內部成員 `m_image` 的對應位置上設置預先定義的亮點或暗點顏色。
+ *
+ * 完成整個圖像的更新後，它會呼叫 `update()` 來觸發一次重繪請求（schedule a repaint）。
+ * 這會告知 Qt 在下一個事件循環中呼叫此 Widget 的 `paintEvent()`，
+ * `paintEvent()` 接著會將這個更新後的 `m_image` 繪製到螢幕上。
+ *
+ * @note 這是一個像素級別的操作。在模型數據發生任何改變後都應該呼叫此函數，以確保使用者介面與資料模型保持同步。
+ * @see paintEvent(QPaintEvent*)
+ * @see OledDataModel::getPixel(int, int) const
+ */
 void OLEDWidget::updateImageFromModel(){
 
     const QColor pixelOnColor = QColor(135, 206, 250); // 淺藍色
@@ -681,63 +743,6 @@ void OLEDWidget::updateImageFromModel(){
     update();
 }
 
-/*
-
-// === Tool_Select ===
-void OLEDWidget::handleSelectPress(QMouseEvent *event)
-{
-    QPoint pos = convertToOLED(event->pos());
-
-    // 只接受左鍵
-    if (event->button() != Qt::LeftButton)
-        return;
-
-    // 開始新的選取
-    m_isSelecting = true;
-
-    m_startPoint = pos;
-    m_endPoint = pos;
-
-    m_selectedRegion = QRect(); // 清除舊框
-    update();
-}
-
-void OLEDWidget::handleSelectMove(QMouseEvent *event)
-{
-    if (!m_isSelecting)
-        return;
-
-    QPoint pos = convertToOLED(event->pos());
-    m_endPoint = pos;
-    update(); // 繪製虛線框
-}
-
-void OLEDWidget::handleSelectRelease(QMouseEvent *event)
-{
-    if (!m_isSelecting || event->button() != Qt::LeftButton)
-        return;
-
-    QPoint pos = convertToOLED(event->pos());
-
-    m_endPoint = pos;
-    m_isSelecting = false;
-
-    // 正規化框（確保左上角小於右下角）
-    QRect region = QRect(m_startPoint, m_endPoint).normalized();
-
-    // 避免太小的誤觸框
-    if (region.width() < 2 && region.height() < 2){
-         qDebug() << "[handleSelectRelease] 選取框太小，清除";
-        region = QRect();
-    }else {
-        qDebug() << "[handleSelectRelease] 選取框設定為:" << region;
-    }
-
-    m_selectedRegion = region;
-
-    update();
-}
-*/
 
 QPoint OLEDWidget::convertToOLED(const QPoint &pos)
 {
@@ -890,6 +895,27 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
 // 在 oledwidget.cpp 中
 
+/**
+ * @brief 啟動「貼上預覽」模式。
+ *
+ * 此函數負責進入一個特殊的互動模式，在該模式下，一個半透明的預覽圖像會顯示在畫布上，
+ * 並且其位置會跟隨滑鼠移動。這是貼上操作的第一步，讓使用者可以確定貼上的最終位置。
+ *
+ * 函數的具體工作包括：
+ * 1. 驗證傳入的圖像資料是否有效。
+ * 2. 設定狀態旗標 `m_pastePreviewActive` 為 `true`，以通知其他事件處理器（如 `paintEvent`）。
+ * 3. 將傳入的 `logicalImage` 儲存到 `m_pastePreviewImage` 成員變數中。
+ * 4. 初始化預覽圖像的初始位置 `m_pastePosition`（通常是左上角）。
+ * 5. 觸發一次重繪（`update()`），以便 `paintEvent` 首次將預覽圖像繪製出來。
+ *
+ * @param[in] logicalImage 要進行預覽的圖像資料。此圖像必須是有效的且格式為 `QImage::Format_Mono`。
+ * @note 此函數僅啟動視覺預覽，並不會修改底層的 `OledDataModel`。實際的像素寫入操作
+ *       由 `applyPaste()` 函數在使用者確定位置後（例如，點擊滑鼠）執行。
+ * @see applyPaste()
+ * @see paintEvent()
+ * @see mouseMoveEvent()
+ * @see handleCopy()
+ */
 void OLEDWidget::startPastePreview(const QImage &logicalImage)
 {
     // 步骤 1: 安全检查
@@ -982,4 +1008,16 @@ QImage OLEDWidget::getCurrentImage() const
     return m_image;
 }
 
+/**
+     * @brief 從一個邏輯格式的 QImage 更新整個 OLED 顯示內容。
+     * @param image 來源圖片，必須是 QImage::Format_Mono 格式。
+     */
+void OLEDWidget::updateOledFromImage(const QImage& image){
+    // 步驟 1: 呼叫外部工具函式來處理資料模型的更新
+    // 我們把 m_model 的指標傳遞給它，讓它去操作
+    OledDataConverter::updateModelFromImage(&m_model, image);
 
+    // 步驟 2: 資料模型已經被外部工具更新了，
+    //         現在我們只需要同步 View 的顯示即可。
+    updateImageFromModel();
+}

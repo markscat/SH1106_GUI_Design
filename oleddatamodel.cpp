@@ -22,6 +22,22 @@ void OledDataModel::clear()
 }
 
 // 核心操作變得極其簡單！
+/**
+ * @brief 修改邏輯緩衝區中一個或多個像素的狀態。
+ *
+ * 此函數是資料模型最主要的繪圖操作介面。它不僅能設定單一像素點的開關，
+ * 還支援基於筆刷大小（brushSize）的方形區域繪製。
+ *
+ * - 當筆刷大小為 1 (預設值) 時，它只會修改 (x, y) 座標上的單一像素。
+ * - 當筆刷大小大於 1 時，它會以 (x, y) 為中心，繪製一個 `brushSize` x `brushSize` 的方形區域。
+ *
+ * 所有操作都會進行邊界檢查，以確保不會寫入到緩衝區範圍之外。
+ *
+ * @param[in] x         目標像素的 X 座標，或筆刷的中心 X 座標。
+ * @param[in] y         目標像素的 Y 座標，或筆刷的中心 Y 座標。
+ * @param[in] on        像素的目標狀態：`true` 為點亮，`false` 為熄滅（擦除）。
+ * @param[in] brushSize 方形筆刷的邊長。預設為 1，表示單點繪製。
+ */
 void OledDataModel::setPixel(int x, int y, bool on,int brushSize = 1)
 {
     if (brushSize <= 1) {
@@ -53,6 +69,18 @@ void OledDataModel::setPixel(int x, int y, bool on,int brushSize = 1)
     }
 
 }
+
+/**
+ * @brief 取得邏輯緩衝區中指定像素的狀態。
+ *
+ * 這是一個唯讀（const）的存取函數，用於查詢特定座標 (x, y) 上的像素是點亮 (`true`) 還是熄滅 (`false`)。
+ * 函數內部包含邊界檢查，如果查詢的座標超出了顯示範圍，將會安全地回傳 `false`。
+ *
+ * @param[in] x 要查詢的像素的 X 座標。
+ * @param[in] y 要查詢的像素的 Y 座標。
+ * @return bool 如果像素為點亮狀態，則回傳 `true`；如果為熄滅狀態或座標超出範圍，則回傳 `false`。
+ * @see setPixel(int, int, bool, int)
+ */
 
 bool OledDataModel::getPixel(int x, int y) const
 {
@@ -137,6 +165,16 @@ void OledDataModel::drawCircle(const QPoint &p1, const QPoint &p2,int brushSize)
 // --- 翻譯層：只在這裡處理硬體格式 ---
 
 // 翻譯官 1: 將內部邏輯 buffer 翻譯成硬體 buffer
+/**
+ * @brief 取得符合硬體格式的顯示緩衝區。
+ *
+ * 此函數將內部儲存的邏輯像素緩衝區（二維概念）轉換為 OLED 硬體所需的特定一維頁面式（page-based）緩衝區格式。
+ * 轉換過程涉及複雜的位元運算，將每個像素點對應到硬體緩衝區中特定位元組的特定位元。
+ * OLED 的記憶體是分頁的，每頁 8 個像素高。此函數會將 (x, y) 座標轉換為 (page, column, bit) 的對應關係。
+ *
+ * @return std::vector<uint8_t> 一個包含可以直接寫入 OLED RAM 的原始資料的緩衝區。
+ * @see setFromHardwareBuffer()
+ */
 std::vector<uint8_t> OledDataModel::getHardwareBuffer() const
 {
     std::vector<uint8_t> hardware_buffer(OledConfig::RAM_PAGE_WIDTH * (OledConfig::DISPLAY_HEIGHT / 8), 0);
@@ -161,6 +199,17 @@ std::vector<uint8_t> OledDataModel::getHardwareBuffer() const
 
 
 // 翻譯官 2: 將外部硬體 buffer 翻譯並載入到內部邏輯 buffer
+/**
+ * @brief 從硬體格式的緩衝區載入像素資料到內部邏輯緩衝區。
+ *
+ * 此函數執行與 getHardwareBuffer() 相反的操作。它接收一個指向原始硬體資料的指標，
+ * 解析其分頁式（page-based）的結構，並將其轉換回內部使用的二維邏輯像素表示。
+ * 這常用於從硬體讀取當前顯示內容時。
+ *
+ * @note 在載入新資料前，會先呼叫 clear() 清空當前的邏輯緩衝區。
+ * @param[in] data 指向符合 OLED 硬體格式的原始資料緩衝區的指標。如果為 nullptr，則函數不做任何事。
+ * @see getHardwareBuffer()
+ */
 void OledDataModel::setFromHardwareBuffer(const uint8_t* data)
 {
     clear(); // 先清空
@@ -183,7 +232,17 @@ void OledDataModel::setFromHardwareBuffer(const uint8_t* data)
     }
 }
 
-
+/**
+ * @brief 複製內部邏輯緩衝區的指定區域並回傳為一個 QImage。
+ *
+ * 此函數用於截取目前 OLED 資料模型中的一個矩形區域，並將其轉換為一個獨立的、
+ * 使用邏輯格式（1-bit monochrome）的 QImage 物件。
+ * 這對於實現複製/貼上功能或預覽局部區域非常有用。
+ *
+ * @param[in] region 要複製的來源區域，使用邏輯座標 (0,0 到 DISPLAY_WIDTH-1, DISPLAY_HEIGHT-1)。
+ * @return QImage 一個包含指定區域像素資料的 QImage。如果指定區域無效或在邊界外，則回傳一個空的 QImage。
+ * @see convertLogicalToHardwareFormat()
+ */
 QImage OledDataModel::copyRegionToLogicalFormat(const QRect& region) const
 {
     // 确保 region 在有效范围内
@@ -210,6 +269,20 @@ QImage OledDataModel::copyRegionToLogicalFormat(const QRect& region) const
 }
 
 // [新增] 实现 convertLogicalToHardwareFormat (作为 static 函数)
+/**
+ * @brief [靜態] 將邏輯格式的 QImage 轉換為硬體緩衝區格式。
+ *
+ * 這是一個靜態工具函數，功能類似於 getHardwareBuffer()，但它操作的是一個外部傳入的 QImage 物件，
+ * 而不是類別實例的內部緩衝區。它會處理欄位偏移（COLUMN_OFFSET）和頁尾填充，
+ * 產生一個完整的、符合硬體規範的資料緩衝區。
+ *
+ * @param[in] logicalImage 要轉換的來源圖片，必須是 QImage::Format_Mono 格式。
+ * @return QVector<uint8_t> 一個包含轉換後的硬體格式資料的 QVector。如果輸入圖片格式不正確，則回傳一個空的 QVector。
+ * @note 請注意，此實現將 QImage 中像素索引為 0 的點（通常是白色）設置為硬體緩衝區中的亮點（對應位元為 1）。
+ *       如果您的 QImage 使用相反的約定（例如，黑色為亮點），請在使用前進行相應的影像處理（如 invertPixels()）。
+ * @see getHardwareBuffer()
+ * @see copyRegionToLogicalFormat()
+ */
 QVector<uint8_t> OledDataModel::convertLogicalToHardwareFormat(const QImage& logicalImage)
 {
     // 确保传入的是单色图
