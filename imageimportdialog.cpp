@@ -17,9 +17,8 @@ ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent)
     // 2. 設定放大倍率選項 (例如 1 到 8 倍)
     ui->scaleSpinBox->setMinimum(1); // 最小為 1%
     ui->scaleSpinBox->setRange(1, 8);
-    ui->scaleSpinBox->setMaximum(8); // 設定一個合理的上限，例如 8%
-    ui->scaleSpinBox->setValue(100); // 設定一個合理的預設值，例如 100%
-    ui->scaleSpinBox->setValue(1); // 預設為 1 倍
+    ui->scaleSpinBox->setMaximum(1); // 設定一個合理的上限，例如 8%
+    ui->scaleSpinBox->setValue(8); // 設定一個合理的預設值，例如 100%
     ui->scaleSpinBox->setSuffix(" 倍");
 
     // 3. 設定旋轉角度選項
@@ -63,7 +62,7 @@ void ImageImportDialog::updatePreview()
     }
 
     // 1. 取得設定值
-    int scalePercent = ui->scaleSpinBox->value();
+    int scaleFactor = ui->scaleSpinBox->value();
     int rotation = ui->rotationComboBox->currentData().toInt();
     bool shouldInvert = ui->B_W_swap->isChecked();
     //int scale = ui->scaleSpinBox->value();
@@ -79,27 +78,24 @@ void ImageImportDialog::updatePreview()
     // 3. 【流水線步驟 A: 縮放】
     //    注意：SpinBox 的 value() 通常是百分比，所以要除以 100.0
     //    如果您的 SpinBox 直接是像素值，則不需要除法
-    double scaleFactor = scalePercent / 100.0;
-    double targetHeight  = m_originalImage.height();
+    //double scaleFactor = scalePercent;
+    //double targetHeight  = m_originalImage.height();
 
+    int targetWidth = m_originalImage.width() * scaleFactor;
+    int targetHeight  = m_originalImage.height() * scaleFactor;
+
+    qDebug() << "targetWidthDouble:" << targetWidth;
+    qDebug() << "targetHeightDouble:" << targetHeight;
 /*
-
-    double targetWidthDouble = m_originalImage.width() * scaleFactor;
-    double targetHeightDouble  = m_originalImage.height() * scaleFactor;
-
-    qDebug() << "targetWidthDouble:" << targetWidthDouble;
-    qDebug() << "targetHeightDouble:" << targetHeightDouble;
-
     targetWidthDouble = std::max(1.0, targetWidthDouble);
-
     targetHeightDouble = std::max(1.0, targetHeightDouble);
     qDebug() << "targetWidthDouble:" << targetWidthDouble;
     qDebug() << "targetHeightDouble:" << targetHeightDouble;
     */
-
+/*
     int targetWidth = static_cast<int>(m_originalImage.width() * scaleFactor);
     targetWidth = std::max(1, targetWidth);
-
+*/
     //int targetWidth = static_cast<int>(targetWidthDouble);
     //int targetHeight = static_cast<int>(targetHeightDouble);
 
@@ -108,7 +104,7 @@ void ImageImportDialog::updatePreview()
 
     processedImage = processedImage.scaled(
         targetWidth,
-        0, // <--- 將高度設為 0
+        targetHeight,
         Qt::KeepAspectRatio,
         Qt::SmoothTransformation
         );
@@ -123,9 +119,6 @@ void ImageImportDialog::updatePreview()
         qDebug() << "Warning: scale Image is null. Scale factor might be zero.";
         return;
     }
-
-
-
 
     // 4. 【流水線步驟 B: 旋轉】
     if (rotation != 0) {

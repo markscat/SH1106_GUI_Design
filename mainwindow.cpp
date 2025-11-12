@@ -337,6 +337,39 @@ void MainWindow::importImage()
         return;
     }
 
+
+    /*因為本程式主要是為了小尺寸的螢幕而設計,所以會限定大小
+     * 後續會把限定的長寬比放寬,與其說放寬,不如說縮限,
+     * 因為如果要使用2吋以上的彩色螢幕還帶觸摸屏的話,請去用其他更專業的工具,例如LVGL、TouchGFX、emWin
+     * 或是花錢去用Qt for MCUs
+     */
+    if (originalImage.width() > 128 || originalImage.height() > 64) {
+        QMessageBox::critical(
+            this,
+            "匯入錯誤：尺寸過大",
+            QString("圖片尺寸不得超過 128x64 像素。\n\n您選擇的圖片尺寸為: %1x%2")
+                .arg(originalImage.width())
+                .arg(originalImage.height())
+            );
+        return; // 不符合條件，直接返回主視窗
+    }
+
+    // 驗證 3b: 檢查是否為彩色圖片
+    // QImage::isGrayscale() 會對純黑白圖片也返回 true，所以這個檢查就夠了。
+    // 如果一張圖片不是灰階的，那它一定是彩色的。
+    if (!originalImage.isGrayscale()) {
+        QMessageBox::critical(
+            this,
+            "匯入錯誤：格式不符",
+            "只允許匯入黑白或灰階圖片。\n\n您選擇的圖片是彩色圖片。"
+            );
+        return; // 不符合條件，直接返回主視窗
+    }
+
+
+
+
+
     // 步骤 3: [新流程] 弹出我们的自定义对话框，让用户进行设置
     ImageImportDialog importDialog(originalImage, this);
 
