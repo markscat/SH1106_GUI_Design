@@ -275,14 +275,9 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
     painter.fillRect(rect(), Qt::darkGray);
 
     // 步骤 2: 计算 OLED 图像的显示位置和大小
-    /*1107修改 開始*/
+
     int scaled_width = OledConfig::DISPLAY_WIDTH * scale;
     int scaled_height = OledConfig::DISPLAY_HEIGHT * scale;
-
-    //int scaled_width = OledConfig::DISPLAY_WIDTH * ScaleMultiple;
-    //int scaled_height = OledConfig::DISPLAY_HEIGHT * ScaleMultiple;
-
-    /*1107修改 結尾*/
 
     // 计算偏移量，使其在 widget 中居中显示
     int x_offset = (width() - scaled_width) / 2;
@@ -376,21 +371,42 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
             break;
         }
 
-        // 2.3 绘制选区虚线框 (最高层)
+        /*
         if (m_isSelecting || m_selectedRegion.isValid()) {
             QPen selectionPen(Qt::yellow, 1, Qt::DashLine);
             painter.setPen(selectionPen);
             painter.setBrush(Qt::NoBrush);
 
-            QRect rectToDraw = m_isSelecting ? QRect(m_startPoint, m_endPoint).normalized() : m_selectedRegion;
+            QRect rectToDraw = m_isSelecting ? QRect(m_startPoint, m_endPoint).normalized()
+                                             : m_selectedRegion;
 
-            const QRect scaledRect(
+            QRect scaledRect(
                 x_offset + rectToDraw.x() * scale,
                 y_offset + rectToDraw.y() * scale,
                 rectToDraw.width() * scale,
                 rectToDraw.height() * scale
                 );
             painter.drawRect(scaledRect);
+        }*/
+
+
+
+
+        // 2.3 绘制选区虚线框 (最高层)
+        if (m_isSelecting || m_selectedRegion.isValid()) {
+            QPen selectionPen(Qt::yellow, 2, Qt::DashLine);
+            painter.setPen(selectionPen);
+            painter.setBrush(Qt::NoBrush);
+
+            QRect rectToDraw = m_isSelecting ? QRect(m_startPoint, m_endPoint).normalized() : m_selectedRegion;
+                        const QRect scaledRect(
+                x_offset + rectToDraw.x() * scale,
+                y_offset + rectToDraw.y() * scale,
+                rectToDraw.width() * scale,
+                rectToDraw.height() * scale
+                );
+            painter.drawRect(scaledRect);
+                        qDebug() << "paintEvent: isSelecting=" << m_isSelecting << " selectedRegion=" << m_selectedRegion;
         }
     }
 
@@ -401,12 +417,16 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
 
     // 步骤 1: 将 Qt 的 widget 坐标转换为我们的 OLED 逻辑坐标
     const QPoint oled_pos = convertToOLED(event->pos());
+    //qDebug() << "Mouse Press Event! Current tool is:" << m_currentTool;
 
     // 步骤 2: [高优先级] 检查是否处于“贴上预览”模式
     if (m_pastePreviewActive) {
         if (event->button() == Qt::LeftButton) {
             // 如果是左键点击，确认贴上
-            commitPaste();
+            //commitPaste();
+            m_dragStartPos = event->pos();
+            m_dragStartPastePos = m_pastePosition;
+
         } else {
             // 任何其他按键 (右键, 中键) 都取消贴上
             m_pastePreviewActive = false;
@@ -460,6 +480,7 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
         break;
     }
 
+
     // 调用基类实现
     QWidget::mousePressEvent(event);
 
@@ -479,13 +500,18 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
         return;                     // 贴上模式下，不进行其他任何操作
     }
 
-
-    // 步骤 3: 如果鼠标没有被按下（只是悬停移动），则不进行任何绘图/选区操作
-    // m_isDrawing 标志在 press 时设置，在 release 时清除
-    if (!m_isDrawing) {
-        QWidget::mouseMoveEvent(event); // 调用基类实现
+    // Step 2.5: 選取工具獨立處理，不依賴 m_isDrawing
+    if (m_currentTool == Tool_Select && m_isSelecting) {
+        handleSelectMove(event);
         return;
     }
+
+    // Step 3: 其他工具才用 m_isDrawing 判斷
+    if (!m_isDrawing) {
+        QWidget::mouseMoveEvent(event);
+        return;
+    }
+
 
 
     // 步骤 4: 更新当前鼠标位置作为“终点”
@@ -539,6 +565,14 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
 
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
 
+
+
+    // ✅ 選取工具獨立處理
+    if (m_currentTool == Tool_Select && m_isSelecting) {
+        handleSelectRelease(event);
+        return;
+    }
+
     // 步骤 1: [高优先级] 检查是否正在进行绘图或选区操作
     // 如果 m_isDrawing 为 false，说明可能只是一个简单的点击然后释放，
     // 或者是一个被 press 事件取消的操作，直接返回即可。
@@ -554,10 +588,10 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
 
     // 步骤 3: 根据当前工具，分发事件
     switch (m_currentTool) {
-    case Tool_Select:
+    /*case Tool_Select:
         // 选区工具的 release 事件单独处理
         handleSelectRelease(event);
-        break;
+        break;*/
 
     case Tool_Pen:
         // 对于画笔工具，所有的绘制工作都在 press 和 move 事件中完成了。
@@ -781,7 +815,6 @@ void OLEDWidget::handleSelectPress(QMouseEvent *event)
     // 步骤 1: 检查是否是鼠标左键按下的事件
     // 通常，我们只用左键来开始一个新的选区。
     if (event->button() == Qt::LeftButton) {
-
         // 步骤 2: 开启“正在选择”模式
         // 这个布尔标志位 m_isSelecting 非常重要，
         // 它会告诉 mouseMoveEvent 和 paintEvent 当前正处于选区绘制状态。
@@ -804,6 +837,10 @@ void OLEDWidget::handleSelectPress(QMouseEvent *event)
         // 调用 update() 会让 paintEvent 被触发，
         // paintEvent 会根据 m_isSelecting = true 来绘制一个（目前还看不见的）黄色的虚线框。
         update();
+
+        qDebug() << "paintEvent: isSelecting=" << m_isSelecting
+                 << " selectedRegion valid=" << m_selectedRegion.isValid()
+                 << " rect=" << m_selectedRegion;
 
         // 步骤 7: 接受事件
         event->accept();
@@ -836,8 +873,12 @@ void OLEDWidget::handleSelectMove(QMouseEvent *event)
     // 然后它会使用最新的 m_startPoint 和 m_endPoint
     // 来绘制一个动态变化的黄色虚线矩形。
     // 这就为用户提供了实时的视觉反馈。
-    update();
 
+
+    update();
+    qDebug() << " " << "paintEvent: isSelecting=" << m_isSelecting
+             << " selectedRegion valid=" << m_selectedRegion.isValid()
+             << " rect=" << m_selectedRegion;
     // 步骤 5: 接受事件
     event->accept();
 }
@@ -870,15 +911,17 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
     // 如果用户只是点击了一下就松开，或者拖动范围太小，
     // 我们应该认为这是一个无效的选区，直接丢弃它。
     // 这样可以避免后续的复制等操作处理一个 1x1 或 0x0 的无效区域。
+
     if (finalRegion.width() < 2 || finalRegion.height() < 2) {
+
         // 如果区域太小，我们就创建一个无效的 QRect，相当于清除了选区。
         m_selectedRegion = QRect();
         qDebug() << "[Select] Region too small, selection cleared.";
+
     } else {
         // 如果区域有效，就将其保存在 m_selectedRegion 成员变量中。
         // m_selectedRegion 现在存储了这次操作的最终成果。
         m_selectedRegion = finalRegion;
-        qDebug() << "[Select] Final region set to:" << m_selectedRegion;
     }
 
     // 步骤 6: 请求最后一次重绘
@@ -888,8 +931,12 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
     // 2. 如果我们得到了一个有效的 m_selectedRegion，paintEvent 会根据它
     //    绘制一个“固化”的黄色虚线框，向用户展示最终的选区结果。
     // 3. 如果选区无效，m_selectedRegion 为空，paintEvent 将不会画任何框。
-    update();
 
+
+    update();
+    qDebug() << " " << "paintEvent: isSelecting=" << m_isSelecting
+             << " selectedRegion valid=" << m_selectedRegion.isValid()
+             << " rect=" << m_selectedRegion;
     event->accept();
 }
 
@@ -952,6 +999,7 @@ void OLEDWidget::startPastePreview(const QImage &logicalImage)
     // paintEvent 会检查到 m_pastePreviewActive 为 true，
     // 然后调用我们之前写好的逻辑，在 (0, 0) 位置首次绘制出半透明的 m_pastePreviewImage。
     update();
+
 }
 
 

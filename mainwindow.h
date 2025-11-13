@@ -50,5 +50,9 @@ private:
     QScrollArea* scrollArea;   // <- 必須有這行
     ToolType m_currentTool;          // 储存当前选中的工具
     QSize m_originalOledSize;; // 用於儲存 oledPlaceholder 的原始尺寸
+
+protected: // 或者 private: 都可以，但 protected 更符合重寫基類函式的慣例
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 };
 #endif // MAINWINDOW_H

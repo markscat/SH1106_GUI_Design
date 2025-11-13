@@ -55,8 +55,10 @@ public:
 // --- 公开槽 (Public Slots, 响应 UI 信号) ---
 
 public slots:
-     void handleCopy();
+    void handleCopy();
     void showBufferDataAsHeader();
+    void commitPaste();
+
 
 signals:
     // 現在 MOC 會看到並處理這個信號了
@@ -107,7 +109,6 @@ private:
     void handleSelectRelease(QMouseEvent *event);
     //void startPastePreview(const QVector<uint8_t>& data, int width, int height);   //ok
     void startPastePreview(const QImage& logicalImage);
-    void commitPaste();
 
 
 
@@ -124,6 +125,10 @@ private:
     QPoint m_pastePosition = QPoint(0, 0);
 
     QImage m_pastePreviewImage;
+
+    QPoint m_dragStartPos;        // 滑鼠拖曳開始時的 widget 座標
+
+    QPoint m_dragStartPastePos;   // 拖曳開始時的貼上預覽位置
 
 
 #endif

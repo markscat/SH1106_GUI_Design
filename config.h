@@ -3,37 +3,39 @@
 #pragma once
 
 #include <QApplication>
+#include <QBuffer>
+#include <QButtonGroup>
+#include <QCheckBox>
 #include <QClipboard>
-#include <QPushButton>
-#include <QWidget>
-#include <QLabel>
-#include <QPoint> // 確保包含了 QPoint
-#include <QKeyEvent>
-#include <QMainWindow>
-#include <QDir>
 #include <QDateTime>
+#include <QDialog>
+#include <QDir>
+#include <QEvent>
 #include <QFile>
+#include <QFileDialog>
+#include <QImage>
+#include <QImageReader>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QMainWindow>
+#include <QMessageBox>
+#include <QMouseEvent>
+#include <QObject>
+#include <QPainter>
+#include <QPixmap>
+#include <QPushButton>
+#include <QPoint>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QSize>
 #include <QTextStream>
 #include <QTextEdit>
-#include <QVBoxLayout>
-#include <QDialog>
-#include <QFileDialog>
-#include <QImageReader>
-#include <QImage>
-#include <QBuffer>
-#include <QCheckBox>
-#include <QScrollArea>  // ← 一定要加在最上方 include 區
-#include <QWheelEvent>
-#include <QButtonGroup> // 加入標頭檔
-#include <QSize>
-#include <QPainter>
-#include <QMouseEvent> // <--- 把這一行加進來！
-#include <cstring>
-#include <QScrollBar>
-#include <QMessageBox>
-
 #include <QTransform>
-#include <QPixmap>
+#include <QVBoxLayout>
+#include <QWheelEvent>
+#include <QWidget>
+
+#include <cstring>
 
 
 // --- 硬體模擬常數 (Hardware Simulation Constants) ---
@@ -55,9 +57,6 @@ constexpr int RAM_PAGE_WIDTH = 132;
 constexpr int  COLUMN_OFFSET =  2;
 
 }
-#define importDialog_case2
-
-#define modify_1107_
 
 #define QMessageBox_debug
 

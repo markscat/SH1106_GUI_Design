@@ -23,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_oled = new OLEDWidget(this);
 
     scrollArea = new QScrollArea(this);
+    scrollArea->viewport()->installEventFilter(this); // 讓 MainWindow 監視 viewport 的事件
+
 
     scrollArea->setWidget(m_oled);
 
@@ -91,13 +93,13 @@ MainWindow::MainWindow(QWidget *parent)
     m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
 
     //選取複製功能
-/*
+/* Note:
     Tool_Select,// pushButton_Select,
     Tool_Copy,// pushButton_Copy,
     Tool_Cut, //pushButton_Cut,
     Tool_Paste//pushButton_paste
  */
-#ifdef SelectCopy
+
     // 隱藏按鍵的方式
     //ui->pushButton_Select->hide();
     //或
@@ -108,8 +110,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_toolButtonGroup->addButton(ui->pushButton_paste, Tool_Paste);
     m_toolButtonGroup->addButton(ui->pushButton_Cut, Tool_Cut);
 
-
-#endif
     const QList<QAbstractButton*> &buttons = m_toolButtonGroup->buttons();
     for (QAbstractButton *button : buttons) {
         button->setCheckable(true);
@@ -369,7 +369,6 @@ void MainWindow::importImage()
 
 
 
-
     // 步骤 3: [新流程] 弹出我们的自定义对话框，让用户进行设置
     ImageImportDialog importDialog(originalImage, this);
 
@@ -382,55 +381,6 @@ void MainWindow::importImage()
 
     }
 
-#ifdef org_code_1107
-
-    // 步骤 3: 图片预处理 (缩放、居中、旋转等，逻辑不变)
-    // ... (弹出旋转对话框的代码) ...
-    // ... (QTransform 旋转的代码) ...
-    QImage scaledImage = image.scaled(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT,
-                                      Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-
-    //1107修改
-/*
-    QImage scaledImage = image.scaled(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT,
-                                      Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-*/
-    //1107修改
-
-
-    QImage canvas(OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT, QImage::Format_RGB32);
-
-    canvas.fill(Qt::white);
-
-    QPainter painter(&canvas);
-
-    painter.drawImage((canvas.width() - scaledImage.width()) / 2,
-                      (canvas.height() - scaledImage.height()) / 2,
-                      scaledImage);
-
-    painter.end();
-
-    // 步骤 4: [关键] 将处理好的画布，转换为我们系统内部标准的【单色逻辑格式】
-    // 这一步是 MainWindow 的核心职责：把“外来图片”变成“自己人”。
-    //QImage logicalMonoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::DiffuseDither);
-    QImage logicalMonoImage = canvas.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
-
-
-    // 步骤 5: [新流程] 调用 OledDataModel 的【静态工具函数】进行格式转换
-    // 我们把准备好的“逻辑图”交给“专家”去翻译成“硬件格式”。
-    // 注意：这里需要 #include "oleddatamodel.h"
-    QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(logicalMonoImage);
-
-    // 步骤 6: [新流程] 将最终的硬件格式数据，发送给 OLEDWidget
-    if (!hardwareData.isEmpty()) {
-        // QVector 的 .constData() 方法可以提供 setBuffer 所需的 const uint8_t* 指针
-        m_oled->setBuffer(hardwareData.constData());
-    } else {
-        QMessageBox::warning(this, "错误", "图片转换失败！");
-    }
-
-#endif
 }
 
 void MainWindow::on_pushButton_Copy_clicked()
@@ -440,27 +390,77 @@ void MainWindow::on_pushButton_Copy_clicked()
     m_oled->showBufferDataAsHeader();
 }
 
+
 void MainWindow::on_pushButton_paste_clicked()
 {
     qDebug() << "[Paste按鈕] 被點擊了";
-
-    // 我们让“贴上”按钮的行为，和“复制”按钮完全一样。
-    // 即：如果当前有选区，就用选区内容开始贴上预览。
-    // 如果没有选区，但剪贴板里有内容，应该用剪贴板内容（这是未来可扩展的功能）。
-    // 目前最简单的实现，就是直接调用 handleCopy()。
-    // handleCopy() 内部会检查是否有选区，然后启动预览。
-    // 这意味着，用户可以通过“复制”或“贴上”按钮，都可以进入预览模式。
-    m_oled->handleCopy();
-
-    /*
-    // --- [注释掉] 旧的 pasteBlock 逻辑 ---
-    // QRect region = m_oled->selectedRegion();
-    // if (!region.isValid()) return;
-    // m_oled->pasteBlock(region);
-    */
+    if (m_oled) {
+        m_oled->commitPaste();
+    }
 }
 
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    static bool isForwardingEvent = false;
 
+    if (isForwardingEvent) {
+        return false; // 如果我們正在轉發事件，就不要處理任何新事件
+    }
+
+    if (obj == scrollArea->viewport()) {
+        if (event->type() == QEvent::MouseButtonPress ||
+            event->type() == QEvent::MouseButtonRelease ||
+            event->type() == QEvent::MouseMove)
+        {
+            QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+
+            // 1. 獲取全域浮點數座標 (QPointF)
+            const QPointF globalPosF = mouseEvent->globalPosition();
+
+            // 2. 將全域浮點數座標映射到 m_oled 的座標系中
+            //    結果也是一個浮點數座標 (QPointF)
+            const QPointF oledPosF = m_oled->mapFromGlobal(globalPosF);
+
+            // 3. 【關鍵修正】明確地將浮點數座標轉換為整數座標
+            const QPoint oledPos = oledPosF.toPoint();
+
+            // 4. 建立新的滑鼠事件
+
+            QMouseEvent newEvent( // 注意：這裡沒有 *，newEvent 是一個物件，不是指標
+                mouseEvent->type(),
+                oledPos,
+                globalPosF.toPoint(),
+                mouseEvent->button(),
+                mouseEvent->buttons(),
+                mouseEvent->modifiers()
+                );
+
+            // 【關鍵修正】傳遞物件的位址給 sendEvent
+
+             isForwardingEvent = true;
+            QApplication::sendEvent(m_oled, &newEvent);
+
+            isForwardingEvent = false;
+
+#ifdef type_one
+            QMouseEvent *newEvent = new QMouseEvent(
+                mouseEvent->type(),
+                oledPos,                 // 使用轉換後的整數相對座標
+                globalPosF.toPoint(),    // 全域座標，從 QPointF 轉回 QPoint
+                mouseEvent->button(),
+                mouseEvent->buttons(),
+                mouseEvent->modifiers()
+                );
+            QApplication::sendEvent(m_oled, newEvent);
+            delete newEvent;
+#endif
+            // 6. 處理完畢
+            return true;
+        }
+    }
+
+    return QMainWindow::eventFilter(obj, event);
+}
 MainWindow::~MainWindow()
 {
     delete ui;
