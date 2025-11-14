@@ -158,7 +158,6 @@ void OLEDWidget::handleCopy(){
     // 步驟 1: 檢查是否有有效的選取區域
     if (!m_selectedRegion.isValid())
     {
-        qDebug() << "[handleCopy] 沒有選取區域，直接 return";
         return; // 沒有選取框就不做
     }
 
@@ -199,7 +198,6 @@ void OLEDWidget::showBufferDataAsHeader()
     QImage logicalData = m_model.copyRegionToLogicalFormat(region);
 
     if (logicalData.isNull()) {
-        qDebug() << "showBufferDataAsHeader: Failed to copy region to logical format.";
         return; // 如果区域无效或复制失败，则不继续
     }
 
@@ -333,6 +331,7 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
         painter.setOpacity(1.0); // 绘制完毕后，恢复不透明度，以免影响后续绘制
     }
 
+
     // 2.2 绘制非画笔工具的拖拽预览 (如画线、画矩形)
     if (m_isDrawing && m_currentTool != Tool_Pen && m_currentTool != Tool_Select) {
         QPen previewPen(Qt::cyan, 1, Qt::DotLine); // 亮蓝色虚线，更像预览
@@ -370,44 +369,27 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
         default:
             break;
         }
+    }
 
-        /*
-        if (m_isSelecting || m_selectedRegion.isValid()) {
-            QPen selectionPen(Qt::yellow, 1, Qt::DashLine);
-            painter.setPen(selectionPen);
-            painter.setBrush(Qt::NoBrush);
+    // 2.3 绘制选区虚线框 (最高层)
+    if (m_isSelecting || m_selectedRegion.isValid()) {
 
-            QRect rectToDraw = m_isSelecting ? QRect(m_startPoint, m_endPoint).normalized()
-                                             : m_selectedRegion;
+        QRect rectToDraw = m_isSelecting
+                               ? QRect(m_startPoint, m_endPoint).normalized()
+                               : m_selectedRegion;
 
-            QRect scaledRect(
-                x_offset + rectToDraw.x() * scale,
-                y_offset + rectToDraw.y() * scale,
-                rectToDraw.width() * scale,
-                rectToDraw.height() * scale
-                );
-            painter.drawRect(scaledRect);
-        }*/
+        QPen selectionPen(Qt::yellow, 2, Qt::DashLine);
+        painter.setPen(selectionPen);
+        painter.setBrush(Qt::NoBrush);
 
+        QRect scaledRect(
+            x_offset + rectToDraw.x() * scale,
+            y_offset + rectToDraw.y() * scale,
+            rectToDraw.width() * scale,
+            rectToDraw.height() * scale
+            );
+        painter.drawRect(scaledRect);
 
-
-
-        // 2.3 绘制选区虚线框 (最高层)
-        if (m_isSelecting || m_selectedRegion.isValid()) {
-            QPen selectionPen(Qt::yellow, 2, Qt::DashLine);
-            painter.setPen(selectionPen);
-            painter.setBrush(Qt::NoBrush);
-
-            QRect rectToDraw = m_isSelecting ? QRect(m_startPoint, m_endPoint).normalized() : m_selectedRegion;
-                        const QRect scaledRect(
-                x_offset + rectToDraw.x() * scale,
-                y_offset + rectToDraw.y() * scale,
-                rectToDraw.width() * scale,
-                rectToDraw.height() * scale
-                );
-            painter.drawRect(scaledRect);
-                        qDebug() << "paintEvent: isSelecting=" << m_isSelecting << " selectedRegion=" << m_selectedRegion;
-        }
     }
 
 }
@@ -417,7 +399,7 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
 
     // 步骤 1: 将 Qt 的 widget 坐标转换为我们的 OLED 逻辑坐标
     const QPoint oled_pos = convertToOLED(event->pos());
-    //qDebug() << "Mouse Press Event! Current tool is:" << m_currentTool;
+
 
     // 步骤 2: [高优先级] 检查是否处于“贴上预览”模式
     if (m_pastePreviewActive) {
@@ -838,9 +820,6 @@ void OLEDWidget::handleSelectPress(QMouseEvent *event)
         // paintEvent 会根据 m_isSelecting = true 来绘制一个（目前还看不见的）黄色的虚线框。
         update();
 
-        qDebug() << "paintEvent: isSelecting=" << m_isSelecting
-                 << " selectedRegion valid=" << m_selectedRegion.isValid()
-                 << " rect=" << m_selectedRegion;
 
         // 步骤 7: 接受事件
         event->accept();
@@ -873,12 +852,8 @@ void OLEDWidget::handleSelectMove(QMouseEvent *event)
     // 然后它会使用最新的 m_startPoint 和 m_endPoint
     // 来绘制一个动态变化的黄色虚线矩形。
     // 这就为用户提供了实时的视觉反馈。
-
-
     update();
-    qDebug() << " " << "paintEvent: isSelecting=" << m_isSelecting
-             << " selectedRegion valid=" << m_selectedRegion.isValid()
-             << " rect=" << m_selectedRegion;
+
     // 步骤 5: 接受事件
     event->accept();
 }
@@ -916,7 +891,7 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
         // 如果区域太小，我们就创建一个无效的 QRect，相当于清除了选区。
         m_selectedRegion = QRect();
-        qDebug() << "[Select] Region too small, selection cleared.";
+
 
     } else {
         // 如果区域有效，就将其保存在 m_selectedRegion 成员变量中。
@@ -934,9 +909,7 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
 
     update();
-    qDebug() << " " << "paintEvent: isSelecting=" << m_isSelecting
-             << " selectedRegion valid=" << m_selectedRegion.isValid()
-             << " rect=" << m_selectedRegion;
+
     event->accept();
 }
 
@@ -969,7 +942,7 @@ void OLEDWidget::startPastePreview(const QImage &logicalImage)
     // 检查传入的 QImage 是否有效，并且是我们期望的内部逻辑格式 (Format_Mono)。
     // 这是一个好的防御性编程习惯。
     if (logicalImage.isNull() || logicalImage.format() != QImage::Format_Mono) {
-        qDebug() << "[Paste] startPastePreview received invalid or non-mono image. Aborting.";
+
         // 如果数据无效，就确保我们不会进入贴上模式
         m_pastePreviewActive = false;
         m_pastePreviewImage = QImage(); // 清空可能存在的旧数据
@@ -986,7 +959,6 @@ void OLEDWidget::startPastePreview(const QImage &logicalImage)
     // QImage 是隐式共享的 (implicitly shared)，所以这个赋值操作非常快，
     // 它只复制了图像的元数据和一个指向数据块的指针。
     m_pastePreviewImage = logicalImage;
-    qDebug() << "[Paste] Starting paste preview with image size:" << m_pastePreviewImage.size();
 
 
     // 步骤 4: 初始化预览图像的显示位置
@@ -1011,11 +983,10 @@ void OLEDWidget::commitPaste()
     // 步骤 1: 安全检查
     // 确保我们确实处于贴上模式，并且有有效的预览图像数据。
     if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
-        qDebug() << "[Paste] commitPaste called in invalid state. Aborting.";
         return;
     }
 
-    qDebug() << "[Paste] Committing paste at position:" << m_pastePosition;
+
 
     // 步骤 2: 遍历预览图像的每一个像素
     // 我们需要将 m_pastePreviewImage 中的像素，一个一个地“复制”到 m_model 中。
@@ -1069,3 +1040,35 @@ void OLEDWidget::updateOledFromImage(const QImage& image){
     //         現在我們只需要同步 View 的顯示即可。
     updateImageFromModel();
 }
+void OLEDWidget::handleCut() {
+    if (!m_selectedRegion.isValid()) return;
+
+    // 1. 建立一個 QImage，大小等於選取區域
+    QImage logicalImage(m_selectedRegion.size(), QImage::Format_ARGB32);
+    logicalImage.fill(Qt::white); // 預設白色背景
+
+    // 2. 從 m_model 複製選取區域的像素到 QImage
+    for (int y = 0; y < m_selectedRegion.height(); ++y) {
+        for (int x = 0; x < m_selectedRegion.width(); ++x) {
+            bool pixelOn = m_model.getPixel(m_selectedRegion.left() + x,
+                                            m_selectedRegion.top() + y);
+            logicalImage.setPixelColor(x, y, pixelOn ? Qt::black : Qt::white);
+        }
+    }
+
+    // 3. 啟動貼上預覽
+    startPastePreview(logicalImage);
+
+    // 4. 清除原區域像素
+    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
+        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
+            m_model.setPixel(x, y, false, 1); // 設成熄滅
+        }
+    }
+
+    // 5. 更新畫面
+    updateImageFromModel();
+    update();
+}
+
+

@@ -58,6 +58,7 @@ public slots:
     void handleCopy();
     void showBufferDataAsHeader();
     void commitPaste();
+    void handleCut();
 
 
 signals:
