@@ -41,6 +41,8 @@ private slots:
 
     void on_pushButton_Copy_clicked();
     void on_pushButton_paste_clicked();
+    void on_pushButton_Cut_clicked();
+
 
 
 private:

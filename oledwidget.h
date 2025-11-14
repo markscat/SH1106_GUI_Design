@@ -59,6 +59,8 @@ public slots:
     void showBufferDataAsHeader();
     void commitPaste();
     void handleCut();
+    void handlePaste(); // <-- 新增這個槽
+
 
 
 signals:
@@ -82,9 +84,6 @@ private:
 
     int scale = 7; // 放大倍率
 
-#ifdef modify_1107
-    int m_pixelScale = 1; // 新增：用於控制內部像素的顯示縮放 (例如，初始化為 1)
-#endif
     //直接用 ToolType
     ToolType m_currentTool;
 
@@ -111,9 +110,8 @@ private:
     //void startPastePreview(const QVector<uint8_t>& data, int width, int height);   //ok
     void startPastePreview(const QImage& logicalImage);
 
+    QImage m_clipboardImage; // <-- 【核心】新增這個成員變數，作為持久化的剪貼簿
 
-
-#ifdef SelectCopy
 
     /* @brief 當前選取框的矩形範圍 */
     QRect m_selectedRegion; // 儲存選取區域（OLED 座標系）
@@ -130,9 +128,6 @@ private:
     QPoint m_dragStartPos;        // 滑鼠拖曳開始時的 widget 座標
 
     QPoint m_dragStartPastePos;   // 拖曳開始時的貼上預覽位置
-
-
-#endif
 
 
 };

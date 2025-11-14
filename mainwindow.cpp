@@ -63,6 +63,11 @@ MainWindow::MainWindow(QWidget *parent)
     // 【新增】將 OLEDWidget 的信號連接到 MainWindow 的槽
     connect(m_oled, &OLEDWidget::coordinatesChanged, this, &MainWindow::updateCoordinateLabel);
 
+
+    //connect(ui->pushButton_paste, &QPushButton::clicked, ui->m_oled, &OLEDWidget::handlePaste);
+    //mainwindow.cpp:67:62: No member named 'oledWidget' in 'Ui::MainWindow'
+
+
     //<筆刷功能>
     m_oled->setBrushSize(1); // 預設 1x1
     //加入brushSizeComboBox的功能選項
@@ -398,6 +403,15 @@ void MainWindow::on_pushButton_paste_clicked()
         m_oled->commitPaste();
     }
 }
+
+void MainWindow::on_pushButton_Cut_clicked()
+{
+    qDebug() << "[Cut按鈕] 被點擊了";
+    if (m_oled) {
+        m_oled->handleCut();
+    }
+}
+
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {

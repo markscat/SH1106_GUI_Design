@@ -13,7 +13,7 @@
  * *****************Copyright (C) 2024*****************************************
  */
 
-
+#define  oldcode
 #include "oledwidget.h"
 #include "oleddatamodel.h"
 
@@ -30,11 +30,6 @@ OLEDWidget::OLEDWidget(QWidget *parent)
 
     setScale(7); // 呼叫 setScale 來設定尺寸和縮放
 
-#ifdef modify_1107
-    // 新增的 m_pixelScale，用於控制內部像素顯示，初始化為 1 (1:1 顯示)
-    m_pixelScale = 1;
-#endif
-
     setFocusPolicy(Qt::StrongFocus); // 允許接收鍵盤事件
 }
 
@@ -48,16 +43,6 @@ void OLEDWidget::setScale(int s) {
 
     update();
 }
-
-#ifdef modify_1107
-
-void OLEDWidget::setPixelScale(int newPixelScale) {
-    if (newPixelScale > 0 && newPixelScale != m_pixelScale) {
-        m_pixelScale = newPixelScale;
-        update(); // 重新繪製
-    }
-}
-#endif
 
 // ↓↓↓↓ 檢查並補上 clearScreen 函式 ↓↓↓↓
 void OLEDWidget::clearScreen() {
@@ -137,40 +122,6 @@ void OLEDWidget::setCurrentTool(ToolType tool) {
 
 }
 
-
-/**
- * @brief [SLOT] 處理「複製」操作的槽函數。
- *
- * 當使用者觸發複製動作時（例如透過選單或快捷鍵），此槽函數會被呼叫。
- * 它的主要工作是從資料模型 `m_model` 中，將目前選取區域 (`m_selectedRegion`) 的像素資料
- * 複製成一個獨立的、邏輯格式的 QImage。
- *
- * @note 此函數的行為是「複製並立即準備貼上」。它不會將資料存放到系統的剪貼簿，
- *       而是直接呼叫 `startPastePreview()`，讓使用者可以立刻看到複製內容的預覽並移動它。
- *       如果當前沒有有效的選取區域，此函數將不會執行任何操作。
- *
- * @see OledDataModel::copyRegionToLogicalFormat()
- * @see startPastePreview()
- * @see handlePaste()
- */
-void OLEDWidget::handleCopy(){
-
-    // 步驟 1: 檢查是否有有效的選取區域
-    if (!m_selectedRegion.isValid())
-    {
-        return; // 沒有選取框就不做
-    }
-
-    // 步驟 2 : 從 m_model 讀取像素
-    // 让 model 把选区复制成一个逻辑图像。
-
-    QImage copiedLogicalData = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-
-   // QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(copiedLogicalData);
-
-    //  步骤 2: 直接用这个逻辑图像启动贴上预览
-    startPastePreview(copiedLogicalData);
-}
 
 /**
  * @brief [SLOT] 將像素資料轉換為 C/C++ 標頭檔陣列格式並顯示。
@@ -985,9 +936,6 @@ void OLEDWidget::commitPaste()
     if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
         return;
     }
-
-
-
     // 步骤 2: 遍历预览图像的每一个像素
     // 我们需要将 m_pastePreviewImage 中的像素，一个一个地“复制”到 m_model 中。
     for (int y = 0; y < m_pastePreviewImage.height(); ++y) {
@@ -1040,35 +988,160 @@ void OLEDWidget::updateOledFromImage(const QImage& image){
     //         現在我們只需要同步 View 的顯示即可。
     updateImageFromModel();
 }
-void OLEDWidget::handleCut() {
-    if (!m_selectedRegion.isValid()) return;
 
-    // 1. 建立一個 QImage，大小等於選取區域
-    QImage logicalImage(m_selectedRegion.size(), QImage::Format_ARGB32);
-    logicalImage.fill(Qt::white); // 預設白色背景
 
-    // 2. 從 m_model 複製選取區域的像素到 QImage
-    for (int y = 0; y < m_selectedRegion.height(); ++y) {
-        for (int x = 0; x < m_selectedRegion.width(); ++x) {
-            bool pixelOn = m_model.getPixel(m_selectedRegion.left() + x,
-                                            m_selectedRegion.top() + y);
-            logicalImage.setPixelColor(x, y, pixelOn ? Qt::black : Qt::white);
-        }
+/**
+ * @brief [SLOT] 處理「複製」操作的槽函數。
+ *
+ * 當使用者觸發複製動作時（例如透過選單或快捷鍵），此槽函數會被呼叫。
+ * 它的主要工作是從資料模型 `m_model` 中，將目前選取區域 (`m_selectedRegion`) 的像素資料
+ * 複製成一個獨立的、邏輯格式的 QImage。
+ *
+ * @note 此函數的行為是「複製並立即準備貼上」。它不會將資料存放到系統的剪貼簿，
+ *       而是直接呼叫 `startPastePreview()`，讓使用者可以立刻看到複製內容的預覽並移動它。
+ *       如果當前沒有有效的選取區域，此函數將不會執行任何操作。
+ *
+ * @see OledDataModel::copyRegionToLogicalFormat()
+ * @see startPastePreview()
+ * @see handlePaste()
+ */
+void OLEDWidget::handleCopy(){
+
+#ifdef newcode
+    // 步驟 1: 檢查是否有有效的選取區域
+    if (!m_selectedRegion.isValid())
+    {
+        return; // 沒有選取框就不做
     }
 
-    // 3. 啟動貼上預覽
-    startPastePreview(logicalImage);
+    // 步驟 2: 從 m_model 讀取像素並儲存到剪貼簿
+    // [修改] 將結果存到 m_clipboardImage，而不是直接啟動預覽
+    m_clipboardImage = m_model.copyRegionToLogicalFormat(m_selectedRegion);
 
-    // 4. 清除原區域像素
-    for (int y = m_selectedRegion.top(); y <= m_selectedRegion.bottom(); ++y) {
-        for (int x = m_selectedRegion.left(); x <= m_selectedRegion.right(); ++x) {
-            m_model.setPixel(x, y, false, 1); // 設成熄滅
-        }
-    }
+    // 注意：複製後不再自動進入貼上模式，這符合標準軟體的行為
 
-    // 5. 更新畫面
-    updateImageFromModel();
-    update();
+#endif
+
+#ifdef oldcode
+    // 步驟 2 : 從 m_model 讀取像素
+    // 让 model 把选区复制成一个逻辑图像。
+
+    QImage copiedLogicalData = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+
+    // QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(copiedLogicalData);
+
+    //  步骤 2: 直接用这个逻辑图像启动贴上预览
+    startPastePreview(copiedLogicalData);
+#endif
+
 }
 
+/**
+ * @brief [SLOT] 處理「剪下」操作的槽函數。
+ *
+ * 剪下操作是一個複合動作，依序執行以下三件事：
+ * 1.  **複製 (Copy)**: 將目前選取區域 (`m_selectedRegion`) 的像素資料複製到一個暫存的 QImage 中。
+ * 2.  **刪除 (Delete)**: 將原選取區域的像素從資料模型 (`m_model`) 中清除（設為熄滅）。
+ * 3.  **貼上預覽 (Paste Preview)**: 立刻進入「貼上預覽」模式，讓使用者可以移動剛剪下的內容到新位置。
+ *
+ * 如果當前沒有有效的選取區域，此函數將不會執行任何操作。
+ *
+ * @see handleCopy()
+ * @see OledDataModel::copyRegionToLogicalFormat()
+ * @see OledDataModel::drawRectangle()
+ * @see startPastePreview()
+ */
+void OLEDWidget::handleCut() {
+    // 步驟 1: 檢查是否有有效的選取區域
+    if (!m_selectedRegion.isValid()) {
+        return; // 沒有選取框就不做任何事
+    }
+
+#ifdef newcode
+    // ================== 1. 複製到剪貼簿 (Copy to Clipboard) ==================
+    // [修改] 將選區內容存到 m_clipboardImage
+    m_clipboardImage = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+    if (m_clipboardImage.isNull()) {
+        return;
+    }
+
+#endif
+
+#ifdef oldcode
+    // ================== 1. 複製 (Copy) ==================
+    // [重用!] 直接呼叫 model 的現有功能，將選區內容複製成一個邏輯圖像。
+    // 這一步與 handleCopy() 完全相同。
+    QImage cutLogicalImage = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+    if (cutLogicalImage.isNull()) {
+        // 如果因某些原因複製失敗，則中止操作
+        return;
+    }
+#endif
+    // ================== 2. 刪除 (Delete) ==================
+    // [優化!] 指揮 model 在原選區位置畫一個「熄滅的、實心的」矩形，
+    // 這比逐點清除像素的效率高得多。
+    m_model.drawRectangle(
+        m_selectedRegion.x(),
+        m_selectedRegion.y(),
+        m_selectedRegion.width(),
+        m_selectedRegion.height(),
+        false, // on = false 代表「擦除」
+        true,  // fill = true 代表「實心」
+        1      // 筆刷大小在此不重要
+        );
+
+
+
+#ifdef newcode
+    // 因為資料模型已經被修改 (原區域被清空)，必須同步顯示
+    updateImageFromModel();
+
+
+    // ================== 3. 清理選區 ==================
+    m_selectedRegion = QRect();
+    update(); // 更新畫面以移除選取框
+
+#endif
+
+#ifdef oldcode
+
+    // ================== 3. 貼上預覽 (Paste Preview) ==================
+    // [重用!] 呼叫現有的輔助函式來啟動貼上預覽模式
+    startPastePreview(cutLogicalImage);
+
+    // [體驗優化] 讓預覽圖的初始位置出現在原本被剪下的地方，而不是左上角 (0,0)
+    m_pastePosition = m_selectedRegion.topLeft();
+
+    // 再次觸發更新，確保 paintEvent 能在正確的位置畫出預覽圖
+    update();
+#endif
+
+    // [清理] 剪下後，原有的選取框應該消失
+    m_selectedRegion = QRect();
+}
+
+
+/**
+ * @brief [SLOT] 處理「貼上」操作的槽函數。
+ *
+ * 當使用者觸發貼上動作時，此槽函數被呼叫。
+ * 它會檢查內部剪貼簿 (`m_clipboardImage`) 是否有有效的圖像資料。
+ * 如果有，它會呼叫 `startPastePreview()`，使用剪貼簿中的圖像
+ * 來啟動一個新的貼上預覽流程，讓使用者可以決定貼上的位置。
+ *
+ * @note 此函數可以被多次呼叫，每次都會從同一個剪貼簿內容創建一個新的貼上預覽。
+ * @see startPastePreview()
+ * @see m_clipboardImage
+ */
+void OLEDWidget::handlePaste()
+{
+    // 步驟 1: 檢查剪貼簿是否為空
+    if (m_clipboardImage.isNull()) {
+        return; // 剪貼簿沒東西，就不做任何事
+    }
+
+    // 步驟 2: 使用剪貼簿的內容來啟動貼上預覽
+    // 每次呼叫 handlePaste，都會開始一個全新的貼上過程
+    startPastePreview(m_clipboardImage);
+}
 
