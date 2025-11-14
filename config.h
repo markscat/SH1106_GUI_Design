@@ -58,6 +58,11 @@ constexpr int  COLUMN_OFFSET =  2;
 
 }
 
+
+//#define  oldcode
+#define newcode_Buffer
+
+
 #define QMessageBox_debug
 
 #define Past_Function

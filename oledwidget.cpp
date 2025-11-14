@@ -13,7 +13,6 @@
  * *****************Copyright (C) 2024*****************************************
  */
 
-#define  oldcode
 #include "oledwidget.h"
 #include "oleddatamodel.h"
 
@@ -751,6 +750,8 @@ void OLEDWidget::handleSelectPress(QMouseEvent *event)
         // 步骤 2: 开启“正在选择”模式
         // 这个布尔标志位 m_isSelecting 非常重要，
         // 它会告诉 mouseMoveEvent 和 paintEvent 当前正处于选区绘制状态。
+
+
         m_isSelecting = true;
 
         // 步骤 3: 转换坐标并记录选区的“起始点”
@@ -845,6 +846,17 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
 
     } else {
+
+#ifdef newcode_Buffer
+        // ==========================================================
+        // 【核心逻辑】在这里清空上一次复制/剪下的内容
+        // ==========================================================
+        if (!m_selectionBuffer.isNull()) {
+            m_selectionBuffer = QImage(); // 清空暂存区
+        }
+        // ==========================================================
+#endif
+
         // 如果区域有效，就将其保存在 m_selectedRegion 成员变量中。
         // m_selectedRegion 现在存储了这次操作的最终成果。
         m_selectedRegion = finalRegion;
@@ -1006,13 +1018,17 @@ void OLEDWidget::updateOledFromImage(const QImage& image){
  * @see handlePaste()
  */
 void OLEDWidget::handleCopy(){
-
-#ifdef newcode
     // 步驟 1: 檢查是否有有效的選取區域
     if (!m_selectedRegion.isValid())
     {
         return; // 沒有選取框就不做
     }
+#ifdef newcode_Buffer
+    m_selectionBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+#endif
+
+#ifdef newcode_clipboard
+
 
     // 步驟 2: 從 m_model 讀取像素並儲存到剪貼簿
     // [修改] 將結果存到 m_clipboardImage，而不是直接啟動預覽
@@ -1057,13 +1073,19 @@ void OLEDWidget::handleCut() {
         return; // 沒有選取框就不做任何事
     }
 
-#ifdef newcode
+#ifdef newcode_clipboard
     // ================== 1. 複製到剪貼簿 (Copy to Clipboard) ==================
     // [修改] 將選區內容存到 m_clipboardImage
     m_clipboardImage = m_model.copyRegionToLogicalFormat(m_selectedRegion);
     if (m_clipboardImage.isNull()) {
         return;
     }
+
+#endif
+
+#ifdef newcode_Buffer
+    m_selectionBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+    if (m_selectionBuffer.isNull()) return;
 
 #endif
 
@@ -1077,6 +1099,7 @@ void OLEDWidget::handleCut() {
         return;
     }
 #endif
+
     // ================== 2. 刪除 (Delete) ==================
     // [優化!] 指揮 model 在原選區位置畫一個「熄滅的、實心的」矩形，
     // 這比逐點清除像素的效率高得多。
@@ -1092,14 +1115,22 @@ void OLEDWidget::handleCut() {
 
 
 
-#ifdef newcode
+#ifdef newcode_clipboard
     // 因為資料模型已經被修改 (原區域被清空)，必須同步顯示
     updateImageFromModel();
-
 
     // ================== 3. 清理選區 ==================
     m_selectedRegion = QRect();
     update(); // 更新畫面以移除選取框
+
+#endif
+
+
+#ifdef newcode_Buffer
+
+    updateImageFromModel();
+    m_selectedRegion = QRect();
+    update();
 
 #endif
 
@@ -1120,6 +1151,7 @@ void OLEDWidget::handleCut() {
     m_selectedRegion = QRect();
 }
 
+#ifdef newcode_Buffer
 
 /**
  * @brief [SLOT] 處理「貼上」操作的槽函數。
@@ -1136,12 +1168,13 @@ void OLEDWidget::handleCut() {
 void OLEDWidget::handlePaste()
 {
     // 步驟 1: 檢查剪貼簿是否為空
-    if (m_clipboardImage.isNull()) {
+    if (m_selectionBuffer.isNull()) {
         return; // 剪貼簿沒東西，就不做任何事
     }
 
     // 步驟 2: 使用剪貼簿的內容來啟動貼上預覽
     // 每次呼叫 handlePaste，都會開始一個全新的貼上過程
-    startPastePreview(m_clipboardImage);
+    startPastePreview(m_selectionBuffer);
 }
 
+#endif
