@@ -264,6 +264,9 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
     }
 
     if (m_pastePreviewActive && !m_pastePreviewImage.isNull()) {
+
+        qDebug() << "绘制预览: 位置" << m_pastePosition << "尺寸" << m_pastePreviewImage.size();
+
         // 使用 QPainter 的透明度功能，效果更好且代码更简单
         painter.setOpacity(0.65); // 设置 65% 的不透明度
 
@@ -279,6 +282,8 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
         painter.drawImage(previewTargetRect, m_pastePreviewImage);
 
         painter.setOpacity(1.0); // 绘制完毕后，恢复不透明度，以免影响后续绘制
+    } else {
+        if (m_pastePreviewActive) qDebug() << "预览图像为空";
     }
 
 
@@ -742,8 +747,13 @@ QPoint OLEDWidget::convertToOLED(const QPoint &pos)
 }
 
 
-void OLEDWidget::handleSelectPress(QMouseEvent *event)
+   void OLEDWidget::handleSelectPress(QMouseEvent *event)
 {
+#ifdef Modefiy_1115
+    // 开始新的选择时，清除之前的缓冲区
+    m_hasValidBuffer = false;
+    m_persistentBuffer = QImage();
+#endif
     // 步骤 1: 检查是否是鼠标左键按下的事件
     // 通常，我们只用左键来开始一个新的选区。
     if (event->button() == Qt::LeftButton) {
@@ -1021,10 +1031,26 @@ void OLEDWidget::handleCopy(){
     // 步驟 1: 檢查是否有有效的選取區域
     if (!m_selectedRegion.isValid())
     {
+        qDebug() << "Copy failed: 无有效选择区域";
+
         return; // 沒有選取框就不做
     }
+
 #ifdef newcode_Buffer
     m_selectionBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+#endif
+
+#ifdef Modefiy_1115
+
+    m_persistentBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+
+    if (m_persistentBuffer.isNull()) {
+        qDebug() << "Copy failed: 选中区域数据为空";
+    } else {
+        qDebug() << "Copy success: 缓冲区尺寸" << m_persistentBuffer.size();
+    }
+
+    m_hasValidBuffer = !m_persistentBuffer.isNull();  // 标记有效
 #endif
 
 #ifdef newcode_clipboard
@@ -1070,8 +1096,23 @@ void OLEDWidget::handleCopy(){
 void OLEDWidget::handleCut() {
     // 步驟 1: 檢查是否有有效的選取區域
     if (!m_selectedRegion.isValid()) {
+        qDebug() << "Cut failed: 无有效选择区域";
+
         return; // 沒有選取框就不做任何事
     }
+
+#ifdef Modefiy_1115
+    // 保存到持久化缓冲区
+    m_persistentBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
+    m_hasValidBuffer = !m_persistentBuffer.isNull();
+
+    if (m_persistentBuffer.isNull()) {
+        qDebug() << "Cut failed: 选中区域数据为空";
+        return;
+    }
+
+
+#endif
 
 #ifdef newcode_clipboard
     // ================== 1. 複製到剪貼簿 (Copy to Clipboard) ==================
@@ -1114,6 +1155,17 @@ void OLEDWidget::handleCut() {
         );
 
 
+#ifdef Modefiy_1115
+
+    updateImageFromModel();
+
+    qDebug() << "Cut success: 緩衝區尺寸" << m_persistentBuffer.size();
+
+    m_selectedRegion = QRect();
+    update();
+
+#endif
+
 
 #ifdef newcode_clipboard
     // 因為資料模型已經被修改 (原區域被清空)，必須同步顯示
@@ -1149,7 +1201,45 @@ void OLEDWidget::handleCut() {
 
     // [清理] 剪下後，原有的選取框應該消失
     m_selectedRegion = QRect();
+
 }
+
+#ifdef Modefiy_1115
+
+/**
+ * @brief [SLOT] 處理「貼上」操作的槽函數。
+ *
+ * 當使用者觸發貼上動作時，此槽函數被呼叫。
+ * 它會檢查內部剪貼簿 (`m_clipboardImage`) 是否有有效的圖像資料。
+ * 如果有，它會呼叫 `startPastePreview()`，使用剪貼簿中的圖像
+ * 來啟動一個新的貼上預覽流程，讓使用者可以決定貼上的位置。
+ *
+ * @note 此函數可以被多次呼叫，每次都會從同一個剪貼簿內容創建一個新的貼上預覽。
+ * @see startPastePreview()
+ * @see m_clipboardImage
+ */
+void OLEDWidget::handlePaste()
+{
+    qDebug() << "Paste ";
+
+    // 步驟 1: 檢查剪貼簿是否為空
+    if (!m_hasValidBuffer || m_persistentBuffer.isNull())  {
+        qDebug() << "Paste failed: 缓冲区为空";
+        return; // 剪貼簿沒東西，就不做任何事
+    }
+
+    // 启动粘贴预览（使用持久化缓冲区数据）
+    startPastePreview(m_persistentBuffer);
+    m_pastePosition = QPoint(0, 0);  // 或设置为当前鼠标位置
+    qDebug() << "Paste preview started: 预览尺寸" << m_pastePreviewImage.size();
+    update();
+
+}
+
+#endif
+
+
+
 
 #ifdef newcode_Buffer
 

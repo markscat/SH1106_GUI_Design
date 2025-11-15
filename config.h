@@ -60,8 +60,8 @@ constexpr int  COLUMN_OFFSET =  2;
 
 
 //#define  oldcode
-#define newcode_Buffer
-
+//#define newcode_Buffer
+    #define Modefiy_1115
 
 #define QMessageBox_debug
 

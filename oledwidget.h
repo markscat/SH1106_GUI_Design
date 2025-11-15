@@ -59,6 +59,9 @@ public slots:
     void showBufferDataAsHeader();
     void commitPaste();
     void handleCut();
+    void handlePaste(); // <-- 新增這個槽
+
+
 
 #ifdef newcode_Buffer
     void handlePaste(); // <-- 新增這個槽
@@ -109,11 +112,14 @@ private:
     void handleSelectPress(QMouseEvent *event);
     void handleSelectMove(QMouseEvent *event);
     void handleSelectRelease(QMouseEvent *event);
-    //void startPastePreview(const QVector<uint8_t>& data, int width, int height);   //ok
     void startPastePreview(const QImage& logicalImage);
 
     //QImage m_clipboardImage; // <-- 【核心】新增這個成員變數，作為持久化的剪貼簿
-    QImage m_selectionBuffer;  //新增這個成員變數，作為持久化的buffer
+    //QImage m_selectionBuffer;  //新增這個成員變數，作為持久化的buffer
+    QImage m_persistentBuffer;  // 持久化缓冲区
+    bool m_hasValidBuffer;      // 标记缓冲区是否有效
+
+
 
     /* @brief 當前選取框的矩形範圍 */
     QRect m_selectedRegion; // 儲存選取區域（OLED 座標系）

@@ -63,8 +63,13 @@ MainWindow::MainWindow(QWidget *parent)
     // 【新增】將 OLEDWidget 的信號連接到 MainWindow 的槽
     connect(m_oled, &OLEDWidget::coordinatesChanged, this, &MainWindow::updateCoordinateLabel);
 
+    // 关键：将粘贴按钮的点击信号连接到 OLEDWidget 的 handlePaste 槽函数
 
-    //connect(ui->pushButton_paste, &QPushButton::clicked, ui->m_oled, &OLEDWidget::handlePaste);
+    //你的版本
+    connect(ui->pushButton_paste, &QPushButton::clicked, m_oled, &OLEDWidget::handlePaste);
+
+    //剪貼簿的版本
+    //connect(ui->pushButton_paste, &QPushButton::clicked, m_oled, &OLEDWidget::handlePaste);
     //mainwindow.cpp:67:62: No member named 'oledWidget' in 'Ui::MainWindow'
 
 
