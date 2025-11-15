@@ -31,16 +31,16 @@ SH1106 GUI設計工具<br>
 2025/11/13<br>
 目前完成項目：<br>
 ✅ 畫筆 <br>
-    ✅ 線條 <br>
-    ✅ 矩形 <br>
-    ✅ 圓形<br>
+&nbsp;&nbsp;&nbsp;&nbsp;✅ 線條 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;✅ 矩形 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;✅ 圓形<br>
 ✅ 預覽圖形 <br>
 ✅ 筆刷大小 <br>
 ✅ 匯出 C 陣列 <br>
 ✅ 匯入圖片 <br>
-    備註:禁止輸入彩色,以及像素超過128*64的圖片
-    ✅ 反白 <br>
-    ✅ 縮放(最大八倍) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;備註:禁止輸入彩色,以及像素超過128*64的圖片
+&nbsp;&nbsp;&nbsp;&nbsp;✅ 反白 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;✅ 縮放(最大八倍) <br>
 ✅ 清除畫面 <br>
 ✅ 滾動視窗 <br>
 ✅ 選取<br>
