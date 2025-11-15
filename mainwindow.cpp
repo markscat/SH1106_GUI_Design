@@ -460,19 +460,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             QApplication::sendEvent(m_oled, &newEvent);
 
             isForwardingEvent = false;
-
-#ifdef type_one
-            QMouseEvent *newEvent = new QMouseEvent(
-                mouseEvent->type(),
-                oledPos,                 // 使用轉換後的整數相對座標
-                globalPosF.toPoint(),    // 全域座標，從 QPointF 轉回 QPoint
-                mouseEvent->button(),
-                mouseEvent->buttons(),
-                mouseEvent->modifiers()
-                );
-            QApplication::sendEvent(m_oled, newEvent);
-            delete newEvent;
-#endif
             // 6. 處理完畢
             return true;
         }

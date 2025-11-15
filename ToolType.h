@@ -3,16 +3,16 @@
 #define SelectCopy
 
 enum ToolType {
-    Tool_Pen,
-    Tool_Line,
-    Tool_Rectangle,
-    Tool_FilledRectangle,
+    Tool_Pen,                           //1
+    Tool_Line,                          //2
+    Tool_Rectangle,                     //3
+    Tool_FilledRectangle,               //4
     Tool_Circle,
 
-    Tool_Select,// pushButton_Select,
-    Tool_Copy,// pushButton_Copy,
-    Tool_Cut, //pushButton_Cut,
-    Tool_Paste//pushButton_paste
+    Tool_Select,// pushButton_Select,     5
+    Tool_Copy,// pushButton_Copy,         6
+    Tool_Cut, //pushButton_Cut,           7
+    Tool_Paste//pushButton_paste          8
 
     //之后可以继续添加 Triangle 等
 };

@@ -1,6 +1,6 @@
 /* ******************Copyright (C) 2025 Ethan Yang *****************************
  * @file    oledwidget.cpp
- * @author  你的名字
+ * @author  Ethan and ai
  * @date    2024/10/25
  * @brief   OLED 螢幕模擬 widget 的核心功能實作。
  *
@@ -265,7 +265,7 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
 
     if (m_pastePreviewActive && !m_pastePreviewImage.isNull()) {
 
-        qDebug() << "绘制预览: 位置" << m_pastePosition << "尺寸" << m_pastePreviewImage.size();
+        qDebug() << "PaintEvent: Drawing paste preview. Paste Preview Active:" << m_pastePreviewActive;
 
         // 使用 QPainter 的透明度功能，效果更好且代码更简单
         painter.setOpacity(0.65); // 设置 65% 的不透明度
@@ -364,12 +364,12 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
             m_dragStartPos = event->pos();
             m_dragStartPastePos = m_pastePosition;
 
-        } else {
+        }/*else {
             // 任何其他按键 (右键, 中键) 都取消贴上
             m_pastePreviewActive = false;
             m_pastePreviewImage = QImage(); // 清空预览图像
             update(); // 更新画面以移除预览
-        }
+        }*/
         return; // 贴上模式下，不进行其他任何绘图操作
     }
 
@@ -501,8 +501,38 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
+/*
+    // 处理粘贴预览状态下的右键确认
+    if (m_currentTool == Tool_Paste && event->button() == Qt::RightButton && m_pastePreviewActive) {
 
+        qDebug() << "Paste: 右键确认粘贴，位置=" << m_pastePosition;
 
+        if (!m_pastePreviewImage.isNull()) {
+            // 遍历预览图像像素并绘制到模型
+            for (int y = 0; y < m_pastePreviewImage.height(); ++y) {
+                for (int x = 0; x < m_pastePreviewImage.width(); ++x) {
+                    int targetX = m_pastePosition.x() + x;
+                    int targetY = m_pastePosition.y() + y;
+
+                    if (targetX >= 0 && targetX < OledConfig::DISPLAY_WIDTH
+                        && targetY >= 0 && targetY < OledConfig::DISPLAY_HEIGHT) {
+
+                        bool isPixelOn = (m_pastePreviewImage.pixelIndex(x, y) == 0);
+                        if (isPixelOn) {
+                            m_model.setPixel(targetX, targetY, true, m_brushSize);
+                        }
+                    }
+                }
+            }
+        }
+
+        updateImageFromModel(); // 刷新画布
+        m_pastePreviewActive = false; // 关闭预览
+        qDebug() << "Paste: 粘贴完成";
+        update();
+        event->accept();
+        return;
+    }*/
 
     // ✅ 選取工具獨立處理
     if (m_currentTool == Tool_Select && m_isSelecting) {
@@ -654,6 +684,19 @@ void OLEDWidget::keyPressEvent(QKeyEvent *event)
             return;          // 5. 直接返回，不再进行其他处理
         }
     }
+
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+
+        // 如果是，执行确认贴上操作
+        commitPaste();
+        m_pastePreviewActive = false;   // 贴上完成后，关闭贴上预览模式
+        m_pastePreviewImage = QImage(); // 清空预览图像数据
+        update();                       // 请求重绘，让预览图从屏幕上消失
+
+        event->accept(); // 消费掉这个事件
+        return;          // 直接返回
+    }
+
 
     // 步骤 3: 如果不是我们关心的特殊情况，就把事件交给基类处理
     // 这很重要，因为基类可能会处理其他按键，比如 Tab 键的焦点切换等
@@ -822,6 +865,7 @@ void OLEDWidget::handleSelectMove(QMouseEvent *event)
 
 void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 {
+
     // 步骤 1: 安全检查
     // 确保我们是在“正在选择”的状态下松开【鼠标左键】。
     // 如果不是，或者松开的是右键，则忽略此事件。
@@ -856,16 +900,6 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
 
 
     } else {
-
-#ifdef newcode_Buffer
-        // ==========================================================
-        // 【核心逻辑】在这里清空上一次复制/剪下的内容
-        // ==========================================================
-        if (!m_selectionBuffer.isNull()) {
-            m_selectionBuffer = QImage(); // 清空暂存区
-        }
-        // ==========================================================
-#endif
 
         // 如果区域有效，就将其保存在 m_selectedRegion 成员变量中。
         // m_selectedRegion 现在存储了这次操作的最终成果。
@@ -953,15 +987,44 @@ void OLEDWidget::startPastePreview(const QImage &logicalImage)
 
 void OLEDWidget::commitPaste()
 {
+    qDebug() << "commitPaste() called. Preview Active:" << m_pastePreviewActive
+             << " Image Null:" << m_pastePreviewImage.isNull()
+             << " Image Size:" << m_pastePreviewImage.size()
+             << " Paste Position:" << m_pastePosition;
+
     // 步骤 1: 安全检查
     // 确保我们确实处于贴上模式，并且有有效的预览图像数据。
     if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
+        qDebug() << "commitPaste() aborted: not active or image is null.";
+
         return;
     }
+
+    bool anyPixelSet = false; // 添加一个标志，检查是否有任何像素被设置
+
     // 步骤 2: 遍历预览图像的每一个像素
     // 我们需要将 m_pastePreviewImage 中的像素，一个一个地“复制”到 m_model 中。
     for (int y = 0; y < m_pastePreviewImage.height(); ++y) {
         for (int x = 0; x < m_pastePreviewImage.width(); ++x) {
+
+
+            //debug-begin
+            int pixelVal = m_pastePreviewImage.pixelIndex(x, y);
+
+            if (pixelVal == 1) { // 假设1代表亮像素，需要写入
+                int targetX = m_pastePosition.x() + x;
+                int targetY = m_pastePosition.y() + y;
+
+                if (targetX >= 0 && targetX < OledConfig::DISPLAY_WIDTH &&
+                    targetY >= 0 && targetY < OledConfig::DISPLAY_HEIGHT) {
+                    m_model.setPixel(targetX, targetY, true, 1);
+                    anyPixelSet = true; // 有像素被设置
+                    // 可以在这里加一个 qDbug() 确认某个像素被设置
+                    // qDebug() << "Setting pixel at OLED(" << targetX << "," << targetY << ") to ON.";
+                }
+            }
+            //debug_end
+
 
             // 步骤 3: 检查预览图像在该点是否有像素 (是否为亮色)
             // .pixelIndex() 对于单色图 (Format_Mono) 来说，
@@ -980,10 +1043,18 @@ void OLEDWidget::commitPaste()
             }
         }
     }
+    //debug_begin
+    if (anyPixelSet) {
+        qDebug() << "commitPaste() completed. At least one pixel was set. Calling updateImageFromModel().";
+        updateImageFromModel(); // 更新显示
+    } else {
+        qDebug() << "commitPaste() completed, but NO pixels were set to ON. Check pixelIndex logic.";
+    }
+    //debug_end
 
     // 步骤 6: [重要] 结束并清理贴上模式
-    m_pastePreviewActive = false;
-    m_pastePreviewImage = QImage(); // 清空预览图像数据，释放内存
+    //m_pastePreviewActive = false;
+    //m_pastePreviewImage = QImage(); // 清空预览图像数据，释放内存
 
     // 步骤 7: [重要] 从数据模型更新主显示图像
     // 因为我们刚刚通过多次 setPixel 修改了 m_model，
@@ -1031,50 +1102,16 @@ void OLEDWidget::handleCopy(){
     // 步驟 1: 檢查是否有有效的選取區域
     if (!m_selectedRegion.isValid())
     {
-        qDebug() << "Copy failed: 无有效选择区域";
-
         return; // 沒有選取框就不做
     }
 
-#ifdef newcode_Buffer
-    m_selectionBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-#endif
-
 #ifdef Modefiy_1115
-
     m_persistentBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-
-    if (m_persistentBuffer.isNull()) {
-        qDebug() << "Copy failed: 选中区域数据为空";
-    } else {
-        qDebug() << "Copy success: 缓冲区尺寸" << m_persistentBuffer.size();
-    }
-
     m_hasValidBuffer = !m_persistentBuffer.isNull();  // 标记有效
 #endif
 
-#ifdef newcode_clipboard
-
-
-    // 步驟 2: 從 m_model 讀取像素並儲存到剪貼簿
-    // [修改] 將結果存到 m_clipboardImage，而不是直接啟動預覽
-    m_clipboardImage = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-
-    // 注意：複製後不再自動進入貼上模式，這符合標準軟體的行為
-
-#endif
-
-#ifdef oldcode
-    // 步驟 2 : 從 m_model 讀取像素
-    // 让 model 把选区复制成一个逻辑图像。
-
-    QImage copiedLogicalData = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-
-    // QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(copiedLogicalData);
-
-    //  步骤 2: 直接用这个逻辑图像启动贴上预览
-    startPastePreview(copiedLogicalData);
-#endif
+    m_selectedRegion = QRect();
+    update();
 
 }
 
@@ -1096,7 +1133,6 @@ void OLEDWidget::handleCopy(){
 void OLEDWidget::handleCut() {
     // 步驟 1: 檢查是否有有效的選取區域
     if (!m_selectedRegion.isValid()) {
-        qDebug() << "Cut failed: 无有效选择区域";
 
         return; // 沒有選取框就不做任何事
     }
@@ -1107,36 +1143,6 @@ void OLEDWidget::handleCut() {
     m_hasValidBuffer = !m_persistentBuffer.isNull();
 
     if (m_persistentBuffer.isNull()) {
-        qDebug() << "Cut failed: 选中区域数据为空";
-        return;
-    }
-
-
-#endif
-
-#ifdef newcode_clipboard
-    // ================== 1. 複製到剪貼簿 (Copy to Clipboard) ==================
-    // [修改] 將選區內容存到 m_clipboardImage
-    m_clipboardImage = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-    if (m_clipboardImage.isNull()) {
-        return;
-    }
-
-#endif
-
-#ifdef newcode_Buffer
-    m_selectionBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-    if (m_selectionBuffer.isNull()) return;
-
-#endif
-
-#ifdef oldcode
-    // ================== 1. 複製 (Copy) ==================
-    // [重用!] 直接呼叫 model 的現有功能，將選區內容複製成一個邏輯圖像。
-    // 這一步與 handleCopy() 完全相同。
-    QImage cutLogicalImage = m_model.copyRegionToLogicalFormat(m_selectedRegion);
-    if (cutLogicalImage.isNull()) {
-        // 如果因某些原因複製失敗，則中止操作
         return;
     }
 #endif
@@ -1156,51 +1162,21 @@ void OLEDWidget::handleCut() {
 
 
 #ifdef Modefiy_1115
-
-    updateImageFromModel();
-
-    qDebug() << "Cut success: 緩衝區尺寸" << m_persistentBuffer.size();
-
-    m_selectedRegion = QRect();
-    update();
-
-#endif
-
-
-#ifdef newcode_clipboard
-    // 因為資料模型已經被修改 (原區域被清空)，必須同步顯示
-    updateImageFromModel();
-
-    // ================== 3. 清理選區 ==================
-    m_selectedRegion = QRect();
-    update(); // 更新畫面以移除選取框
-
-#endif
-
-
-#ifdef newcode_Buffer
-
-    updateImageFromModel();
-    m_selectedRegion = QRect();
-    update();
-
-#endif
-
-#ifdef oldcode
-
-    // ================== 3. 貼上預覽 (Paste Preview) ==================
-    // [重用!] 呼叫現有的輔助函式來啟動貼上預覽模式
-    startPastePreview(cutLogicalImage);
-
-    // [體驗優化] 讓預覽圖的初始位置出現在原本被剪下的地方，而不是左上角 (0,0)
+    startPastePreview(m_persistentBuffer);
     m_pastePosition = m_selectedRegion.topLeft();
-
-    // 再次觸發更新，確保 paintEvent 能在正確的位置畫出預覽圖
     update();
+    m_selectedRegion = QRect();
+    update();
+    setFocus(); // 【新增】确保OLEDWidget获得焦点
+
+    //updateImageFromModel();
+    //m_selectedRegion = QRect();
+    //update();
+
 #endif
 
     // [清理] 剪下後，原有的選取框應該消失
-    m_selectedRegion = QRect();
+    //m_selectedRegion = QRect();
 
 }
 
@@ -1220,51 +1196,23 @@ void OLEDWidget::handleCut() {
  */
 void OLEDWidget::handlePaste()
 {
-    qDebug() << "Paste ";
-
     // 步驟 1: 檢查剪貼簿是否為空
     if (!m_hasValidBuffer || m_persistentBuffer.isNull())  {
-        qDebug() << "Paste failed: 缓冲区为空";
         return; // 剪貼簿沒東西，就不做任何事
     }
+
+    m_pastePreviewImage = m_persistentBuffer;
+    m_pastePreviewActive = true;
 
     // 启动粘贴预览（使用持久化缓冲区数据）
     startPastePreview(m_persistentBuffer);
     m_pastePosition = QPoint(0, 0);  // 或设置为当前鼠标位置
-    qDebug() << "Paste preview started: 预览尺寸" << m_pastePreviewImage.size();
+
     update();
+    setFocus(); // 【新增】确保OLEDWidget获得焦点
 
 }
 
 #endif
 
 
-
-
-#ifdef newcode_Buffer
-
-/**
- * @brief [SLOT] 處理「貼上」操作的槽函數。
- *
- * 當使用者觸發貼上動作時，此槽函數被呼叫。
- * 它會檢查內部剪貼簿 (`m_clipboardImage`) 是否有有效的圖像資料。
- * 如果有，它會呼叫 `startPastePreview()`，使用剪貼簿中的圖像
- * 來啟動一個新的貼上預覽流程，讓使用者可以決定貼上的位置。
- *
- * @note 此函數可以被多次呼叫，每次都會從同一個剪貼簿內容創建一個新的貼上預覽。
- * @see startPastePreview()
- * @see m_clipboardImage
- */
-void OLEDWidget::handlePaste()
-{
-    // 步驟 1: 檢查剪貼簿是否為空
-    if (m_selectionBuffer.isNull()) {
-        return; // 剪貼簿沒東西，就不做任何事
-    }
-
-    // 步驟 2: 使用剪貼簿的內容來啟動貼上預覽
-    // 每次呼叫 handlePaste，都會開始一個全新的貼上過程
-    startPastePreview(m_selectionBuffer);
-}
-
-#endif
