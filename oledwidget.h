@@ -5,8 +5,10 @@
 
 #include "ToolType.h"
 #include "config.h"
-#include "oleddatamodel.h"
-#include "oleddataconverter.h"
+#include "oled_datamodel.h"
+#include "oled_dataconverter.h"
+#include "oledwidget.h"
+
 
 class OLEDWidget : public QWidget {
     Q_OBJECT
@@ -23,14 +25,6 @@ public:
     void setScale(int s);
 
      QImage getCurrentImage() const;
-
-#ifdef modify_1107
-    // [新增] 設置內部像素顯示縮放的方法 (如果你需要動態切換 1:1 和其他縮放)
-    void setPixelScale(int newPixelScale);
-
-    // [新增] 獲取當前內部像素顯示縮放的方法 (如果需要)
-    int pixelScale() const { return m_pixelScale; }
-#endif
 
     void setBrushSize(int size);
 

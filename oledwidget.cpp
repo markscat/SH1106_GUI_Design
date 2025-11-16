@@ -14,7 +14,7 @@
  */
 
 #include "oledwidget.h"
-#include "oleddatamodel.h"
+#include "oled_datamodel.h"
 
 OLEDWidget::OLEDWidget(QWidget *parent)
     : QWidget(parent),
@@ -32,185 +32,7 @@ OLEDWidget::OLEDWidget(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus); // 允許接收鍵盤事件
 }
 
-void OLEDWidget::setScale(int s) {
-    const int minScale = 1;
-    const int maxScale = 20; // 依需求調整最大放大倍數
-    scale = std::clamp(s, minScale, maxScale);
-    //scale = s > 0 ? s : 1;
-    //setFixedSize(img.width() * scale, img.height() * scale);
-    setFixedSize(m_image.width() * scale, m_image.height() * scale);
-
-    update();
-}
-
-// ↓↓↓↓ 檢查並補上 clearScreen 函式 ↓↓↓↓
-void OLEDWidget::clearScreen() {
-    // 將內部緩衝區全部填 0
-    //memset(m_buffer, 0, sizeof(m_buffer));
-    //updateImageFromBuffer(); // 更新顯示
-
-    // 1. 调用数据模型来清除数据
-    m_model.clear();
-
-    // 2. 调用辅助函数，从更新后的模型同步到显示图像
-    updateImageFromModel();
-}
-
-void OLEDWidget::setBrushSize(int size)
-{
-    // 安全限制：筆刷大小只能是 1～6
-    //if (size < 1) size = 1;
-    //if (size > 6) size = 6;
-
-    //m_brushSize = size;
-
-    m_brushSize = std::clamp(size, 1, 6); // 限制笔刷大小在 1-6 之间
-
-}
-
-
-void OLEDWidget::setBuffer(const uint8_t *buffer){
-    // 同步内部状态
-
-    // 1. 调用数据模型的新方法，从硬体 buffer 载入数据并完成翻译
-    m_model.setFromHardwareBuffer(buffer);
-
-    // 2. 数据模型更新后，同步到显示图像
-    updateImageFromModel();
-}
-
-/**
- * @brief 取得符合硬體格式的顯示緩衝區。
- *
- * 這是一個方便的包裝函式（wrapper function），作為 `OLEDWidget`（View）對外的介面，
- * 用於取得底層資料模型（Model）所產生的硬體緩衝區。
- * 實際的格式轉換邏輯由 `m_model` 物件處理，此處僅做轉發呼叫。
- * 這樣設計符合 Model-View 的職責分離原則。
- *
- * @return std::vector<uint8_t> 一個包含可以直接寫入 OLED 硬體的原始資料緩衝區。
- * @see OledDataModel::getHardwareBuffer() const
- */
-std::vector<uint8_t> OLEDWidget::getHardwareBuffer() const
-{
-    // 直接返回从数据模型翻译过来的硬体 buffer
-    return m_model.getHardwareBuffer();
-}
-
-// ================== 新增的 SLOT ==================
-/**
- * @brief [SLOT] 設定目前使用的繪圖或互動工具。
- *
- * 這是一個 Qt 的槽（Slot），設計用來接收來自工具列按鈕或其他 UI 元件的訊號。
- * 當使用者點選不同的工具（如畫筆、橡皮擦、選取工具）時，這個槽會被呼叫，
- * 並更新內部狀態 `m_currentTool`。
- *
- * 這個狀態變數會直接影響滑鼠事件（如 `mousePressEvent`, `mouseMoveEvent`）的行為，
- * 從而決定使用者在畫布上的操作是進行繪製、擦除還是選取。
- *
- * @param[in] tool 要被啟用的新工具類型（來自 `ToolType` enum）。
- */
-void OLEDWidget::setCurrentTool(ToolType tool) {
-    m_currentTool = tool;
-/*
-    if (tool != Tool_Select) {
-        m_selectedRegion = QRect(); // 清除選取框
-        m_isSelecting = false;
-        m_isDraggingSelection = false;
-        update(); // 觸發重繪
-    }*/
-
-}
-
-
-/**
- * @brief [SLOT] 將像素資料轉換為 C/C++ 標頭檔陣列格式並顯示。
- *
- * 這是一個工具性槽函數，主要提供給開發者使用，以便將畫面上的圖形快速轉換為
- * 可用於嵌入式系統（如 Arduino, ESP32 等）的原始位元組陣列。
- *
- * 此函數會根據當前是否存在有效選取區 (`m_selectedRegion`) 來決定匯出的範圍：
- * - 如果有選取區，則只轉換選取區內的像素。
- * - 如果沒有選取區，則轉換整個畫面的像素。
- *
- * 轉換完成後，結果會被格式化成一個 C 語言的 `const unsigned char` 陣列，
- * 並在一個彈出視窗中顯示，方便使用者複製貼上。
- *
- * @see OledDataModel::copyRegionToLogicalFormat()
- * @see OledDataModel::convertLogicalToHardwareFormat()
- */
-void OLEDWidget::showBufferDataAsHeader()
-{
-    // 步骤 1: 确定要导出的区域 (有选区就用选区，否则用整个屏幕)
-    QRect region = m_selectedRegion.isValid() ? m_selectedRegion :
-                       QRect(0, 0, OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT);
-
-    // 步骤 2: [复用!] 调用 model 将该区域转换为逻辑图像 QImage
-    QImage logicalData = m_model.copyRegionToLogicalFormat(region);
-
-    if (logicalData.isNull()) {
-        return; // 如果区域无效或复制失败，则不继续
-    }
-
-    // 步骤 3: [复用!] 调用 model 将逻辑图像转换为硬件格式的 QVector
-    QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(logicalData);
-
-    // ------------------------------------------------------------------
-    // 到此为止，数据准备工作已完成，且没有任何重复的转换算法。
-    // 下面的代码只负责将准备好的 hardwareData 格式化为字符串。
-    // ------------------------------------------------------------------
-
-
-    // 步骤 4: 将打包好的 hardwareData 格式化成 C 阵列字符串
-    QString output;
-    output += QString("// Image Data (%1x%2 region at (%3, %4))\n")
-                  .arg(logicalData.width()).arg(logicalData.height())
-                  .arg(region.left()).arg(region.top());
-    output += QString("const uint8_t imageData[%1] = {\n    ").arg(hardwareData.size());
-
-    for (int i = 0; i < hardwareData.size(); ++i) {
-        output += QString("0x%1, ").arg(hardwareData[i], 2, 16, QChar('0')).toUpper();
-        if ((i + 1) % 16 == 0 && i < hardwareData.size() - 1) {
-            output += "\n    ";
-        }
-    }
-
-    if (output.endsWith(", ")) {
-        output.chop(2);
-    }
-    output += "\n};";
-
-
-    // === 顯示在視窗中 ===
-    QDialog *dialog = new QDialog(this);
-    dialog->setStyleSheet("QDialog { background-color: white; border: 1px solid #ccc; }");
-    dialog->setWindowTitle("SH1106 .h 格式輸出");
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-
-    QTextEdit *textEdit = new QTextEdit(dialog);
-    textEdit->setPlainText(output);
-    textEdit->setReadOnly(true);
-    textEdit->setFont(QFont("Courier", 10));
-    textEdit->setStyleSheet("background-color: white; color: black;");
-
-    QPushButton *copyButton = new QPushButton("複製到剪貼簿", dialog);
-    connect(copyButton, &QPushButton::clicked, [output]() {
-        QApplication::clipboard()->setText(output);
-    });
-
-    QPushButton *closeButton = new QPushButton("Close", dialog);
-    connect(closeButton, &QPushButton::clicked, dialog, &QDialog::accept);
-
-    QVBoxLayout *layout = new QVBoxLayout(dialog);
-    layout->addWidget(textEdit);
-
-    layout->addWidget(copyButton);
-    layout->addWidget(closeButton);
-
-    dialog->resize(500, 400);
-    dialog->exec();
-}
-
-
+//留下paintEvent
 void OLEDWidget::paintEvent(QPaintEvent *event) {
 
     QWidget::paintEvent(event);
@@ -348,8 +170,8 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
     }
 
 }
-//mouse 三兄弟
 
+//mousePressEvent留下
 void OLEDWidget::mousePressEvent(QMouseEvent *event) {
 
     // 步骤 1: 将 Qt 的 widget 坐标转换为我们的 OLED 逻辑坐标
@@ -423,9 +245,8 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
 
 }
 
+//mouseMoveEvent留下
 void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
-
-
     // 步骤 1: 坐标转换，并发射信号让 MainWindow 显示
     const QPoint oled_pos = convertToOLED(event->pos());
     emit coordinatesChanged(oled_pos);
@@ -448,8 +269,6 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
         QWidget::mouseMoveEvent(event);
         return;
     }
-
-
 
     // 步骤 4: 更新当前鼠标位置作为“终点”
     m_endPoint = oled_pos;
@@ -500,39 +319,8 @@ void OLEDWidget::mouseMoveEvent(QMouseEvent *event) {
     QWidget::mouseMoveEvent(event);
 }
 
+//留下mouseReleaseEvent
 void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
-/*
-    // 处理粘贴预览状态下的右键确认
-    if (m_currentTool == Tool_Paste && event->button() == Qt::RightButton && m_pastePreviewActive) {
-
-        qDebug() << "Paste: 右键确认粘贴，位置=" << m_pastePosition;
-
-        if (!m_pastePreviewImage.isNull()) {
-            // 遍历预览图像像素并绘制到模型
-            for (int y = 0; y < m_pastePreviewImage.height(); ++y) {
-                for (int x = 0; x < m_pastePreviewImage.width(); ++x) {
-                    int targetX = m_pastePosition.x() + x;
-                    int targetY = m_pastePosition.y() + y;
-
-                    if (targetX >= 0 && targetX < OledConfig::DISPLAY_WIDTH
-                        && targetY >= 0 && targetY < OledConfig::DISPLAY_HEIGHT) {
-
-                        bool isPixelOn = (m_pastePreviewImage.pixelIndex(x, y) == 0);
-                        if (isPixelOn) {
-                            m_model.setPixel(targetX, targetY, true, m_brushSize);
-                        }
-                    }
-                }
-            }
-        }
-
-        updateImageFromModel(); // 刷新画布
-        m_pastePreviewActive = false; // 关闭预览
-        qDebug() << "Paste: 粘贴完成";
-        update();
-        event->accept();
-        return;
-    }*/
 
     // ✅ 選取工具獨立處理
     if (m_currentTool == Tool_Select && m_isSelecting) {
@@ -555,7 +343,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
 
     // 步骤 3: 根据当前工具，分发事件
     switch (m_currentTool) {
-    /*case Tool_Select:
+        /*case Tool_Select:
         // 选区工具的 release 事件单独处理
         handleSelectRelease(event);
         break;*/
@@ -611,21 +399,11 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
     default:
         break;
     }
-
-    // 步骤 4: [重要] 无论是什么工具，在鼠标释放后，都必须结束“正在绘制”的状态
-    m_isDrawing = false;
-
-    // 步骤 5: [重要] 调用 update() 清除所有预览图形
-    // 因为 m_isDrawing 现在是 false，paintEvent 中的预览绘制逻辑将不会执行，
-    // 从而达到清除蓝色预览线框和黄色选区框（如果是正在选区）的效果。
     update();
-
     QWidget::mouseReleaseEvent(event);
 }
 
-//mouse 三兄弟
-
-
+//留下wheelEvent
 void OLEDWidget::wheelEvent(QWheelEvent *event)
 {
     // 步骤 1: 检查用户是否同时按下了 "Control" 键
@@ -658,15 +436,16 @@ void OLEDWidget::wheelEvent(QWheelEvent *event)
     }
 }
 
-
+//留下leaveEvent
 void OLEDWidget::leaveEvent(QEvent *event)
 {
     // 當滑鼠離開 widget 時，發送一個無效座標 (-1, -1)
     emit coordinatesChanged(QPoint(-1, -1));
     QWidget::leaveEvent(event);
 }
- // 确保包含了 QKeyEvent
+// 确保包含了 QKeyEvent
 
+//留下keyPressEvent
 void OLEDWidget::keyPressEvent(QKeyEvent *event)
 {
     // 步骤 1: [高优先级] 检查当前是否处于“贴上预览”模式
@@ -703,7 +482,22 @@ void OLEDWidget::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 }
 
+/*
+//留下clearScreen
+void OLEDWidget::clearScreen() {
+    // 將內部緩衝區全部填 0
+    //memset(m_buffer, 0, sizeof(m_buffer));
+    //updateImageFromBuffer(); // 更新顯示
 
+    // 1. 调用数据模型来清除数据
+    m_model.clear();
+
+    // 2. 调用辅助函数，从更新后的模型同步到显示图像
+    updateImageFromModel();
+}
+*/
+
+//留下updateImageFromModel
 /**
  * @brief 根據資料模型（OledDataModel）的狀態，重新生成用於顯示的 QImage 緩衝區。
  *
@@ -756,6 +550,196 @@ void OLEDWidget::updateImageFromModel(){
     // “我的画面内容已经准备好了，请在下一个刷新周期调用我的 paintEvent()！”
     update();
 }
+
+
+
+/**
+     * @brief 從一個邏輯格式的 QImage 更新整個 OLED 顯示內容。
+     * @param image 來源圖片，必須是 QImage::Format_Mono 格式。
+     */
+void OLEDWidget::updateOledFromImage(const QImage& image){
+    // 步驟 1: 呼叫外部工具函式來處理資料模型的更新
+    // 我們把 m_model 的指標傳遞給它，讓它去操作
+    OledDataConverter::updateModelFromImage(&m_model, image);
+
+    // 步驟 2: 資料模型已經被外部工具更新了，
+    //         現在我們只需要同步 View 的顯示即可。
+    updateImageFromModel();
+}
+
+
+/*
+void OLEDWidget::setScale(int s) {
+    const int minScale = 1;
+    const int maxScale = 20; // 依需求調整最大放大倍數
+    scale = std::clamp(s, minScale, maxScale);
+    //scale = s > 0 ? s : 1;
+    //setFixedSize(img.width() * scale, img.height() * scale);
+    setFixedSize(m_image.width() * scale, m_image.height() * scale);
+
+    update();
+}
+
+QImage OLEDWidget::getCurrentImage() const
+{
+    // m_image 是您用來在 paintEvent 中繪圖的那個 QImage
+    return m_image;
+}
+
+
+void OLEDWidget::setBrushSize(int size)
+{
+    // 安全限制：筆刷大小只能是 1～6
+
+    m_brushSize = std::clamp(size, 1, 6); // 限制笔刷大小在 1-6 之间
+
+}
+
+
+void OLEDWidget::setBuffer(const uint8_t *buffer){
+    // 同步内部状态
+
+    // 1. 调用数据模型的新方法，从硬体 buffer 载入数据并完成翻译
+    m_model.setFromHardwareBuffer(buffer);
+
+    // 2. 数据模型更新后，同步到显示图像
+    updateImageFromModel();
+}
+*/
+/**
+ * @brief 取得符合硬體格式的顯示緩衝區。
+ *
+ * 這是一個方便的包裝函式（wrapper function），作為 `OLEDWidget`（View）對外的介面，
+ * 用於取得底層資料模型（Model）所產生的硬體緩衝區。
+ * 實際的格式轉換邏輯由 `m_model` 物件處理，此處僅做轉發呼叫。
+ * 這樣設計符合 Model-View 的職責分離原則。
+ *
+ * @return std::vector<uint8_t> 一個包含可以直接寫入 OLED 硬體的原始資料緩衝區。
+ * @see OledDataModel::getHardwareBuffer() const
+ */
+std::vector<uint8_t> OLEDWidget::getHardwareBuffer() const
+{
+    // 直接返回从数据模型翻译过来的硬体 buffer
+    return m_model.getHardwareBuffer();
+}
+
+
+// ================== 新增的 SLOT ==================
+/**
+ * @brief [SLOT] 設定目前使用的繪圖或互動工具。
+ *
+ * 這是一個 Qt 的槽（Slot），設計用來接收來自工具列按鈕或其他 UI 元件的訊號。
+ * 當使用者點選不同的工具（如畫筆、橡皮擦、選取工具）時，這個槽會被呼叫，
+ * 並更新內部狀態 `m_currentTool`。
+ *
+ * 這個狀態變數會直接影響滑鼠事件（如 `mousePressEvent`, `mouseMoveEvent`）的行為，
+ * 從而決定使用者在畫布上的操作是進行繪製、擦除還是選取。
+ *
+ * @param[in] tool 要被啟用的新工具類型（來自 `ToolType` enum）。
+ */
+void OLEDWidget::setCurrentTool(ToolType tool) {
+    m_currentTool = tool;
+/*
+    if (tool != Tool_Select) {
+        m_selectedRegion = QRect(); // 清除選取框
+        m_isSelecting = false;
+        m_isDraggingSelection = false;
+        update(); // 觸發重繪
+    }*/
+
+}
+
+
+/**
+ * @brief [SLOT] 將像素資料轉換為 C/C++ 標頭檔陣列格式並顯示。
+ *
+ * 這是一個工具性槽函數，主要提供給開發者使用，以便將畫面上的圖形快速轉換為
+ * 可用於嵌入式系統（如 Arduino, ESP32 等）的原始位元組陣列。
+ *
+ * 此函數會根據當前是否存在有效選取區 (`m_selectedRegion`) 來決定匯出的範圍：
+ * - 如果有選取區，則只轉換選取區內的像素。
+ * - 如果沒有選取區，則轉換整個畫面的像素。
+ *
+ * 轉換完成後，結果會被格式化成一個 C 語言的 `const unsigned char` 陣列，
+ * 並在一個彈出視窗中顯示，方便使用者複製貼上。
+ *
+ * @see OledDataModel::copyRegionToLogicalFormat()
+ * @see OledDataModel::convertLogicalToHardwareFormat()
+ */
+void OLEDWidget::showBufferDataAsHeader()
+{
+    // 步骤 1: 确定要导出的区域 (有选区就用选区，否则用整个屏幕)
+    QRect region = m_selectedRegion.isValid() ? m_selectedRegion :
+                       QRect(0, 0, OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT);
+
+    // 步骤 2: [复用!] 调用 model 将该区域转换为逻辑图像 QImage
+    QImage logicalData = m_model.copyRegionToLogicalFormat(region);
+
+    if (logicalData.isNull()) {
+        return; // 如果区域无效或复制失败，则不继续
+    }
+
+    // 步骤 3: [复用!] 调用 model 将逻辑图像转换为硬件格式的 QVector
+    QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(logicalData);
+
+    // ------------------------------------------------------------------
+    // 到此为止，数据准备工作已完成，且没有任何重复的转换算法。
+    // 下面的代码只负责将准备好的 hardwareData 格式化为字符串。
+    // ------------------------------------------------------------------
+
+
+    // 步骤 4: 将打包好的 hardwareData 格式化成 C 阵列字符串
+    QString output;
+    output += QString("// Image Data (%1x%2 region at (%3, %4))\n")
+                  .arg(logicalData.width()).arg(logicalData.height())
+                  .arg(region.left()).arg(region.top());
+    output += QString("const uint8_t imageData[%1] = {\n    ").arg(hardwareData.size());
+
+    for (int i = 0; i < hardwareData.size(); ++i) {
+        output += QString("0x%1, ").arg(hardwareData[i], 2, 16, QChar('0')).toUpper();
+        if ((i + 1) % 16 == 0 && i < hardwareData.size() - 1) {
+            output += "\n    ";
+        }
+    }
+
+    if (output.endsWith(", ")) {
+        output.chop(2);
+    }
+    output += "\n};";
+
+
+    // === 顯示在視窗中 ===
+    QDialog *dialog = new QDialog(this);
+    dialog->setStyleSheet("QDialog { background-color: white; border: 1px solid #ccc; }");
+    dialog->setWindowTitle("SH1106 .h 格式輸出");
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    QTextEdit *textEdit = new QTextEdit(dialog);
+    textEdit->setPlainText(output);
+    textEdit->setReadOnly(true);
+    textEdit->setFont(QFont("Courier", 10));
+    textEdit->setStyleSheet("background-color: white; color: black;");
+
+    QPushButton *copyButton = new QPushButton("複製到剪貼簿", dialog);
+    connect(copyButton, &QPushButton::clicked, [output]() {
+        QApplication::clipboard()->setText(output);
+    });
+
+    QPushButton *closeButton = new QPushButton("Close", dialog);
+    connect(closeButton, &QPushButton::clicked, dialog, &QDialog::accept);
+
+    QVBoxLayout *layout = new QVBoxLayout(dialog);
+    layout->addWidget(textEdit);
+
+    layout->addWidget(copyButton);
+    layout->addWidget(closeButton);
+
+    dialog->resize(500, 400);
+    dialog->exec();
+}
+
+
+
 
 
 QPoint OLEDWidget::convertToOLED(const QPoint &pos)
@@ -913,8 +897,6 @@ void OLEDWidget::handleSelectRelease(QMouseEvent *event)
     // 2. 如果我们得到了一个有效的 m_selectedRegion，paintEvent 会根据它
     //    绘制一个“固化”的黄色虚线框，向用户展示最终的选区结果。
     // 3. 如果选区无效，m_selectedRegion 为空，paintEvent 将不会画任何框。
-
-
     update();
 
     event->accept();
@@ -987,15 +969,9 @@ void OLEDWidget::startPastePreview(const QImage &logicalImage)
 
 void OLEDWidget::commitPaste()
 {
-    qDebug() << "commitPaste() called. Preview Active:" << m_pastePreviewActive
-             << " Image Null:" << m_pastePreviewImage.isNull()
-             << " Image Size:" << m_pastePreviewImage.size()
-             << " Paste Position:" << m_pastePosition;
-
     // 步骤 1: 安全检查
     // 确保我们确实处于贴上模式，并且有有效的预览图像数据。
     if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
-        qDebug() << "commitPaste() aborted: not active or image is null.";
 
         return;
     }
@@ -1006,26 +982,6 @@ void OLEDWidget::commitPaste()
     // 我们需要将 m_pastePreviewImage 中的像素，一个一个地“复制”到 m_model 中。
     for (int y = 0; y < m_pastePreviewImage.height(); ++y) {
         for (int x = 0; x < m_pastePreviewImage.width(); ++x) {
-
-
-            //debug-begin
-            int pixelVal = m_pastePreviewImage.pixelIndex(x, y);
-
-            if (pixelVal == 1) { // 假设1代表亮像素，需要写入
-                int targetX = m_pastePosition.x() + x;
-                int targetY = m_pastePosition.y() + y;
-
-                if (targetX >= 0 && targetX < OledConfig::DISPLAY_WIDTH &&
-                    targetY >= 0 && targetY < OledConfig::DISPLAY_HEIGHT) {
-                    m_model.setPixel(targetX, targetY, true, 1);
-                    anyPixelSet = true; // 有像素被设置
-                    // 可以在这里加一个 qDbug() 确认某个像素被设置
-                    // qDebug() << "Setting pixel at OLED(" << targetX << "," << targetY << ") to ON.";
-                }
-            }
-            //debug_end
-
-
             // 步骤 3: 检查预览图像在该点是否有像素 (是否为亮色)
             // .pixelIndex() 对于单色图 (Format_Mono) 来说，
             // 返回 1 代表前景色 (亮)，返回 0 代表背景色 (暗)。
@@ -1043,42 +999,6 @@ void OLEDWidget::commitPaste()
             }
         }
     }
-    //debug_begin
-    if (anyPixelSet) {
-        qDebug() << "commitPaste() completed. At least one pixel was set. Calling updateImageFromModel().";
-        updateImageFromModel(); // 更新显示
-    } else {
-        qDebug() << "commitPaste() completed, but NO pixels were set to ON. Check pixelIndex logic.";
-    }
-    //debug_end
-
-    // 步骤 6: [重要] 结束并清理贴上模式
-    //m_pastePreviewActive = false;
-    //m_pastePreviewImage = QImage(); // 清空预览图像数据，释放内存
-
-    // 步骤 7: [重要] 从数据模型更新主显示图像
-    // 因为我们刚刚通过多次 setPixel 修改了 m_model，
-    // 所以必须调用 updateImageFromModel() 来将这些改动同步到 m_image 上。
-    updateImageFromModel();
-}
-
-QImage OLEDWidget::getCurrentImage() const
-{
-    // m_image 是您用來在 paintEvent 中繪圖的那個 QImage
-    return m_image;
-}
-
-/**
-     * @brief 從一個邏輯格式的 QImage 更新整個 OLED 顯示內容。
-     * @param image 來源圖片，必須是 QImage::Format_Mono 格式。
-     */
-void OLEDWidget::updateOledFromImage(const QImage& image){
-    // 步驟 1: 呼叫外部工具函式來處理資料模型的更新
-    // 我們把 m_model 的指標傳遞給它，讓它去操作
-    OledDataConverter::updateModelFromImage(&m_model, image);
-
-    // 步驟 2: 資料模型已經被外部工具更新了，
-    //         現在我們只需要同步 View 的顯示即可。
     updateImageFromModel();
 }
 
@@ -1137,7 +1057,6 @@ void OLEDWidget::handleCut() {
         return; // 沒有選取框就不做任何事
     }
 
-#ifdef Modefiy_1115
     // 保存到持久化缓冲区
     m_persistentBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
     m_hasValidBuffer = !m_persistentBuffer.isNull();
@@ -1145,7 +1064,6 @@ void OLEDWidget::handleCut() {
     if (m_persistentBuffer.isNull()) {
         return;
     }
-#endif
 
     // ================== 2. 刪除 (Delete) ==================
     // [優化!] 指揮 model 在原選區位置畫一個「熄滅的、實心的」矩形，
@@ -1161,7 +1079,6 @@ void OLEDWidget::handleCut() {
         );
 
 
-#ifdef Modefiy_1115
     startPastePreview(m_persistentBuffer);
     m_pastePosition = m_selectedRegion.topLeft();
     update();
@@ -1169,18 +1086,9 @@ void OLEDWidget::handleCut() {
     update();
     setFocus(); // 【新增】确保OLEDWidget获得焦点
 
-    //updateImageFromModel();
-    //m_selectedRegion = QRect();
-    //update();
-
-#endif
-
-    // [清理] 剪下後，原有的選取框應該消失
-    //m_selectedRegion = QRect();
 
 }
 
-#ifdef Modefiy_1115
 
 /**
  * @brief [SLOT] 處理「貼上」操作的槽函數。
@@ -1212,7 +1120,5 @@ void OLEDWidget::handlePaste()
     setFocus(); // 【新增】确保OLEDWidget获得焦点
 
 }
-
-#endif
 
 
