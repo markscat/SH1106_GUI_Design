@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1064</width>
-    <height>629</height>
+    <width>1152</width>
+    <height>662</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -34,8 +34,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1050</width>
-      <height>550</height>
+      <width>1131</width>
+      <height>561</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -66,7 +66,7 @@
         <x>0</x>
         <y>10</y>
         <width>141</width>
-        <height>347</height>
+        <height>406</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="ToolbarverticalLayout">
@@ -89,6 +89,16 @@
           <widget class="QToolButton" name="ToolLine">
            <property name="text">
             <string>Line</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icon/line.bmp</normaloff>icon/line.bmp</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -127,6 +137,16 @@
            <property name="text">
             <string>Circle</string>
            </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icon/Circle.bmp</normaloff>icon/Circle.bmp</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
           </widget>
          </item>
          <item>
@@ -163,6 +183,16 @@
           <widget class="QToolButton" name="ToolPen">
            <property name="text">
             <string>Pen</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icon/pen.bmp</normaloff>icon/pen.bmp</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -201,6 +231,16 @@
            <property name="text">
             <string>FilledRectangle</string>
            </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icon/FilledRectangle.bmp</normaloff>icon/FilledRectangle.bmp</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
           </widget>
          </item>
          <item>
@@ -237,6 +277,16 @@
           <widget class="QToolButton" name="ToolRectangle">
            <property name="text">
             <string>Rectangle</string>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>icon/Rectangle.bmp</normaloff>icon/Rectangle.bmp</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -275,6 +325,9 @@
            <property name="text">
             <string>選取</string>
            </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditSelectAll"/>
+           </property>
           </widget>
          </item>
          <item>
@@ -311,6 +364,9 @@
           <widget class="QPushButton" name="pushButton_Cut">
            <property name="text">
             <string>剪下</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditCut"/>
            </property>
           </widget>
          </item>
@@ -349,6 +405,9 @@
            <property name="text">
             <string>複製</string>
            </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditCopy"/>
+           </property>
           </widget>
          </item>
          <item>
@@ -385,6 +444,9 @@
           <widget class="QPushButton" name="pushButton_paste">
            <property name="text">
             <string>貼上</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditPaste"/>
            </property>
           </widget>
          </item>
@@ -451,7 +513,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>901</width>
+        <width>981</width>
         <height>531</height>
        </rect>
       </property>
@@ -459,36 +521,104 @@
        <item>
         <layout class="QHBoxLayout" name="FunctionLayout">
          <item>
-          <widget class="QPushButton" name="clearButton">
+          <widget class="QPushButton" name="undo_Bottom">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>120</width>
+             <width>140</width>
              <height>16777215</height>
             </size>
            </property>
            <property name="text">
-            <string>清除</string>
+            <string>undo</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditUndo"/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="redo_Bottom">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>140</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>redo</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditRedo"/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="clearButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>140</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>清空畫面</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::SystemReboot"/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="saveButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>120</width>
+             <width>140</width>
              <height>16777215</height>
             </size>
            </property>
            <property name="text">
             <string>存檔</string>
            </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="exportButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>120</width>
+             <width>140</width>
              <height>16777215</height>
             </size>
            </property>
@@ -499,27 +629,45 @@
          </item>
          <item>
           <widget class="QPushButton" name="importButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>120</width>
+             <width>140</width>
              <height>16777215</height>
             </size>
            </property>
            <property name="text">
             <string>匯入圖檔</string>
            </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="resetOledSizeButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>120</width>
+             <width>140</width>
              <height>16777215</height>
             </size>
            </property>
            <property name="text">
-            <string>重製繪圖框尺寸</string>
+            <string>恢復圖框大小</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::ViewRestore"/>
            </property>
           </widget>
          </item>
@@ -571,8 +719,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1064</width>
-     <height>21</height>
+     <width>1152</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>

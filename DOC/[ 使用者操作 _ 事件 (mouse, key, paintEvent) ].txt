@@ -1,0 +1,25 @@
+[ 使用者操作 / 事件 (mouse, key, paintEvent) ]
+                │
+                ▼
+        ┌───────────────────┐
+        │ OledDataModel     │
+        │ (邏輯層: 0/1 buffer)│
+        │ std::vector<bool> │
+        └───────────────────┘
+                │
+                │ updateImageFromModel()
+                ▼
+        ┌───────────────────┐
+        │ OLEDWidget        │
+        │ (UI層: QImage)    │
+        │ m_image           │
+        └───────────────────┘
+                │
+                │ 匯出時才轉換
+                ▼
+        ┌───────────────────┐
+        │ 硬體層 (Export)   │
+        │ getHardwareBuffer │
+        │ convertLogicalTo… │
+        │ std::vector<uint8_t> │
+        └───────────────────┘
