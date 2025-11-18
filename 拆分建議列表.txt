@@ -1,10 +1,7 @@
-©î¤À«ØÄ³¦Cªí
+æ‹†åˆ†å»ºè­°åˆ—è¡¨
 
-oledwidget_API.cpp
-
-¤½¶}¹ï¥~ªº API ¨ç¼Æ
-
-clearScreen()
+oledwidget_API.cpp(å…¬é–‹å°å¤–çš„ API å‡½æ•¸)
+  clearScreen()
 
 setScale(int s)
 
@@ -18,7 +15,7 @@ getHardwareBuffer()
 
 oledwidget_Tool.cpp
 
-¤u¨ã¾Ş§@¬ÛÃö¼Ñ»Pª¬ºA
+å·¥å…·æ“ä½œç›¸é—œæ§½èˆ‡ç‹€æ…‹
 
 setCurrentTool(ToolType tool)
 
@@ -26,7 +23,7 @@ showBufferDataAsHeader()
 
 oledwidget_Selection.cpp
 
-¿ï¨ú°Ï¾Ş§@¬ÛÃö¨ç¼Æ
+é¸å–å€æ“ä½œç›¸é—œå‡½æ•¸
 
 handleSelectPress(QMouseEvent* event)
 
@@ -38,7 +35,7 @@ convertToOLED(const QPoint &pos)
 
 oledwidget_Paste.cpp
 
-½Æ»s/°Å¤U/¶K¤W¤Î¹wÄı¬ÛÃö
+è¤‡è£½/å‰ªä¸‹/è²¼ä¸ŠåŠé è¦½ç›¸é—œ
 
 startPastePreview(const QImage &logicalImage)
 
@@ -52,6 +49,6 @@ handlePaste()
 
 oledwidget_Paint.cpp
 
-»P paintEvent() ¬ÛÃöªºÃ¸»sÅŞ¿è¡]¥Ø«e¦b¥D cpp¡^
+èˆ‡ paintEvent() ç›¸é—œçš„ç¹ªè£½é‚è¼¯ï¼ˆç›®å‰åœ¨ä¸» cppï¼‰
 
-µe¥¬¨ê·s¡B¿ï¨ú®ØÃ¸»s¡B¶K¤W¹wÄıÃ¸»s
+ç•«å¸ƒåˆ·æ–°ã€é¸å–æ¡†ç¹ªè£½ã€è²¼ä¸Šé è¦½ç¹ªè£½
