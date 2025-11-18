@@ -4,7 +4,7 @@
 
 
 #include "ToolType.h"
-#include "oledwidget.h"
+#include "oledwidget_Paint.h"
 #include "imageimportdialog.h"
 #include "oled_datamodel.h"
 #include "config.h"

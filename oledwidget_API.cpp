@@ -1,7 +1,4 @@
-#include "oledwidget.h"
-//oledwidget_API.cpp:1:10: Expected "FILENAME" or <FILENAME>
-
-
+#include "oledwidget_Paint.h"
 
 //留下clearScreen
 void OLEDWidget::clearScreen() {
@@ -58,3 +55,24 @@ void OLEDWidget::setBuffer(const uint8_t *buffer){
     // 2. 数据模型更新后，同步到显示图像
     updateImageFromModel();
 }
+
+
+
+    /**
+ * @brief 取得符合硬體格式的顯示緩衝區。
+ *
+ * 這是一個方便的包裝函式（wrapper function），作為 `OLEDWidget`（View）對外的介面，
+ * 用於取得底層資料模型（Model）所產生的硬體緩衝區。
+ * 實際的格式轉換邏輯由 `m_model` 物件處理，此處僅做轉發呼叫。
+ * 這樣設計符合 Model-View 的職責分離原則。
+ *
+ * @return std::vector<uint8_t> 一個包含可以直接寫入 OLED 硬體的原始資料緩衝區。
+ * @see OledDataModel::getHardwareBuffer() const
+ */
+    std::vector<uint8_t> OLEDWidget::getHardwareBuffer() const
+{
+    // 直接返回从数据模型翻译过来的硬体 buffer
+    return m_model.getHardwareBuffer();
+}
+
+

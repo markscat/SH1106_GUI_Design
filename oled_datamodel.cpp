@@ -1,6 +1,6 @@
 
     #include "oled_datamodel.h"
-    #include "oledwidget.h"
+    #include "oledwidget_Paint.h"
 
     #include <algorithm>
     #include <QPoint>

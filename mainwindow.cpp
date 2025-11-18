@@ -2,7 +2,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "sample.h"
-#include "oledwidget.h"
+#include "oledwidget_Paint.h"
 #include "ToolType.h"
 #include "config.h"
 
