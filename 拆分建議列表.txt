@@ -1,21 +1,16 @@
 拆分建議列表
 
-oledwidget_API.cpp(公開對外的 API 函數)
-  clearScreen()
+├──oledwidget_API.cpp(公開對外的 API 函數)
+|
+|  ├──clearScreen()
+|  ├──setScale(int s)
+|  ├──getCurrentImage()
+|  ├──setBrushSize(int size)
+|  ├──setBuffer(const uint8_t* buffer)
+|  ├──getHardwareBuffer()
+├──oledwidget_Tool.cpp(工具操作相關槽與狀態
+)
 
-setScale(int s)
-
-getCurrentImage()
-
-setBrushSize(int size)
-
-setBuffer(const uint8_t* buffer)
-
-getHardwareBuffer()
-
-oledwidget_Tool.cpp
-
-工具操作相關槽與狀態
 
 setCurrentTool(ToolType tool)
 
