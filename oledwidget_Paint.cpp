@@ -356,7 +356,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         if (event->button() == Qt::LeftButton) {
             // 指挥“绘图引擎”在起点和终点之间，画一条 1 像素宽的线
             m_model.drawLine(m_startPoint.x(), m_startPoint.y(),
-                             m_endPoint.x(), m_endPoint.y(),
+                             m_endPoint.x()-1, m_endPoint.y(),
                              true,m_brushSize); // on=true, brushSize=1
             updateImageFromModel(); // 数据已变，同步视图
         }
@@ -367,7 +367,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         if (event->button() == Qt::LeftButton) {
             const QRect rect = QRect(m_startPoint, m_endPoint).normalized();
             // 指挥引擎画一个不填充的、1 像素宽的矩形
-            m_model.drawRectangle(rect.x(), rect.y(), rect.width(), rect.height(),
+            m_model.drawRectangle(rect.x()-1, rect.y()-1, rect.width(), rect.height(),
                                   true, false, m_brushSize); // on=true, fill=false, brushSize=1
             updateImageFromModel();
         }
@@ -378,7 +378,7 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         if (event->button() == Qt::LeftButton) {
             const QRect rect = QRect(m_startPoint, m_endPoint).normalized();
             // 指挥引擎画一个填充的、1 像素宽边框的矩形
-            m_model.drawRectangle(rect.x(), rect.y(), rect.width(), rect.height(),
+            m_model.drawRectangle(rect.x()-1, rect.y()-1, rect.width(), rect.height(),
                                   true, true, m_brushSize); // on=true, fill=true, brushSize=1
             updateImageFromModel();
         }

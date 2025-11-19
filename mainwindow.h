@@ -8,6 +8,7 @@
 #include "imageimportdialog.h"
 #include "oled_datamodel.h"
 #include "config.h"
+#include "historymanager.h"
 
 
 
@@ -42,6 +43,8 @@ private slots:
     void on_pushButton_Copy_clicked();
     void on_pushButton_paste_clicked();
     void on_pushButton_Cut_clicked();
+    void onUndoClicked();
+    void onRedoClicked();
 
 
 
@@ -52,6 +55,10 @@ private:
     QScrollArea* scrollArea;   // <- 必須有這行
     ToolType m_currentTool;          // 储存当前选中的工具
     QSize m_originalOledSize;; // 用於儲存 oledPlaceholder 的原始尺寸
+
+    HistoryManager history;
+    QByteArray captureCanvasState();          // 把畫布序列化成 QByteArray
+    void applyCanvasState(const QByteArray&); // 還原畫布
 
 protected: // 或者 private: 都可以，但 protected 更符合重寫基類函式的慣例
     bool eventFilter(QObject *obj, QEvent *event) override;

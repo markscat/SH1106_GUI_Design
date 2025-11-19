@@ -8,6 +8,7 @@
 #include "oled_datamodel.h"
 #include "oled_dataconverter.h"
 #include "oledwidget_Paint.h"
+#include "historymanager.h"
 
 
 class OLEDWidget : public QWidget {

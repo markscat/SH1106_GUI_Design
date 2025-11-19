@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1152</width>
+    <width>1184</width>
     <height>662</height>
    </rect>
   </property>
@@ -34,8 +34,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1131</width>
-      <height>561</height>
+      <width>1151</width>
+      <height>571</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -513,7 +513,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>981</width>
+        <width>991</width>
         <height>531</height>
        </rect>
       </property>
@@ -530,7 +530,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>140</width>
+             <width>130</width>
              <height>16777215</height>
             </size>
            </property>
@@ -552,7 +552,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>140</width>
+             <width>130</width>
              <height>16777215</height>
             </size>
            </property>
@@ -574,7 +574,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>140</width>
+             <width>130</width>
              <height>16777215</height>
             </size>
            </property>
@@ -596,7 +596,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>140</width>
+             <width>130</width>
              <height>16777215</height>
             </size>
            </property>
@@ -618,7 +618,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>140</width>
+             <width>130</width>
              <height>16777215</height>
             </size>
            </property>
@@ -637,7 +637,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>140</width>
+             <width>130</width>
              <height>16777215</height>
             </size>
            </property>
@@ -659,7 +659,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>140</width>
+             <width>130</width>
              <height>16777215</height>
             </size>
            </property>
@@ -670,6 +670,19 @@
             <iconset theme="QIcon::ThemeIcon::ViewRestore"/>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_22">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </item>
@@ -719,7 +732,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1152</width>
+     <width>1184</width>
      <height>25</height>
     </rect>
    </property>

@@ -63,6 +63,10 @@ MainWindow::MainWindow(QWidget *parent)
     // 【新增】將 OLEDWidget 的信號連接到 MainWindow 的槽
     connect(m_oled, &OLEDWidget::coordinatesChanged, this, &MainWindow::updateCoordinateLabel);
 
+    connect(ui->undo_Bottom, &QPushButton::clicked,this, &MainWindow::onUndoClicked);
+
+    connect(ui->redo_Bottom, &QPushButton::clicked,this, &MainWindow::onRedoClicked);
+
     // 关键：将粘贴按钮的点击信号连接到 OLEDWidget 的 handlePaste 槽函数
 
     //你的版本
@@ -149,13 +153,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_oled->setBuffer(sample_image);
 
-
-
     // --- 設定一個合適的初始視窗大小 ---
     //resize(1050, 600);
     resize(m_oled->width() + 150, m_oled->height() + 150);
     setFixedSize(size()); // 鎖定大小，禁止拉伸
 
+    history.pushState(captureCanvasState()); // 初始快照
 }
 
 void MainWindow::exportData()
@@ -324,6 +327,9 @@ void MainWindow::resetOledPlaceholderSize()
         // setScale() 导致的尺寸变化，会被 QScrollArea 自动侦测到，
         // Qt 的布局系统会负责处理剩下的更新。
     }
+
+    //for undo and redo
+    history.pushState(captureCanvasState());
 }
 
 
@@ -346,7 +352,6 @@ void MainWindow::importImage()
         QMessageBox::warning(this, "错误", "无法载入图片档案！");
         return;
     }
-
 
     /*因為本程式主要是為了小尺寸的螢幕而設計,所以會限定大小
      * 後續會把限定的長寬比放寬,與其說放寬,不如說縮限,
@@ -376,9 +381,6 @@ void MainWindow::importImage()
         return; // 不符合條件，直接返回主視窗
     }
 
-
-
-
     // 步骤 3: [新流程] 弹出我们的自定义对话框，让用户进行设置
     ImageImportDialog importDialog(originalImage, this);
 
@@ -390,7 +392,8 @@ void MainWindow::importImage()
         m_oled->updateOledFromImage(monoImage);
 
     }
-
+    //for undo and redo
+    history.pushState(captureCanvasState());
 }
 
 void MainWindow::on_pushButton_Copy_clicked()
@@ -407,6 +410,8 @@ void MainWindow::on_pushButton_paste_clicked()
     if (m_oled) {
         m_oled->commitPaste();
     }
+    //for undo and redo
+    history.pushState(captureCanvasState());
 }
 
 void MainWindow::on_pushButton_Cut_clicked()
@@ -415,6 +420,8 @@ void MainWindow::on_pushButton_Cut_clicked()
     if (m_oled) {
         m_oled->handleCut();
     }
+    //for undo and redo
+    history.pushState(captureCanvasState());
 }
 
 
@@ -467,6 +474,44 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
     return QMainWindow::eventFilter(obj, event);
 }
+
+
+
+void MainWindow::onUndoClicked() {
+    if (history.canUndo()) {
+        QByteArray state = history.undo();
+        applyCanvasState(state);
+    }
+}
+
+void MainWindow::onRedoClicked() {
+    if (history.canRedo()) {
+        QByteArray state = history.redo();
+        applyCanvasState(state);
+    }
+}
+
+
+void MainWindow::applyCanvasState(const QByteArray& state) {
+    if (state.isEmpty()) return;
+    m_oled->setBuffer(reinterpret_cast<const uint8_t*>(state.constData()));
+
+    /* m_oled->setBuffer(reinterpret_cast<const uint8_t*>(state.constData()));
+     * 等同於：
+     * const char* rawData = state.constData();
+     * const uint8_t* buffer = reinterpret_cast<const uint8_t*>(rawData);
+     * m_oled->setBuffer(buffer);
+     */
+
+    //update(); // 觸發 Qt 重繪
+}
+
+
+QByteArray MainWindow::captureCanvasState() {
+    std::vector<uint8_t> buffer = m_oled->getHardwareBuffer();
+    return QByteArray(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
