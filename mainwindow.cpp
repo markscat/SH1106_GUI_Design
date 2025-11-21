@@ -136,6 +136,11 @@ MainWindow::MainWindow(QWidget *parent)
                 m_oled->setCurrentTool(static_cast<ToolType>(id));
             });
 
+    connect(m_oled, &OLEDWidget::canvasStateChanged,
+            this, [this](const QByteArray &state) {
+                history.pushState(state);
+            });
+
 
     // 設定預設工具
     ui->ToolPen->setChecked(true);

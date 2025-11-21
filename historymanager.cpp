@@ -1,6 +1,9 @@
 #include "historymanager.h"
 
 void HistoryManager::pushState(const QByteArray& state) {
+    if (current && current->canvasState == state) {
+        return; // 狀態相同，不要重複存
+    }
     auto* node = new HistoryNode{state};
     if (current) {
         // 清除 redo 分支
@@ -39,6 +42,25 @@ bool HistoryManager::canUndo() const {
 bool HistoryManager::canRedo() const {
     return current && current->next;
 }
+
+void HistoryManager::clearNote() {
+    if (!current) return;
+
+    // 移動到最前面
+    while (current->prev)
+        current = current->prev;
+
+    // 刪除所有節點
+    while (current) {
+        HistoryNode* next = current->next;
+        delete current;
+        current = next;
+    }
+
+    current = nullptr;
+}
+
+
 
 HistoryManager::~HistoryManager() {
     //historymanager.cpp:43:17: Definition of implicitly declared destructor

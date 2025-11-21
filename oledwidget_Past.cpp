@@ -120,8 +120,6 @@ void OLEDWidget::handleCut() {
     m_selectedRegion = QRect();
     update();
     setFocus(); // 【新增】确保OLEDWidget获得焦点
-
-
 }
 
 

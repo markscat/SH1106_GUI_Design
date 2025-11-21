@@ -35,6 +35,8 @@ public:
     // getHardwareBuffer 用于导出内部逻辑模型到硬体格式
     std::vector<uint8_t> getHardwareBuffer() const;
 
+    QByteArray getCanvasSnapshot() const;
+
 
     // --- 工具 & 状态查询 ---
     void setCurrentTool(ToolType tool);
@@ -66,7 +68,8 @@ public slots:
 signals:
     // 現在 MOC 會看到並處理這個信號了
     void coordinatesChanged(const QPoint &pos);
-
+    void paintingCommitted(const QByteArray& newCanvas);
+    void canvasStateChanged(const QByteArray &state);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -108,6 +111,7 @@ private:
     void handleSelectMove(QMouseEvent *event);
     void handleSelectRelease(QMouseEvent *event);
     void startPastePreview(const QImage& logicalImage);
+    QByteArray getCanvasByteArray() const;
 
     //QImage m_clipboardImage; // <-- 【核心】新增這個成員變數，作為持久化的剪貼簿
     //QImage m_selectionBuffer;  //新增這個成員變數，作為持久化的buffer
@@ -131,6 +135,16 @@ private:
     QPoint m_dragStartPos;        // 滑鼠拖曳開始時的 widget 座標
 
     QPoint m_dragStartPastePos;   // 拖曳開始時的貼上預覽位置
+
+
+    HistoryManager historyManager;
+
+
+    //QByteArray canvasData;   // 畫布快照
+
+    //QPoint lastPoint;        // 記錄上一個點
+
+    //bool painting = false;   // 是否正在畫筆中
 
 
 };

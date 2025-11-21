@@ -217,6 +217,7 @@ void OLEDWidget::mousePressEvent(QMouseEvent *event) {
             m_model.setPixel(oled_pos.x(), oled_pos.y(), false, m_brushSize);
             updateImageFromModel(); // 数据已变，立即更新画面
         }
+
         break;
 
     case Tool_Line:
@@ -397,6 +398,15 @@ void OLEDWidget::mouseReleaseEvent(QMouseEvent *event) {
         break;
     }
     update();
+
+
+    QByteArray state = QByteArray(
+        reinterpret_cast<const char*>(getHardwareBuffer().data()),
+        getHardwareBuffer().size()
+        );
+    emit canvasStateChanged(state);  // 新增一個 signal
+    //oledwidget_Paint.cpp:407:10: Use of undeclared identifier 'canvasStateChanged'
+
     QWidget::mouseReleaseEvent(event);
 }
 
@@ -606,7 +616,4 @@ void OLEDWidget::startPastePreview(const QImage &logicalImage)
     update();
 
 }
-
-
-
 

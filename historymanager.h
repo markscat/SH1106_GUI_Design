@@ -19,4 +19,5 @@ public:
 
 private:
     HistoryNode* current = nullptr;
+    void clearNote();
 };
