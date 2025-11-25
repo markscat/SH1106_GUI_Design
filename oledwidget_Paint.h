@@ -48,6 +48,8 @@ public:
      */
     void updateOledFromImage(const QImage& image);
 
+    void handleImportPreview(const QImage &image); // 對外公開
+
 
 // --- 公开槽 (Public Slots, 响应 UI 信号) ---
 

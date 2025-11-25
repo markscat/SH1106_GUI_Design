@@ -1,0 +1,39 @@
+MainWindow (UI 控制中心)
+│
+├── Toolbar / 功能按鈕
+│   ├── 繪圖工具 (Pen, Line, Rectangle, FilledRectangle, Circle)
+│   ├── 編輯工具 (Select, Copy, Cut, Paste)
+│   ├── 功能按鈕 (Undo, Redo, Clear, Save, Export, Import, Reset Size)
+│   └── 狀態列 (即時座標顯示)
+│
+├── OLEDWidget (畫布元件 / View)
+│   │
+│   ├── OledDataModel (邏輯緩衝區 / Model)
+│   │   ├── setPixel / drawLine / drawRectangle / drawCircle
+│   │   ├── getPixel / clear
+│   │   ├── getHardwareBuffer / setFromHardwareBuffer
+│   │   └── copyRegionToLogicalFormat / convertLogicalToHardwareFormat
+│   │
+│   ├── OledDataConverter (匯入圖片轉換器)
+│   │   └── updateModelFromImage (QImage → Model)
+│   │
+│   ├── 功能模組
+│   │   ├── Paint (paintEvent, mouse事件, wheel縮放, key事件)
+│   │   ├── Selection (選取框邏輯)
+│   │   ├── Paste (commitPaste, handleCopy, handleCut, handlePaste, startPastePreview)
+│   │   ├── Tool (setCurrentTool, showBufferDataAsHeader)
+│   │   └── API (clearScreen, setScale, setBrushSize, setBuffer, getHardwareBuffer)
+│   │
+│   └── 信號 (signals)
+│       ├── coordinatesChanged (座標更新)
+│       └── canvasStateChanged (狀態快照，用於 Undo/Redo)
+│
+├── HistoryManager (Undo/Redo 管理)
+│   └── pushState / undo / redo / clearNote
+│
+└── ImageImportDialog (匯入對話框)
+    ├── scaleSpinBox (縮放倍率)
+    ├── rotationComboBox (旋轉角度)
+    ├── B_W_swap (反白/反黑)
+    ├── C_O_swap (覆蓋/疊加模式選擇)
+    └── previewLabel (即時預覽)

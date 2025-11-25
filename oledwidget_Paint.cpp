@@ -87,7 +87,7 @@ void OLEDWidget::paintEvent(QPaintEvent *event) {
 
     if (m_pastePreviewActive && !m_pastePreviewImage.isNull()) {
 
-        qDebug() << "PaintEvent: Drawing paste preview. Paste Preview Active:" << m_pastePreviewActive;
+
 
         // 使用 QPainter 的透明度功能，效果更好且代码更简单
         painter.setOpacity(0.65); // 设置 65% 的不透明度
@@ -615,5 +615,8 @@ void OLEDWidget::startPastePreview(const QImage &logicalImage)
     // 然后调用我们之前写好的逻辑，在 (0, 0) 位置首次绘制出半透明的 m_pastePreviewImage。
     update();
 
+}
+void OLEDWidget::handleImportPreview(const QImage &image) {
+    startPastePreview(image);
 }
 

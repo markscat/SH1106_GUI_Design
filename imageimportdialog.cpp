@@ -81,10 +81,6 @@ void ImageImportDialog::updatePreview()
     int targetWidth = m_originalImage.width() * scaleFactor;
     int targetHeight  = m_originalImage.height() * scaleFactor;
 
-
-    qDebug() << "targetWidth:" << targetWidth;
-    qDebug() << "targetHeight:" << targetHeight;
-
     processedImage = processedImage.scaled(
         targetWidth,
         targetHeight,
@@ -92,14 +88,8 @@ void ImageImportDialog::updatePreview()
         Qt::SmoothTransformation
         );
 
-    qDebug() << "targetWidth:" << targetWidth;
-    qDebug() << "targetHeight:" << targetHeight;
-
-
     if (processedImage.isNull()) {
         // 如果縮放失敗（例如 scale 為 0），就不要繼續執行
-        // 可以選擇在這裡印出除錯訊息
-        qDebug() << "Warning: scale Image is null. Scale factor might be zero.";
         return;
     }
 
@@ -112,8 +102,6 @@ void ImageImportDialog::updatePreview()
 
     if (processedImage.isNull()) {
         // 如果縮放失敗（例如 scale 為 0），就不要繼續執行
-        // 可以選擇在這裡印出除錯訊息
-        qDebug() << "Warning: rotate Image is null. Scale factor might be zero.";
         return;
     }
 
@@ -127,8 +115,6 @@ void ImageImportDialog::updatePreview()
 
     if (processedImage.isNull()) {
         // 如果縮放失敗（例如 scale 為 0），就不要繼續執行
-        // 可以選擇在這裡印出除錯訊息
-        qDebug() << "Warning: invertPixels is null. Scale factor might be zero.";
         return;
     }
 
@@ -139,20 +125,23 @@ void ImageImportDialog::updatePreview()
 
     if (monoImage.isNull()) {
         // 如果縮放失敗（例如 scale 為 0），就不要繼續執行
-        // 可以選擇在這裡印出除錯訊息
-        qDebug() << "Warning: Finel convertToFormat is null. Scale factor might be zero.";
         return;
     }
 
-
-
     // 7. 更新 UI 預覽
     //    用最終的 monoImage 來更新預覽
-    ui->previewLabel->setPixmap(QPixmap::fromImage(monoImage.scaled(
-        ui->previewLabel->size(),
-        Qt::KeepAspectRatio,
-        Qt::FastTransformation
-        )));
+
+    // 讓 Label 跟著圖片大小改變
+    int previewWidth  = monoImage.width() * scaleFactor;
+    int previewHeight = monoImage.height() * scaleFactor;
+
+    QPixmap pixmap = QPixmap::fromImage(
+        monoImage.scaled(previewWidth, previewHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+        );
+
+    ui->previewLabel->setPixmap(pixmap);
+    ui->previewLabel->resize(pixmap.size());  // 讓 Label 跟著圖片大小改變
+
 
     // 8. 將最終結果儲存到成員變數中，供 MainWindow 讀取
     //    這一步非常重要，確保 getProcessedImage() 返回正確的結果
@@ -160,4 +149,7 @@ void ImageImportDialog::updatePreview()
 
 }
 
+bool ImageImportDialog::isCoverMode() const {
+    return ui->C_O_swap->isChecked();
+}
 

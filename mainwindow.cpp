@@ -16,6 +16,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //ui->statusbar->addWidget(ui->label);
+    //ui->statusbar->addWidget(ui->label_coordinate);
+
 
     m_originalOledSize = ui->oledPlaceholder->size(); // 或 m_oled->sizeHint()
 
@@ -118,7 +121,7 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->pushButton_Select->hide();
     //或
     //ui->pushButton_Select->setVisible(false);
-
+    ui->pushButton->setVisible(false);
     m_toolButtonGroup->addButton(ui->pushButton_Select, Tool_Select);
     m_toolButtonGroup->addButton(ui->pushButton_Copy, Tool_Copy);
     m_toolButtonGroup->addButton(ui->pushButton_paste, Tool_Paste);
@@ -160,8 +163,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // --- 設定一個合適的初始視窗大小 ---
     //resize(1050, 600);
-    resize(m_oled->width() + 150, m_oled->height() + 150);
-    setFixedSize(size()); // 鎖定大小，禁止拉伸
+    resize(m_oled->width() + 200, m_oled->height() + 150);
+    //setFixedSize(size()); // 鎖定大小，禁止拉伸
 
     history.pushState(captureCanvasState()); // 初始快照
 }
@@ -394,16 +397,37 @@ void MainWindow::importImage()
         QImage processedImage = importDialog.getProcessedImage();
         QImage monoImage = processedImage.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
 
-        m_oled->updateOledFromImage(monoImage);
-
+        if (importDialog.isCoverMode()) {
+            // 覆蓋模式：清空畫布並直接匯入
+            m_oled->updateOledFromImage(monoImage);
+        } else {
+            // 疊加模式：進入貼上預覽，不清空畫布
+            m_oled->handleImportPreview(monoImage);
+        }
     }
+
+
+    /*
+
+    if (importDialog.exec() == QDialog::Accepted) {
+        QImage processedImage = importDialog.getProcessedImage();
+        QImage monoImage = processedImage.convertToFormat(QImage::Format_Mono, Qt::ThresholdDither);
+
+        //m_oled->updateOledFromImage(monoImage);
+        //m_oled->handleImportPreview(monoImage);
+
+        // 建議：讓 OLEDWidget 拿到焦點，確保 Enter/Esc 能用
+        m_oled->setFocus();
+    }
+
+    */
     //for undo and redo
     history.pushState(captureCanvasState());
 }
 
 void MainWindow::on_pushButton_Copy_clicked()
 {
-    qDebug() << "[Copy按鈕] 被點擊了";
+
     m_oled->handleCopy();
     m_oled->showBufferDataAsHeader();
 }
@@ -411,7 +435,7 @@ void MainWindow::on_pushButton_Copy_clicked()
 
 void MainWindow::on_pushButton_paste_clicked()
 {
-    qDebug() << "[Paste按鈕] 被點擊了";
+
     if (m_oled) {
         m_oled->commitPaste();
     }
@@ -421,7 +445,7 @@ void MainWindow::on_pushButton_paste_clicked()
 
 void MainWindow::on_pushButton_Cut_clicked()
 {
-    qDebug() << "[Cut按鈕] 被點擊了";
+
     if (m_oled) {
         m_oled->handleCut();
     }
