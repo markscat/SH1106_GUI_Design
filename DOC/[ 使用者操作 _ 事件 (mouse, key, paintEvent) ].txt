@@ -1,25 +1,25 @@
-[ ¨Ï¥ÎªÌ¾Ş§@ / ¨Æ¥ó (mouse, key, paintEvent) ]
-                ¢x
-                ¡¿
-        ¢z¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢{
-        ¢x OledDataModel     ¢x
-        ¢x (ÅŞ¿è¼h: 0/1 buffer)¢x
-        ¢x std::vector<bool> ¢x
-        ¢|¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢}
-                ¢x
-                ¢x updateImageFromModel()
-                ¡¿
-        ¢z¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢{
-        ¢x OLEDWidget        ¢x
-        ¢x (UI¼h: QImage)    ¢x
-        ¢x m_image           ¢x
-        ¢|¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢}
-                ¢x
-                ¢x ¶×¥X®É¤~Âà´«
-                ¡¿
-        ¢z¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢{
-        ¢x µwÅé¼h (Export)   ¢x
-        ¢x getHardwareBuffer ¢x
-        ¢x convertLogicalTo¡K ¢x
-        ¢x std::vector<uint8_t> ¢x
-        ¢|¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢w¢}
+[ View / Controller (mouse, key, paintEvent) ]
+     â†‘
+     â”‚
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚   OledDataModel             â”‚
+â”‚   (é‚è¼¯è³‡æ–™: 0/1 buffer)     â”‚
+â”‚   std::vector<bool>         â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+     â†“
+     updateImageFromModel()
+     â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚   OLEDWidget                â”‚
+â”‚   (UIç¹ªåœ–: QImage)           â”‚
+â”‚   m_image                   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+     â†“
+  åŒ¯å‡ºåŠŸèƒ½
+     â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚   Export                    â”‚
+â”‚   getHardwareBuffer()       â”‚
+â”‚   convertLogicalToâ€¦         â”‚
+â”‚   std::vector<uint8_t>      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
