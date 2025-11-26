@@ -1,0 +1,20 @@
+// WiFi Icon (16x16 pixel)
+// 格式：Horizontal addressing (每 2 個 byte 代表一行)
+static const unsigned char sample_image[] = {
+    0x00, 0x00, //Row 0 (空白)
+    0x00, 0x00, //Row 1
+    0x07, 0xE0, //Row 2   xxxxx
+    0x1F, 0xF8, //Row 3  xxxxxxxxx
+    0x38, 0x1C, //Row 4 xx       xx
+    0x60, 0x06, //Row 5 xx       xx
+    0x40, 0x02, //Row 6 x         x
+    0x0F, 0xF0, //Row 7    xxxx
+    0x1C, 0x38, //Row 8   xx  xx
+    0x30, 0x0C, //Row 9   xx  xx
+    0x03, 0xC0, //Row 10     xx
+    0x06, 0x60, //Row 11    x  x
+    0x04, 0x20, //Row 12    x  x
+    0x01, 0x80, //Row 13     xx
+    0x01, 0x80, //Row 14     xx
+    0x00, 0x00  //Row 15
+};
