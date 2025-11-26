@@ -37,6 +37,9 @@ public:
 
     QByteArray getCanvasSnapshot() const;
 
+    QImage copyRegionToImage(const QRect &region) const;
+    QRect getSelectedRegion() const;
+
 
     // --- 工具 & 状态查询 ---
     void setCurrentTool(ToolType tool);

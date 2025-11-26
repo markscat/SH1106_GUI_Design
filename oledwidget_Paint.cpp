@@ -620,3 +620,11 @@ void OLEDWidget::handleImportPreview(const QImage &image) {
     startPastePreview(image);
 }
 
+ QRect OLEDWidget::getSelectedRegion() const {
+     return m_selectedRegion;
+ }
+
+QImage OLEDWidget::copyRegionToImage(const QRect &region) const {
+    return m_model.copyRegionToLogicalFormat(region);
+}
+

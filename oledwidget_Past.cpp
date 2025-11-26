@@ -4,6 +4,7 @@
 
 void OLEDWidget::commitPaste()
 {
+        qDebug() << "[commitPaste] function entered";
     // 步骤 1: 安全检查
     // 确保我们确实处于贴上模式，并且有有效的预览图像数据。
     if (!m_pastePreviewActive || m_pastePreviewImage.isNull()) {
@@ -31,10 +32,23 @@ void OLEDWidget::commitPaste()
                 // 正确地在 (targetX, targetY) 位置上点亮一个像素。
                 // 这里的笔刷大小应为 1，因为我们是逐像素复制。
                 m_model.setPixel(targetX, targetY, true, 1);
+                                anyPixelSet = true;
+                 //qDebug() << "[commitPaste] anyPixelSet = true, updating image...";
             }
         }
     }
-    updateImageFromModel();
+
+    if (anyPixelSet) {
+            qDebug() << "[commitPaste] anyPixelSet = true, updating image...";
+        updateImageFromModel();
+        update();
+    }
+
+     //清理貼上狀態
+    m_pastePreviewActive = false;
+    m_pastePreviewImage = QImage();
+
+    //updateImageFromModel();
 }
 
 
@@ -59,13 +73,9 @@ void OLEDWidget::handleCopy(){
     {
         return; // 沒有選取框就不做
     }
-
-#ifdef Modefiy_1115
     m_persistentBuffer = m_model.copyRegionToLogicalFormat(m_selectedRegion);
     m_hasValidBuffer = !m_persistentBuffer.isNull();  // 标记有效
-#endif
-
-    m_selectedRegion = QRect();
+    //m_selectedRegion = QRect();
     update();
 
 }
@@ -127,7 +137,7 @@ void OLEDWidget::handleCut() {
  * @brief [SLOT] 處理「貼上」操作的槽函數。
  *
  * 當使用者觸發貼上動作時，此槽函數被呼叫。
- * 它會檢查內部剪貼簿 (`m_clipboardImage`) 是否有有效的圖像資料。
+ * 它會檢查內部剪貼簿 (`m_persistentBuffer`) 是否有有效的圖像資料。
  * 如果有，它會呼叫 `startPastePreview()`，使用剪貼簿中的圖像
  * 來啟動一個新的貼上預覽流程，讓使用者可以決定貼上的位置。
  *

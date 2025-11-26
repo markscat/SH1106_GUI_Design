@@ -177,6 +177,13 @@ void MainWindow::exportData()
     // 我们用一个新的同类型变量 buffer 来接收它。
     std::vector<uint8_t> buffer = m_oled->getHardwareBuffer();
 
+    QRect region = m_oled->getSelectedRegion().isValid()
+                       ? m_oled->getSelectedRegion()
+                       : QRect(0, 0, OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT);
+    QImage logicalData = m_oled->copyRegionToImage(region);
+    QVector<uint8_t> hardwareData = OledDataModel::convertLogicalToHardwareFormat(logicalData);
+
+
     // 步骤 2: [新增] 健壮性检查
     // 在进行操作前，最好先检查一下 buffer 是否为空。
     if (buffer.empty()) {
@@ -212,7 +219,7 @@ void MainWindow::exportData()
 
     // 步骤 6: 显示对话框 (这部分逻辑保持不变)
     QDialog *exportDialog = new QDialog(this);
-    exportDialog->setWindowTitle("汇出的 C 阵列 (可複製)");
+    exportDialog->setWindowTitle("匯出的H檔 (可複製)");
     exportDialog->setAttribute(Qt::WA_DeleteOnClose); // 使用 WA_DeleteOnClose 更安全
     exportDialog->resize(600, 400);
 
