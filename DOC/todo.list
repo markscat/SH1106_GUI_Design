@@ -1,0 +1,36 @@
+
+1. 文字工具 (Text Tool) - 最迫切的功能
+目前如果要在畫面上寫 "Temp: 25°C"，你必須用滑鼠一個點一個點畫，或者去別的地方截圖匯入。
+功能： 點擊畫面 -> 輸入文字 -> 選擇字型/大小 -> 渲染到 OLED 上。
+進階：
+模擬 點陣字型 (Bitmap Fonts)：嵌入式系統通常不用 TrueType，而是用 5x7, 8x8 這種固定寬度字型。你可以內建幾個這種字型檔，讓預覽更接近真實硬體效果。
+支援 Qt 的 QFontDialog，將系統字型二值化（Binarize）後貼上。
+2. 印章/元件庫 (Stamp/Component Library)
+你在 main.cpp 的註解裡提到了這個想法，現在是實現它的時候了！
+功能： 做一個側邊欄（DockWidget），裡面列出常用的 icon：
+電池圖示 (滿格/半格/空格)
+WiFi / 藍牙訊號圖示
+七段顯示器數字 (0-9)
+常見 UI 元件 (進度條外框、開關)
+操作： 點選圖示 -> 拖曳到畫布 -> 放開即「蓋章」。
+3. 支援主流圖形庫格式 (U8g2 / Adafruit GFX)
+目前你的匯出是「Raw Byte Array」，這對裸機開發很好用。但大部分 Arduino/ESP32 玩家使用 U8g2 或 Adafruit GFX 函式庫。
+功能： 在匯出選單增加選項。
+U8g2 XBM 格式： 其實跟你的很像，但格式宣告不同。
+Adafruit GFX 格式： 也是類似，但可以自動生成 .drawBitmap(x, y, bitmap, w, h, WHITE); 的程式碼片段，讓使用者直接貼進 Arduino IDE。
+4. 即時硬體預覽 (Live Serial Preview) - 殺手級功能
+這是讓你的工具超越網頁版工具的關鍵。
+概念： 透過 USB Serial (COM Port) 連接 Arduino/ESP32。
+功能： 當你在 Qt 畫布上畫畫時，程式透過 Serial 把 buffer 丟給 MCU，MCU 收到後直接刷到 OLED 上。
+Qt 實作： 使用 QSerialPort。
+效果： 達到「所見即所得」(WYSIWYG)，不用每次改一個像素都要重新編譯燒錄 MCU。
+5. 動畫/多幀編輯 (Animation/Timeline)
+OLED 不只是顯示靜態圖，開機動畫或 loading 動畫很常見。
+功能：
+下方增加一個「時間軸」或「幀列表」。
+每一幀都是一個 OledDataModel。
+增加「播放」按鈕，以設定的 FPS (例如 10fps) 在畫布上預覽動畫。
+匯出： 匯出成 const unsigned char animation_frame_0[], animation_frame_1[]... 陣列。
+6. 幾何圖形調整 (Vector-like behavior)
+目前你的矩形、圓形一旦畫下去，就變成像素點（Rasterized），無法再調整大小。
+挑戰： 在「選取」還沒結束前（MouseRelease 之前），允許使用者拖曳控制點來改變矩形長寬，而不是只能重畫。這需要更複雜的 paintEvent 預覽邏輯。
