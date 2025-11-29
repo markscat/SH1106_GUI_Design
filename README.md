@@ -1,6 +1,27 @@
 # SH1106_GUI_Design<br>
 SH1106 GUI設計工具<br>
 
+
+25/11/29
+完成undo redo功能
+
+修改按鍵的Layout，
+繪圖工具改用圖示
+可以使用熱鍵
+
+畫筆工具 =  P
+直線工具 = L
+矩形工具  = R
+實心矩形 =Shift+R
+圓形工具 = C
+
+選取工具 = S
+複製 = Ctrl+C
+剪下  = Ctrl+X
+貼上 = Ctrl+V
+
+
+
 25/11/18
 目前欠缺的功能有：
 1. undo/redo的功能
