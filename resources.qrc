@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon/Circle.bmp</file>
+        <file>icon/FilledRectangle.bmp</file>
+        <file>icon/line.bmp</file>
+        <file>icon/pen.bmp</file>
+        <file>icon/Rectangle.bmp</file>
+        <file>icon/bat-0.bmp</file>
+        <file>icon/bat-25.bmp</file>
+        <file>icon/bat-50.bmp</file>
+        <file>icon/bat-75.bmp</file>
+        <file>icon/bat-Full.bmp</file>
+        <file>icon/exproH.bmp</file>
+        <file>icon/impro_H.bmp</file>
+        <file>icon/impro_picture.bmp</file>
+        <file>icon/wifi-BandW.bmp</file>
+        <file>icon/wifi-BandW_10x10.bmp</file>
+    </qresource>
+</RCC>

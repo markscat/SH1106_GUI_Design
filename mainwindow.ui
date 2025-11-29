@@ -39,8 +39,27 @@
           </item>
           <item>
            <widget class="QToolButton" name="ToolLine">
+            <property name="statusTip">
+             <string comment="直線" extracomment="直線"/>
+            </property>
+            <property name="whatsThis">
+             <string comment="直線" extracomment="直線"/>
+            </property>
             <property name="text">
-             <string>Line</string>
+             <string extracomment="直線">Line</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icon/line.bmp</normaloff>:/icon/line.bmp</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="shortcut">
+             <string extracomment="直線"/>
             </property>
            </widget>
           </item>
@@ -79,6 +98,16 @@
             <property name="text">
              <string>Circle</string>
             </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icon/Circle.bmp</normaloff>:/icon/Circle.bmp</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
            </widget>
           </item>
           <item>
@@ -115,6 +144,16 @@
            <widget class="QToolButton" name="ToolPen">
             <property name="text">
              <string>Pen</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icon/pen.bmp</normaloff>:/icon/pen.bmp</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -153,6 +192,16 @@
             <property name="text">
              <string>FilledRectangle</string>
             </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/icon/FilledRectangle.bmp</normaloff>:/icon/FilledRectangle.bmp</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
            </widget>
           </item>
           <item>
@@ -189,6 +238,16 @@
            <widget class="QToolButton" name="ToolRectangle">
             <property name="text">
              <string>Rectangle</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>icon/Rectangle.bmp</normaloff>icon/Rectangle.bmp</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
             </property>
            </widget>
           </item>
@@ -556,7 +615,7 @@
         <height>30</height>
        </size>
       </property>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>0</x>
@@ -635,6 +694,8 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
