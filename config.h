@@ -61,7 +61,10 @@ constexpr int  COLUMN_OFFSET =  2;
 
 //#define  oldcode
 //#define newcode_Buffer
-    #define Modefiy_1115
+#define Modefiy_1115
+
+
+#define modify_1122
 
 #define QMessageBox_debug
 

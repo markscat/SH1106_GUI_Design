@@ -39,14 +39,14 @@
           </item>
           <item>
            <widget class="QToolButton" name="ToolLine">
-            <property name="statusTip">
-             <string comment="直線" extracomment="直線"/>
+            <property name="toolTip">
+             <string comment="Line" extracomment="Line"/>
             </property>
             <property name="whatsThis">
-             <string comment="直線" extracomment="直線"/>
+             <string comment="Line"/>
             </property>
             <property name="text">
-             <string extracomment="直線">Line</string>
+             <string>Line</string>
             </property>
             <property name="icon">
              <iconset resource="resources.qrc">
@@ -54,12 +54,12 @@
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>30</width>
+              <height>30</height>
              </size>
             </property>
             <property name="shortcut">
-             <string extracomment="直線"/>
+             <string/>
             </property>
            </widget>
           </item>
@@ -104,8 +104,8 @@
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>30</width>
+              <height>30</height>
              </size>
             </property>
            </widget>
@@ -151,8 +151,8 @@
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>30</width>
+              <height>30</height>
              </size>
             </property>
            </widget>
@@ -198,8 +198,8 @@
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>30</width>
+              <height>30</height>
              </size>
             </property>
            </widget>
@@ -240,19 +240,59 @@
              <string>Rectangle</string>
             </property>
             <property name="icon">
-             <iconset>
-              <normaloff>icon/Rectangle.bmp</normaloff>icon/Rectangle.bmp</iconset>
+             <iconset resource="resources.qrc">
+              <normaloff>:/icon/Rectangle.bmp</normaloff>:/icon/Rectangle.bmp</iconset>
             </property>
             <property name="iconSize">
              <size>
-              <width>20</width>
-              <height>20</height>
+              <width>30</width>
+              <height>30</height>
              </size>
             </property>
            </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_10">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="ToolBrushSizeComboBoxLayout">
+          <item>
+           <spacer name="horizontalSpacer_12">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>筆刷大小</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="brushSizeComboBox"/>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_11">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
             </property>
@@ -280,16 +320,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_Select">
-            <property name="text">
-             <string>選取</string>
-            </property>
-            <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditSelectAll"/>
-            </property>
-           </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_16">
@@ -322,16 +352,6 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_Cut">
-            <property name="text">
-             <string>剪下</string>
-            </property>
-            <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditCut"/>
-            </property>
-           </widget>
-          </item>
-          <item>
            <spacer name="horizontalSpacer_18">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
@@ -360,16 +380,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton_Copy">
-            <property name="text">
-             <string>複製</string>
-            </property>
-            <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditCopy"/>
-            </property>
-           </widget>
           </item>
           <item>
            <spacer name="horizontalSpacer_20">
@@ -402,50 +412,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_paste">
-            <property name="text">
-             <string>貼上</string>
-            </property>
-            <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditPaste"/>
-            </property>
-           </widget>
-          </item>
-          <item>
            <spacer name="horizontalSpacer_14">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="ToolBrushSizeComboBoxLayout">
-          <item>
-           <spacer name="horizontalSpacer_12">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QComboBox" name="brushSizeComboBox"/>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_11">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
             </property>
@@ -542,6 +509,46 @@
             </property>
             <property name="icon">
              <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_Select">
+            <property name="text">
+             <string>選取</string>
+            </property>
+            <property name="icon">
+             <iconset theme="QIcon::ThemeIcon::EditSelectAll"/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_Cut">
+            <property name="text">
+             <string>剪下</string>
+            </property>
+            <property name="icon">
+             <iconset theme="QIcon::ThemeIcon::EditCut"/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_Copy">
+            <property name="text">
+             <string>複製</string>
+            </property>
+            <property name="icon">
+             <iconset theme="QIcon::ThemeIcon::EditCopy"/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_paste">
+            <property name="text">
+             <string>貼上</string>
+            </property>
+            <property name="icon">
+             <iconset theme="QIcon::ThemeIcon::EditPaste"/>
             </property>
            </widget>
           </item>
@@ -688,7 +695,7 @@
      <x>0</x>
      <y>0</y>
      <width>1123</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

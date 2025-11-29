@@ -104,10 +104,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 假設您的按鈕 objectName 分別是 penButton, lineButton 等
     m_toolButtonGroup->addButton(ui->ToolPen, Tool_Pen);
+    ui->ToolPen->setToolTip("鉛筆");
+
     m_toolButtonGroup->addButton(ui->ToolLine, Tool_Line);
+    ui->ToolLine->setToolTip("直線");
+
     m_toolButtonGroup->addButton(ui->ToolRectangle, Tool_Rectangle);
+    ui->ToolRectangle->setToolTip("方形");
+
     m_toolButtonGroup->addButton(ui->ToolFilledRectangle, Tool_FilledRectangle);
+    ui->ToolFilledRectangle->setToolTip("方塊");
+
     m_toolButtonGroup->addButton(ui->ToolCircle, Tool_Circle);
+    ui->ToolCircle->setToolTip("方形");
 
     //選取複製功能
 /* Note:
@@ -165,6 +174,29 @@ MainWindow::MainWindow(QWidget *parent)
     //resize(1050, 600);
     resize(m_oled->width() + 200, m_oled->height() + 150);
     //setFixedSize(size()); // 鎖定大小，禁止拉伸
+
+    /************************HOT Key ******************/
+
+    // 1. 標準編輯功能 (使用 QKeySequence 會自動適應 Windows/Mac)
+    ui->pushButton_Copy->setShortcut(QKeySequence::Copy);   // 自動對應 Ctrl+C
+    ui->pushButton_paste->setShortcut(QKeySequence::Paste); // 自動對應 Ctrl+V
+    ui->pushButton_Cut->setShortcut(QKeySequence::Cut);     // 自動對應 Ctrl+X
+    ui->undo_Bottom->setShortcut(QKeySequence::Undo);       // 自動對應 Ctrl+Z
+    ui->redo_Bottom->setShortcut(QKeySequence::Redo);       // 自動對應 Ctrl+Y 或 Ctrl+Shift+Z
+
+    // 2. 工具切換 (單鍵熱鍵)
+    // 當按下 P 時，ToolPen 會被觸發 (click)，因為它在 ButtonGroup 裡，所以會自動切換過去
+    ui->ToolPen->setShortcut(QKeySequence("P"));
+    ui->ToolLine->setShortcut(QKeySequence("L"));
+    ui->ToolRectangle->setShortcut(QKeySequence("R"));
+    ui->ToolCircle->setShortcut(QKeySequence("C"));
+
+    // 3. 選取模式
+    ui->pushButton_Select->setShortcut(QKeySequence("S"));
+
+    /************************HOT Key ******************/
+
+
 
     history.pushState(captureCanvasState()); // 初始快照
 }
