@@ -5,7 +5,7 @@
 
 #include "ToolType.h"
 #include "oledwidget_Paint.h"
-#include "imageimportdialog.h"
+#include "ImageImportDialog.h"
 #include "oled_datamodel.h"
 #include "config.h"
 #include "historymanager.h"

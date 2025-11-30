@@ -1,8 +1,8 @@
 
 
 
-#include "imageimportdialog.h"
-#include "ui_imageimportdialog.h"
+#include "ImageImportDialog.h"
+#include "ui_ImageImportDialog.h"
 
 ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent) :
     QDialog(parent),
