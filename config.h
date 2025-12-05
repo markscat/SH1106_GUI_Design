@@ -25,7 +25,6 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QPoint>
-#include <QRegularExpression>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSize>

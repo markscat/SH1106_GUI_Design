@@ -1,8 +1,8 @@
 
 
 
-#include "ImageImportDialog.h"
-#include "ui_ImageImportDialog.h"
+#include "imageimportdialog.h"
+#include "ui_imageimportdialog.h"
 
 ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent) :
     QDialog(parent),
@@ -10,16 +10,22 @@ ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent)
     m_originalImage(sourceImage) // 保存原始圖片
 {
     ui->setupUi(this);
-    this->setWindowTitle("圖片匯入選項");
+    this->setWindowTitle("匯入精靈");
 
     // --- 初始化 UI 元件 ---
+    // 1. 設定圖片 Tab 的初始狀態
+    if (!m_originalImage.isNull()) {
+        ui->label_ImgSize->setText(QString("原始尺寸: %1 x %2").arg(m_originalImage.width()).arg(m_originalImage.height()));
+    } else {
+        ui->label_ImgSize->setText("尚未載入圖片");
+    }
 
     // 1. 顯示原始圖片尺寸
-    ui->label_ImgSize->setText(QString("原始尺寸: %1 x %2").arg(m_originalImage.width()).arg(m_originalImage.height()));
+    //ui->label_ImgSize->setText(QString("原始尺寸: %1 x %2").arg(m_originalImage.width()).arg(m_originalImage.height()));
 
     // 2. 設定放大倍率選項 (例如 1 到 8 倍)
     ui->scaleSpinBox->setRange(1, 8);
-    ui->scaleSpinBox->setValue(1); // 設定一個合理的預設值，例如 100%
+    ui->scaleSpinBox->setValue(1); // 設定一個合理的預設值
     ui->scaleSpinBox->setSuffix(" 倍");
 
     // 3. 設定旋轉角度選項
@@ -32,11 +38,21 @@ ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent)
     ui->previewLabel->setScaledContents(false); // 我們手動設定大小，不讓 QLabel 自動縮放
     ui->previewLabel->setAlignment(Qt::AlignCenter);
 
+
+    // 檔案 Tab 的預覽 Label
+    ui->label_FilePreview->setScaledContents(false);
+    ui->label_FilePreview->setAlignment(Qt::AlignCenter);
+
+
+
     // --- 連接信號與槽 ---
     connect(ui->scaleSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, &ImageImportDialog::updatePreview);
     connect(ui->rotationComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImageImportDialog::updatePreview);
-
     connect(ui->B_W_swap, &QRadioButton::toggled, this, &ImageImportDialog::updatePreview);
+
+    // [新增] 按鈕連接 (如果 UI 編輯器沒有自動連接 on_..._clicked 的話，手動連比較保險)
+    connect(ui->OpenPicture_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_OpenPicture_pushButton_clicked);
+    connect(ui->Openfile_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_Openfile_pushButton_clicked);
 
     // --- 第一次載入時，立即更新一次預覽 ---
     updatePreview();
@@ -51,14 +67,45 @@ ImageImportDialog::~ImageImportDialog()
 // 這個 public 函數是關鍵，讓 MainWindow 可以拿到結果
 QImage ImageImportDialog::getProcessedImage() const
 {
-    return m_processedImage;
+    // 判斷目前使用者停留在哪個分頁
+    if (ui->tabWidget->currentWidget() == ui->File_tab) {
+        // 如果是檔案分頁，回傳解析出來的圖
+        return m_fileRawImage;
+    } else {
+        // 否則回傳圖片分頁處理過的圖
+        return m_processedImage;
+    }
+    //return m_processedImage;
 }
 
+
+// ================= Picture Tab 邏輯 =================
+
 // 核心邏輯：根據 UI 設定來產生預覽圖
-void ImageImportDialog::updatePreview()
+void ImageImportDialog::on_OpenPicture_pushButton_clicked()
 {
+    QString filePath = QFileDialog::getOpenFileName(
+        this, "選擇圖片", "", "Images (*.jpg *.jpeg *.bmp *.xpm)");
+
+    if (filePath.isEmpty()) return;
+    QImage loaded;
+
+    if (loaded.load(filePath)) {
+        // 檢查尺寸 (選擇性)
+        if (loaded.width() > 128 || loaded.height() > 64) {
+            QMessageBox::warning(this, "注意", "圖片尺寸大於 128x64，匯入後可能需要縮小。");
+        }
+        m_originalImage = loaded;
+        ui->label_ImgSize->setText(QString("原始尺寸: %1 x %2").arg(m_originalImage.width()).arg(m_originalImage.height()));
+        updatePreview(); // 更新預覽
+    }
+}
+
+void ImageImportDialog::updatePreview(){
+
     if (m_originalImage.isNull()) {
-        qDebug() << "Warning: m_originalImage is null. import factor might be zero.";
+        ui->previewLabel->setText("請先開啟圖片");
+        //qDebug() << "Warning: m_originalImage is null. import factor might be zero.";
         return;
     }
 
@@ -66,12 +113,13 @@ void ImageImportDialog::updatePreview()
     int scaleFactor = ui->scaleSpinBox->value();
     int rotation = ui->rotationComboBox->currentData().toInt();
     bool shouldInvert = ui->B_W_swap->isChecked();
-    //int scale = ui->scaleSpinBox->value();
-    //int rotation = ui->rotationComboBox->currentData().toInt();
+
 
     // 2. 建立一個局部的、用於處理的圖片副本
     //    我們從原始圖片開始，確保每次更新都是全新的計算
     QImage processedImage = m_originalImage;
+    //QImage temp = m_originalImage;
+
 
     // 3. 【流水線步驟 A: 縮放】
     //    注意：SpinBox 的 value() 通常是百分比，所以要除以 100.0
@@ -80,6 +128,7 @@ void ImageImportDialog::updatePreview()
 
     int targetWidth = m_originalImage.width() * scaleFactor;
     int targetHeight  = m_originalImage.height() * scaleFactor;
+    //processedImage = processedImage.scaled(targetWidth, targetHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     processedImage = processedImage.scaled(
         targetWidth,
@@ -128,6 +177,18 @@ void ImageImportDialog::updatePreview()
         return;
     }
 
+    /*  這段就有差別,
+
+    // 3. 顯示預覽
+    // 為了讓使用者看得清楚，預覽圖本身可以在 Label 上放大顯示
+    int displayScale = (scaleFactor < 2) ? 4 : 2;
+    QPixmap px = QPixmap::fromImage(mono);
+    // 這裡只是顯示放大，不改變 mono 本身數據
+    ui->previewLabel->setPixmap(px.scaled(px.size() * displayScale, Qt::KeepAspectRatio));
+    ui->previewLabel->resize(px.size() * displayScale);
+    */
+
+
     // 7. 更新 UI 預覽
     //    用最終的 monoImage 來更新預覽
 
@@ -148,6 +209,148 @@ void ImageImportDialog::updatePreview()
     m_processedImage = monoImage;
 
 }
+
+
+void ImageImportDialog::on_Openfile_pushButton_clicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        "選擇標頭檔/原始碼",
+        "",
+        "C/C++ Header (*.h *.c *.cpp *.txt);;All Files (*)"
+        );
+
+    if (filePath.isEmpty()) return;
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, "錯誤", "無法開啟檔案！");
+        return;
+    }
+
+    // 顯示路徑
+    ui->lbl_FilePath->setText(filePath);
+
+    QTextStream in(&file);
+    QString content = in.readAll();
+    file.close();
+
+    // 開始解析
+    parseFileContentToImage(content);
+}
+
+void ImageImportDialog::parseFileContentToImage(const QString &content)
+{
+    // 1. 使用 Regex 提取 Hex
+    QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
+    auto matches = hexRegex.globalMatch(content);
+
+    std::vector<uint8_t> buffer;
+    while (matches.hasNext()) {
+        auto match = matches.next();
+        bool ok;
+        int val = match.captured().toInt(&ok, 16);
+        if (ok) buffer.push_back(static_cast<uint8_t>(val));
+    }
+
+    if (buffer.empty()) {
+        ui->label_FilePreview->setText("未找到 Hex 數據");
+        m_fileRawImage = QImage();
+        return;
+    }
+
+    // 2. 處理資料長度 (標準 SH1106/SSD1306 128x64 需要 1024 bytes)
+    size_t requiredSize = OledConfig::DISPLAY_WIDTH * OledConfig::DISPLAY_HEIGHT / 8;
+
+    if (buffer.size() > requiredSize) {
+        buffer.resize(requiredSize); // 截斷
+    } else if (buffer.size() < requiredSize) {
+        buffer.resize(requiredSize, 0x00); // 補零
+    }
+
+    // 3. 借用 OledDataModel 進行轉換 (Hardware Bytes -> Logical QImage)
+    OledDataModel tempModel;
+    tempModel.setFromHardwareBuffer(buffer.data());
+
+    // 轉出來就是 Format_Mono 的邏輯圖
+    QImage result = tempModel.copyRegionToLogicalFormat(
+        QRect(0, 0, OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT)
+        );
+
+    // 4. 儲存與預覽
+    m_fileRawImage = result;
+
+    // 預覽放大 3 倍比較容易看
+    QPixmap px = QPixmap::fromImage(result);
+    ui->label_FilePreview->setPixmap(px.scaled(px.size() * 3, Qt::KeepAspectRatio));
+    ui->label_FilePreview->resize(px.size() * 3);
+}
+
+/*
+void ImageImportDialog::parseAndPreviewFile(const QString &fileContent)
+{
+    std::vector<uint8_t> buffer;
+
+    // 1. 使用 Regex 提取 Hex 數值 (邏輯參考 SimulatorDialog)
+    QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
+    auto matches = hexRegex.globalMatch(fileContent);
+
+    while (matches.hasNext()) {
+        auto match = matches.next();
+        bool ok;
+        int val = match.captured().toInt(&ok, 16);
+        if (ok) {
+            buffer.push_back(static_cast<uint8_t>(val));
+        }
+    }
+
+    if (buffer.empty()) {
+        ui->label_FilePreview->setText("未偵測到有效的 Hex 數據");
+        m_fileImportImage = QImage(); // 清空
+        return;
+    }
+
+    // 2. 檢查大小 (128x64 的 OLED 需要 1024 bytes)
+    const size_t requiredSize = OledConfig::DISPLAY_WIDTH * OledConfig::DISPLAY_HEIGHT / 8;
+
+    if (buffer.size() < requiredSize) {
+        // 資料不足補 0
+        buffer.resize(requiredSize, 0x00);
+    } else if (buffer.size() > requiredSize) {
+        // 資料過多截斷 (通常只取前 1024 bytes)
+        buffer.resize(requiredSize);
+    }
+
+    // 3. 利用 OledDataModel 將 Hardware Buffer 轉回 QImage
+    // 這裡我們建立一個暫時的 Model 來幫我們做苦工
+    OledDataModel tempModel;
+    tempModel.setFromHardwareBuffer(buffer.data());
+
+    // 轉換為邏輯圖像 (Format_Mono)
+    QImage resultImage = tempModel.copyRegionToLogicalFormat(
+        QRect(0, 0, OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT)
+        );
+
+    // 4. 存檔與預覽
+    m_fileImportImage = resultImage;
+
+    // 顯示預覽 (放大顯示比較清楚，例如放大 2 倍)
+    int previewScale = 2;
+    QPixmap pixmap = QPixmap::fromImage(resultImage.scaled(
+        resultImage.width() * previewScale,
+        resultImage.height() * previewScale,
+        Qt::KeepAspectRatio
+        ));
+
+    ui->label_FilePreview->setPixmap(pixmap);
+    ui->label_FilePreview->resize(pixmap.size());
+}
+*/
+
+
+
+
+
 
 bool ImageImportDialog::isCoverMode() const {
     return ui->C_O_swap->isChecked();
