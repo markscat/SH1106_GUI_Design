@@ -11,6 +11,9 @@ ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent)
 {
     ui->setupUi(this);
     this->setWindowTitle("匯入精靈");
+    ui->tabWidget->setCurrentIndex(0);
+
+
 
     // --- 初始化 UI 元件 ---
     // 1. 設定圖片 Tab 的初始狀態
@@ -40,9 +43,10 @@ ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent)
 
 
     // 檔案 Tab 的預覽 Label
-    ui->label_FilePreview->setScaledContents(false);
-    ui->label_FilePreview->setAlignment(Qt::AlignCenter);
-
+    if (ui->label_FilePreview) { // 加上判斷防止崩潰
+        ui->label_FilePreview->setScaledContents(false);
+        ui->label_FilePreview->setAlignment(Qt::AlignCenter);
+    }
 
 
     // --- 連接信號與槽 ---
@@ -51,8 +55,8 @@ ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent)
     connect(ui->B_W_swap, &QRadioButton::toggled, this, &ImageImportDialog::updatePreview);
 
     // [新增] 按鈕連接 (如果 UI 編輯器沒有自動連接 on_..._clicked 的話，手動連比較保險)
-    connect(ui->OpenPicture_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_OpenPicture_pushButton_clicked);
-    connect(ui->Openfile_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_Openfile_pushButton_clicked);
+    //connect(ui->OpenPicture_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_OpenPicture_pushButton_clicked);
+    //connect(ui->Openfile_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_Openfile_pushButton_clicked);
 
     // --- 第一次載入時，立即更新一次預覽 ---
     updatePreview();
