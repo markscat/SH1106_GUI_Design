@@ -246,39 +246,80 @@ void ImageImportDialog::on_Openfile_pushButton_clicked()
 void ImageImportDialog::parseFileContentToImage(const QString &content)
 {
     // 1. 使用 Regex 提取 Hex
-    QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
-    auto matches = hexRegex.globalMatch(content);
+    QString dataContent = content;
+    int startBrace = content.indexOf('{');
+    int endBrace = content.lastIndexOf('}');
 
-    std::vector<uint8_t> buffer;
+    // 如果找得到大括號，我們就只看大括號裡面的東西
+    if (startBrace != -1 && endBrace != -1 && endBrace > startBrace) {
+        dataContent = content.mid(startBrace, endBrace - startBrace + 1);
+    }
+
+    //QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
+    QRegularExpression hexRegex("0x[0-9a-fA-F]+");
+    auto matches = hexRegex.globalMatch(dataContent);
+
+    std::vector<uint8_t> rawBuffer;
     while (matches.hasNext()) {
         auto match = matches.next();
         bool ok;
         int val = match.captured().toInt(&ok, 16);
-        if (ok) buffer.push_back(static_cast<uint8_t>(val));
+        if (ok) rawBuffer.push_back(static_cast<uint8_t>(val));
     }
 
-    if (buffer.empty()) {
+    if (rawBuffer.empty()) {
         ui->label_FilePreview->setText("未找到 Hex 數據");
         m_fileRawImage = QImage();
         return;
     }
 
-    // 2. 處理資料長度 (標準 SH1106/SSD1306 128x64 需要 1024 bytes)
-    size_t requiredSize = OledConfig::DISPLAY_WIDTH * OledConfig::DISPLAY_HEIGHT / 8;
 
-    if (buffer.size() > requiredSize) {
-        buffer.resize(requiredSize); // 截斷
-    } else if (buffer.size() < requiredSize) {
-        buffer.resize(requiredSize, 0x00); // 補零
+    int ramPageWidth = OledConfig::RAM_PAGE_WIDTH; // 通常是 132
+    int displayWidth = OledConfig::DISPLAY_WIDTH;  // 通常是 128
+    int height = OledConfig::DISPLAY_HEIGHT;       // 通常是 64
+    int pages = height / 8;
+    int offset = OledConfig::COLUMN_OFFSET;        // 通常是 2
+
+    // 最終要丟給 Model 的 Buffer
+    std::vector<uint8_t> alignedBuffer(ramPageWidth * pages, 0x00);
+
+    // 2. 處理資料長度 (標準 SH1106/SSD1306 128x64 需要 1024 bytes)
+    //size_t requiredSize = OledConfig::DISPLAY_WIDTH * OledConfig::DISPLAY_HEIGHT / 8;
+
+    if (rawBuffer.size() <= (displayWidth * pages)) {
+        // [情境 A]: 來源是標準 1024 bytes (緊密排列，無 Padding)
+        // 這是最常見的 .h 檔格式。我們需要手動把它 "搬運" 到有 Offset 的位置。
+
+        int srcIndex = 0;
+        for (int page = 0; page < pages; ++page) {
+            // 計算每一頁在 alignedBuffer 中的起始寫入點
+            // 寫入點 = (頁數 * 132) + 偏移量(2)
+            int destIndex = (page * ramPageWidth) + offset;
+
+            // 複製這一頁的 128 個 bytes
+            for (int col = 0; col < displayWidth; ++col) {
+                if (srcIndex < rawBuffer.size()) {
+                    alignedBuffer[destIndex + col] = rawBuffer[srcIndex++];
+                }
+            }
+        }
+    } else {
+        // [情境 B]: 來源是大於 1024 bytes (可能是之前匯出的 Raw Dump，已經含 Padding)
+        // 直接複製，假設它已經符合硬體格式
+        if (rawBuffer.size() > alignedBuffer.size()) {
+            rawBuffer.resize(alignedBuffer.size()); // 截斷多餘的
+        }
+        alignedBuffer = rawBuffer;
     }
+
 
     // 3. 借用 OledDataModel 進行轉換 (Hardware Bytes -> Logical QImage)
     OledDataModel tempModel;
-    tempModel.setFromHardwareBuffer(buffer.data());
+    tempModel.setFromHardwareBuffer(rawBuffer.data());
 
-    // 轉出來就是 Format_Mono 的邏輯圖
+
     QImage result = tempModel.copyRegionToLogicalFormat(
-        QRect(0, 0, OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT)
+        QRect(0, 0, displayWidth, height)
         );
 
     // 4. 儲存與預覽
@@ -350,11 +391,6 @@ void ImageImportDialog::parseAndPreviewFile(const QString &fileContent)
     ui->label_FilePreview->resize(pixmap.size());
 }
 */
-
-
-
-
-
 
 bool ImageImportDialog::isCoverMode() const {
     return ui->C_O_swap->isChecked();

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>StampDialog</class>
+ <widget class="QDialog" name="StampDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QListView" name="iconListWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>30</y>
+     <width>256</width>
+     <height>192</height>
+    </rect>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>48</width>
+     <height>18</height>
+    </size>
+   </property>
+   <property name="movement">
+    <enum>QListView::Movement::Static</enum>
+   </property>
+   <property name="resizeMode">
+    <enum>QListView::ResizeMode::Adjust</enum>
+   </property>
+   <property name="spacing">
+    <number>5</number>
+   </property>
+   <property name="viewMode">
+    <enum>QListView::ViewMode::IconMode</enum>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
