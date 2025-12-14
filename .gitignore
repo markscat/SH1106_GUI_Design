@@ -1,20 +1,20 @@
-# Qt Creator user settings (¥»¦a³]©w¡A¤£À³¤À¨É)
+# Qt Creator user settings (ï¿½ï¿½ï¿½aï¿½]ï¿½wï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 *.pro.user
 *.user
 
-# CMake build directory («Ø¸mµ²ªG¸ê®Æ§¨)
+# CMake build directory (ï¿½Ø¸mï¿½ï¿½ï¿½Gï¿½ï¿½Æ§ï¿½)
 # ----------------------------------------
-# ©¿²¤¾ã­Ó build/ ¥Ø¿ý¤Uªº©Ò¦³¤º®e
+# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ build/ ï¿½Ø¿ï¿½ï¿½Uï¿½ï¿½ï¿½Ò¦ï¿½ï¿½ï¿½ï¿½e
 build/
 
-# ¦ý¡u¤£¡v©¿²¤ build/Release/ (¨ú®ø©¿²¤)
+# ï¿½ï¿½ï¿½uï¿½ï¿½ï¿½vï¿½ï¿½ï¿½ï¿½ build/Release/ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 !build/Release/
 
-# ¦pªG build/Release/ ¤UÁÙ¦³¤l¥Ø¿ý§A¤£§Æ±æ³Q©¿²¤¡A¤]¥i¥HÄ~Äò²K¥[Ãþ¦üªº³W«h
-# ¨Ò¦p¡A¦pªG Release/ ¤U¦³ my_release_binary.exe §A·Q°lÂÜ¡A¦ý¤£·Q°lÂÜ¨ä¥L¤å¥ó¡G
+# ï¿½pï¿½G build/Release/ ï¿½Uï¿½Ù¦ï¿½ï¿½lï¿½Ø¿ï¿½ï¿½Aï¿½ï¿½ï¿½Æ±ï¿½Qï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½]ï¿½iï¿½Hï¿½~ï¿½ï¿½Kï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½h
+# ï¿½Ò¦pï¿½Aï¿½pï¿½G Release/ ï¿½Uï¿½ï¿½ my_release_binary.exe ï¿½Aï¿½Qï¿½lï¿½Ü¡Aï¿½ï¿½ï¿½ï¿½ï¿½Qï¿½lï¿½Ü¨ï¿½Lï¿½ï¿½ï¿½G
 # !build/Release/my_release_binary.exe
 
-# CMake generated files (CMake §Ö¨ú©M¤¤¶¡ÀÉ®×)
+# CMake generated files (CMake ï¿½Ö¨ï¿½ï¿½Mï¿½ï¿½ï¿½ï¿½ï¿½É®ï¿½)
 CMakeCache.txt
 CMakeLists.txt
 CMakeCache.txt.usr
@@ -24,18 +24,18 @@ Makefile
 CPackConfig.cmake
 CTestTestfile.cmake
 
-# Ninja build files (¦pªG§Aªº CMake ¨Ï¥Î Ninja §@¬°¥Í¦¨¾¹)
+# Ninja build files (ï¿½pï¿½Gï¿½Aï¿½ï¿½ CMake ï¿½Ï¥ï¿½ Ninja ï¿½@ï¿½ï¿½ï¿½Í¦ï¿½ï¿½ï¿½)
 .ninja_deps
 .ninja_log
 
-# Executables and libraries (¥i°õ¦æÀÉ©M®wÀÉ®×)
+# Executables and libraries (ï¿½iï¿½ï¿½ï¿½ï¿½ï¿½É©Mï¿½wï¿½É®ï¿½)
 *.exe
 *.dll
 *.lib
 *.so
 *.dylib
 
-# Object files (½sÄ¶¤¤¶¡²£ª«)
+# Object files (ï¿½sÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 *.obj
 *.o
 *.lo
@@ -44,9 +44,10 @@ CTestTestfile.cmake
 *.pdb
 *.ilk
 
-# Qt specific files (Qt Designer ¬ÛÃöªº UI ½sÄ¶²£ª«¡A³q±`¥Ñ½sÄ¶¾¹¦Û°Ê¥Í¦¨)
+# Qt specific files (Qt Designer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI ï¿½sÄ¶ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½qï¿½`ï¿½Ñ½sÄ¶ï¿½ï¿½ï¿½Û°Ê¥Í¦ï¿½)
 ui_*.h
 moc_*.cpp
 qrc_*.cpp
 *.qrc.cpp # for newer Qt versions
 *.json
+icon/â€”Pngtreeâ€”wifi vector icon_4015278.png

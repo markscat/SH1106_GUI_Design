@@ -255,8 +255,22 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
         dataContent = content.mid(startBrace, endBrace - startBrace + 1);
     }
 
+    // --- 2. 嘗試解析尺寸 (這是新增的關鍵功能) ---
+    // 目標：從註解中抓出 "(22x8 region" 這樣的資訊
+    // Regex 解說：尋找括號，接著數字(寬)，接著x，接著數字(高)
+    QRegularExpression sizeRegex("\\((\\d+)x(\\d+) region");
+    auto sizeMatch = sizeRegex.match(content);
+
+    int targetW = 0;
+    int targetH = 0;
+
+    if (sizeMatch.hasMatch()) {
+        targetW = sizeMatch.captured(1).toInt();
+        targetH = sizeMatch.captured(2).toInt();
+    }
+
     //QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
-    QRegularExpression hexRegex("0x[0-9a-fA-F]+");
+    QRegularExpression hexRegex("0[xX][0-9a-fA-F]+");
     auto matches = hexRegex.globalMatch(dataContent);
 
     std::vector<uint8_t> rawBuffer;
@@ -273,64 +287,61 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
         return;
     }
 
+    if (targetW == 0 || targetH == 0) {
+        // [備案]: 如果 buffer 很小 (小於 128)，假設它是單行圖示 (高=8)
+        if (rawBuffer.size() < 128) {
+            targetW = rawBuffer.size();
+            targetH = 8;
+        } else {
+            // 否則假設它是全寬度 128
+            targetW = 128;
+            targetH = (rawBuffer.size() + 127) / 128 * 8; // 向上取整的頁數
+        }
+    }
 
-    int ramPageWidth = OledConfig::RAM_PAGE_WIDTH; // 通常是 132
-    int displayWidth = OledConfig::DISPLAY_WIDTH;  // 通常是 128
-    int height = OledConfig::DISPLAY_HEIGHT;       // 通常是 64
-    int pages = height / 8;
-    int offset = OledConfig::COLUMN_OFFSET;        // 通常是 2
+    // 建立一張「剛好大小」的圖片，而不是全螢幕
+    QImage importImg(targetW, targetH, QImage::Format_Mono);
+    importImg.fill(0);
+    importImg.setColor(0, qRgb(0, 0, 0));
+    importImg.setColor(1, qRgb(255, 255, 255));
 
-    // 最終要丟給 Model 的 Buffer
-    std::vector<uint8_t> alignedBuffer(ramPageWidth * pages, 0x00);
 
-    // 2. 處理資料長度 (標準 SH1106/SSD1306 128x64 需要 1024 bytes)
-    //size_t requiredSize = OledConfig::DISPLAY_WIDTH * OledConfig::DISPLAY_HEIGHT / 8;
+    int p = 0;
+    // 根據目標高度計算頁數 (每 8 pixel 一頁)
+    int pages = (targetH + 7) / 8;
 
-    if (rawBuffer.size() <= (displayWidth * pages)) {
-        // [情境 A]: 來源是標準 1024 bytes (緊密排列，無 Padding)
-        // 這是最常見的 .h 檔格式。我們需要手動把它 "搬運" 到有 Offset 的位置。
+    for (int page = 0; page < pages; ++page) {
+        for (int col = 0; col < targetW; ++col) {
 
-        int srcIndex = 0;
-        for (int page = 0; page < pages; ++page) {
-            // 計算每一頁在 alignedBuffer 中的起始寫入點
-            // 寫入點 = (頁數 * 132) + 偏移量(2)
-            int destIndex = (page * ramPageWidth) + offset;
+            if (p >= rawBuffer.size()) break;
 
-            // 複製這一頁的 128 個 bytes
-            for (int col = 0; col < displayWidth; ++col) {
-                if (srcIndex < rawBuffer.size()) {
-                    alignedBuffer[destIndex + col] = rawBuffer[srcIndex++];
+            uint8_t byte = rawBuffer[p++];
+
+            for (int bit = 0; bit < 8; ++bit) {
+                int y = page * 8 + bit;
+                // 確保不要畫出界 (例如高度是 12，第二頁只能畫前 4 bit)
+                if (y < targetH) {
+                    if ((byte >> bit) & 1) {
+                        importImg.setPixel(col, y, 1);
+                    }
                 }
             }
         }
-    } else {
-        // [情境 B]: 來源是大於 1024 bytes (可能是之前匯出的 Raw Dump，已經含 Padding)
-        // 直接複製，假設它已經符合硬體格式
-        if (rawBuffer.size() > alignedBuffer.size()) {
-            rawBuffer.resize(alignedBuffer.size()); // 截斷多餘的
-        }
-        alignedBuffer = rawBuffer;
     }
 
-
-    // 3. 借用 OledDataModel 進行轉換 (Hardware Bytes -> Logical QImage)
-    OledDataModel tempModel;
-    tempModel.setFromHardwareBuffer(rawBuffer.data());
-
-
-    QImage result = tempModel.copyRegionToLogicalFormat(
-        QRect(0, 0, displayWidth, height)
-        );
-
     // 4. 儲存與預覽
-    m_fileRawImage = result;
+   // m_fileRawImage = result;
 
+    m_fileRawImage =importImg;
     // 預覽放大 3 倍比較容易看
-    QPixmap px = QPixmap::fromImage(result);
+    QPixmap px = QPixmap::fromImage(importImg);
+
+    // 如果圖片很小，放大顯示倍率可以設大一點 (例如 4 倍)
+    //int scale = (targetW < 64) ? 4 : 2;
+
     ui->label_FilePreview->setPixmap(px.scaled(px.size() * 3, Qt::KeepAspectRatio));
     ui->label_FilePreview->resize(px.size() * 3);
 }
-
 /*
 void ImageImportDialog::parseAndPreviewFile(const QString &fileContent)
 {

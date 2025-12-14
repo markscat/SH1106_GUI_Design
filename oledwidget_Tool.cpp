@@ -74,7 +74,12 @@ void OLEDWidget::showBufferDataAsHeader()
     output += QString("const uint8_t imageData[%1] = {\n    ").arg(hardwareData.size());
 
     for (int i = 0; i < hardwareData.size(); ++i) {
-        output += QString("0x%1, ").arg(hardwareData[i], 2, 16, QChar('0')).toUpper();
+        //output += QString("0x%1, ").arg(hardwareData[i], 2, 16, QChar('0')).toUpper();
+
+        QString hexVal = QString::number(hardwareData[i], 16).toUpper().rightJustified(2, '0');
+        output += QString("0x%1, ").arg(hexVal);
+
+
         if ((i + 1) % 16 == 0 && i < hardwareData.size() - 1) {
             output += "\n    ";
         }
