@@ -342,67 +342,6 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
     ui->label_FilePreview->setPixmap(px.scaled(px.size() * 3, Qt::KeepAspectRatio));
     ui->label_FilePreview->resize(px.size() * 3);
 }
-/*
-void ImageImportDialog::parseAndPreviewFile(const QString &fileContent)
-{
-    std::vector<uint8_t> buffer;
-
-    // 1. 使用 Regex 提取 Hex 數值 (邏輯參考 SimulatorDialog)
-    QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
-    auto matches = hexRegex.globalMatch(fileContent);
-
-    while (matches.hasNext()) {
-        auto match = matches.next();
-        bool ok;
-        int val = match.captured().toInt(&ok, 16);
-        if (ok) {
-            buffer.push_back(static_cast<uint8_t>(val));
-        }
-    }
-
-    if (buffer.empty()) {
-        ui->label_FilePreview->setText("未偵測到有效的 Hex 數據");
-        m_fileImportImage = QImage(); // 清空
-        return;
-    }
-
-    // 2. 檢查大小 (128x64 的 OLED 需要 1024 bytes)
-    const size_t requiredSize = OledConfig::DISPLAY_WIDTH * OledConfig::DISPLAY_HEIGHT / 8;
-
-    if (buffer.size() < requiredSize) {
-        // 資料不足補 0
-        buffer.resize(requiredSize, 0x00);
-    } else if (buffer.size() > requiredSize) {
-        // 資料過多截斷 (通常只取前 1024 bytes)
-        buffer.resize(requiredSize);
-    }
-
-    // 3. 利用 OledDataModel 將 Hardware Buffer 轉回 QImage
-    // 這裡我們建立一個暫時的 Model 來幫我們做苦工
-    OledDataModel tempModel;
-    tempModel.setFromHardwareBuffer(buffer.data());
-
-    // 轉換為邏輯圖像 (Format_Mono)
-    QImage resultImage = tempModel.copyRegionToLogicalFormat(
-        QRect(0, 0, OledConfig::DISPLAY_WIDTH, OledConfig::DISPLAY_HEIGHT)
-        );
-
-    // 4. 存檔與預覽
-    m_fileImportImage = resultImage;
-
-    // 顯示預覽 (放大顯示比較清楚，例如放大 2 倍)
-    int previewScale = 2;
-    QPixmap pixmap = QPixmap::fromImage(resultImage.scaled(
-        resultImage.width() * previewScale,
-        resultImage.height() * previewScale,
-        Qt::KeepAspectRatio
-        ));
-
-    ui->label_FilePreview->setPixmap(pixmap);
-    ui->label_FilePreview->resize(pixmap.size());
-}
-*/
-
 bool ImageImportDialog::isCoverMode() const {
     return ui->C_O_swap->isChecked();
 }

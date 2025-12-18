@@ -303,24 +303,17 @@
         int pages = (h + 7) / 8;
 
         for (int page = 0; page < pages; ++page) {
-            for (int x = 0; x < OledConfig::COLUMN_OFFSET; ++x) {
-                hardwareData.append(0x00);
-            }
             for (int x = 0; x < w; ++x) {
                 uint8_t byte = 0;
                 for (int bit = 0; bit < 8; ++bit) {
                     int currentY = page * 8 + bit;
                     if (currentY < h) {
-                        if (logicalImage.pixelIndex(x, currentY) == 0) {
+                        if (logicalImage.pixelIndex(x, currentY) != 0) {
                             byte |= (1 << bit);
                         }
                     }
                 }
                 hardwareData.append(byte);
-            }
-            int filled = OledConfig::COLUMN_OFFSET + w;
-            for (int x = filled; x < OledConfig::RAM_PAGE_WIDTH; ++x) {
-                hardwareData.append(0x00);
             }
         }
         return hardwareData;
