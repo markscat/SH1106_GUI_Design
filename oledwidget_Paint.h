@@ -11,6 +11,16 @@
 #include "historymanager.h"
 
 
+/** @class OLEDWidget
+        * @brief OLED 編輯器元件，負責 UI 顯示與使用者互動。
+            *
+                * 此類別繼承自 QWidget，是整個畫板的核心。它結合了：
+    * - 數據儲存 (OledDataModel)
+    * - 影像轉換 (OledDataConverter)
+    * - 歷史管理 (HistoryManager)
+    *
+    * 它負責處理滑鼠繪圖、選取、複製貼上等操作，並將邏輯座標轉換為螢幕顯示。
+        */
 class OLEDWidget : public QWidget {
     Q_OBJECT
 

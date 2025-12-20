@@ -1,7 +1,28 @@
 #include <algorithm>     // 需要 std::min
 #include "oled_dataconverter.h"
 
-
+/**
+ * @brief 將 QImage 的影像數據轉換並更新至 OledDataModel 中。
+ *
+ * 此函式會將傳入的 QImage 內容同步到 OLED 模型。這是一個「覆蓋式」的操作，
+ * 函式執行開始時會先清空模型，隨後根據圖片的像素資訊進行填色。
+ *
+ * @param model 指向目標 OledDataModel 的指標。若為 nullptr 則不執行任何操作。
+ * @param image 來源圖片。必須滿足以下條件：
+ *              1. 圖片不為空 (isNull() == false)
+ *              2. 格式必須為 QImage::Format_Mono (單色位圖)
+ *
+ * @note 轉換邏輯說明：
+ * - 邊界處理：若圖片尺寸超過 OLED 顯示範圍 (OledConfig::DISPLAY_WIDTH/HEIGHT)，將進行裁切。
+ * - 像素判定：針對 Format_Mono，此處將 pixelIndex 為 0 的點判定為「開啟 (True)」，
+ *   通常對應於單色圖中的黑色部分（取決於調色盤設定）。
+ *
+ * @par 實作細節：
+ * 1. 進行安全性檢查 (Null check)。
+ * 2. 呼叫 model->clear() 重置畫布。
+ * 3. 透過雙層迴圈遍歷有效區域內的像素。
+ * 4. 呼叫 model->setPixel 更新數據。
+ */
 void OledDataConverter::updateModelFromImage(OledDataModel* model, const QImage& image)
 {
     // --- 步驟 1: 安全性檢查 ---
