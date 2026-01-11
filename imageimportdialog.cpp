@@ -258,7 +258,10 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
     // --- 2. 嘗試解析尺寸 (這是新增的關鍵功能) ---
     // 目標：從註解中抓出 "(22x8 region" 這樣的資訊
     // Regex 解說：尋找括號，接著數字(寬)，接著x，接著數字(高)
-    QRegularExpression sizeRegex("\\((\\d+)x(\\d+) region");
+    QRegularExpression sizeRegex("(\\d+)\\s*[xX]\\s*(\\d+)");
+
+    //QRegularExpression sizeRegex("\\((\\d+)x(\\d+) region");
+
     auto sizeMatch = sizeRegex.match(content);
 
     int targetW = 0;
@@ -269,11 +272,12 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
         targetH = sizeMatch.captured(2).toInt();
     }
 
-    //QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
-    QRegularExpression hexRegex("0[xX][0-9a-fA-F]+");
+    QRegularExpression hexRegex("0x[0-9a-fA-F]+|[0-9a-fA-F]{2}");
+    //QRegularExpression hexRegex("0[xX][0-9a-fA-F]+");
     auto matches = hexRegex.globalMatch(dataContent);
 
     std::vector<uint8_t> rawBuffer;
+
     while (matches.hasNext()) {
         auto match = matches.next();
         bool ok;
@@ -287,8 +291,25 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
         return;
     }
 
+    bool isHorizontal = content.contains("Horizontal", Qt::CaseInsensitive);
+
+
     if (targetW == 0 || targetH == 0) {
-        // [備案]: 如果 buffer 很小 (小於 128)，假設它是單行圖示 (高=8)
+
+        if (rawBuffer.size() == 1056) { targetW = 132; targetH = 64; isHorizontal = false; }
+        else if (rawBuffer.size() == 1024) { targetW = 128; targetH = 64; isHorizontal = false; }
+        else {
+            // 預設假設 (例如 16x16)
+            targetW = 16;
+            targetH = (rawBuffer.size() * 8) / targetW;
+        }
+        /*
+        if(rawBuffer.size()%132 ==0 ){
+            targetW = 132;
+        }else {
+            targetW = 128; // 其他情況預設為 128
+        }
+
         if (rawBuffer.size() < 128) {
             targetW = rawBuffer.size();
             targetH = 8;
@@ -296,7 +317,7 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
             // 否則假設它是全寬度 128
             targetW = 128;
             targetH = (rawBuffer.size() + 127) / 128 * 8; // 向上取整的頁數
-        }
+        }*/
     }
 
     // 建立一張「剛好大小」的圖片，而不是全螢幕
@@ -306,6 +327,47 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
     importImg.setColor(1, qRgb(255, 255, 255));
 
 
+    int p = 0;
+    if (isHorizontal) {
+        // --- 水平定址解析 (Horizontal) ---
+        // 每一行由 (targetW / 8) 個 byte 組成
+        int bytesPerRow = (targetW + 7) / 8;
+        for (int y = 0; y < targetH; ++y) {
+            for (int b = 0; b < bytesPerRow; ++b) {
+                if (p >= (int)rawBuffer.size()) break;
+                uint8_t byte = rawBuffer[p++];
+                for (int bit = 0; bit < 8; ++bit) {
+                    int x = b * 8 + bit;
+                    if (x < targetW) {
+                        // 水平模式通常是 MSB First (最高位元在左邊)
+                        if ((byte >> (7 - bit)) & 1) {
+                            importImg.setPixel(x, y, 1);
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // --- 垂直定址解析 (Vertical/Page - SH1106 專用) ---
+        int pages = (targetH + 7) / 8;
+        for (int page = 0; page < pages; ++page) {
+            for (int col = 0; col < targetW; ++col) {
+                if (p >= (int)rawBuffer.size()) break;
+                uint8_t byte = rawBuffer[p++];
+                for (int bit = 0; bit < 8; ++bit) {
+                    int y = page * 8 + bit;
+                    if (y < targetH) {
+                        // 垂直模式通常是 LSB First
+                        if ((byte >> bit) & 1) {
+                            importImg.setPixel(col, y, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+/*
     int p = 0;
     // 根據目標高度計算頁數 (每 8 pixel 一頁)
     int pages = (targetH + 7) / 8;
@@ -321,27 +383,37 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
                 int y = page * 8 + bit;
                 // 確保不要畫出界 (例如高度是 12，第二頁只能畫前 4 bit)
                 if (y < targetH) {
-                    if ((byte >> bit) & 1) {
+                    if ((byte >> (bit)) & 1) {
                         importImg.setPixel(col, y, 1);
                     }
                 }
             }
         }
-    }
+    }*/
 
     // 4. 儲存與預覽
-   // m_fileRawImage = result;
+
 
     m_fileRawImage =importImg;
+
+    // 如果使用者勾選了反白選項，就反轉顏色
+    if (ui->B_W_swap_2->isChecked()) {
+        m_fileRawImage.invertPixels(QImage::InvertRgb);
+    }
+
     // 預覽放大 3 倍比較容易看
     QPixmap px = QPixmap::fromImage(importImg);
 
-    // 如果圖片很小，放大顯示倍率可以設大一點 (例如 4 倍)
-    //int scale = (targetW < 64) ? 4 : 2;
+    int displayScale = (targetW < 32) ? 10 : 4;
 
-    ui->label_FilePreview->setPixmap(px.scaled(px.size() * 3, Qt::KeepAspectRatio));
-    ui->label_FilePreview->resize(px.size() * 3);
+    ui->label_FilePreview->setPixmap(px.scaled(targetW * displayScale, targetH * displayScale, Qt::KeepAspectRatio));
+    ui->label_FilePreview->resize(targetW * displayScale, targetH * displayScale);
+    ui->lbl_FilePath->setText(QString("解析成功: %1x%2 (%3)").arg(targetW).arg(targetH).arg(isHorizontal ? "水平" : "垂直"));
+
 }
+
+
+
 bool ImageImportDialog::isCoverMode() const {
     return ui->C_O_swap->isChecked();
 }
