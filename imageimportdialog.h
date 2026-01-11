@@ -35,6 +35,8 @@ private slots:
     // [新增] 處理 "File_tab" 的開啟檔案按鈕
     void on_Openfile_pushButton_clicked();
 
+
+
 private:
     Ui::ImageImportDialog *ui;
     QImage m_originalImage;   // 保存未經處理的原始圖片
@@ -51,6 +53,12 @@ private:
     //void parseAndPreviewFile(const QString &fileContent);
 
     void parseFileContentToImage(const QString &content);
+    QString m_currentFileContent; // 新增：儲存目前讀入的 .h 檔案文字內容
+
+    void updateFilePreview();
+
+
+    QString m_lastLoadedFileContent; // 暫存檔案內容，方便切換模式時重繪
 
 };
 

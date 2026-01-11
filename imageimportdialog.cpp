@@ -54,10 +54,11 @@ ImageImportDialog::ImageImportDialog(const QImage &sourceImage, QWidget *parent)
     connect(ui->rotationComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ImageImportDialog::updatePreview);
     connect(ui->B_W_swap, &QRadioButton::toggled, this, &ImageImportDialog::updatePreview);
 
-    // [新增] 按鈕連接 (如果 UI 編輯器沒有自動連接 on_..._clicked 的話，手動連比較保險)
-    //connect(ui->OpenPicture_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_OpenPicture_pushButton_clicked);
-    //connect(ui->Openfile_pushButton, &QPushButton::clicked, this, &ImageImportDialog::on_Openfile_pushButton_clicked);
 
+
+
+    connect(ui->V_H_swap, &QRadioButton::toggled, this, &ImageImportDialog::updateFilePreview);
+    connect(ui->B_W_swap_H, &QRadioButton::toggled, this, &ImageImportDialog::updateFilePreview);
     // --- 第一次載入時，立即更新一次預覽 ---
     updatePreview();
 }
@@ -243,6 +244,17 @@ void ImageImportDialog::on_Openfile_pushButton_clicked()
     parseFileContentToImage(content);
 }
 
+
+void ImageImportDialog::updateFilePreview()
+{
+    if (m_currentFileContent.isEmpty()) return;
+
+    // 直接呼叫你之前寫好的解析邏輯 (記得把 parseFileContentToImage 的邏輯整合進來)
+    // 這裡會讀取 ui->V_H_swap->isChecked() 和 ui->B_W_swap_H->isChecked()
+    parseFileContentToImage(m_currentFileContent);
+}
+
+
 void ImageImportDialog::parseFileContentToImage(const QString &content)
 {
     // 1. 使用 Regex 提取 Hex
@@ -303,21 +315,6 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
             targetW = 16;
             targetH = (rawBuffer.size() * 8) / targetW;
         }
-        /*
-        if(rawBuffer.size()%132 ==0 ){
-            targetW = 132;
-        }else {
-            targetW = 128; // 其他情況預設為 128
-        }
-
-        if (rawBuffer.size() < 128) {
-            targetW = rawBuffer.size();
-            targetH = 8;
-        } else {
-            // 否則假設它是全寬度 128
-            targetW = 128;
-            targetH = (rawBuffer.size() + 127) / 128 * 8; // 向上取整的頁數
-        }*/
     }
 
     // 建立一張「剛好大小」的圖片，而不是全螢幕
@@ -367,37 +364,13 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
         }
     }
 
-/*
-    int p = 0;
-    // 根據目標高度計算頁數 (每 8 pixel 一頁)
-    int pages = (targetH + 7) / 8;
-
-    for (int page = 0; page < pages; ++page) {
-        for (int col = 0; col < targetW; ++col) {
-
-            if (p >= rawBuffer.size()) break;
-
-            uint8_t byte = rawBuffer[p++];
-
-            for (int bit = 0; bit < 8; ++bit) {
-                int y = page * 8 + bit;
-                // 確保不要畫出界 (例如高度是 12，第二頁只能畫前 4 bit)
-                if (y < targetH) {
-                    if ((byte >> (bit)) & 1) {
-                        importImg.setPixel(col, y, 1);
-                    }
-                }
-            }
-        }
-    }*/
-
     // 4. 儲存與預覽
 
 
     m_fileRawImage =importImg;
 
     // 如果使用者勾選了反白選項，就反轉顏色
-    if (ui->B_W_swap_2->isChecked()) {
+    if (ui->B_W_swap_H->isChecked()) {
         m_fileRawImage.invertPixels(QImage::InvertRgb);
     }
 
