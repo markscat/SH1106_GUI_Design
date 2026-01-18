@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1123</width>
+    <width>1323</width>
     <height>732</height>
    </rect>
   </property>
@@ -575,7 +575,7 @@
           <item>
            <widget class="QPushButton" name="importButton">
             <property name="text">
-             <string>匯入圖檔</string>
+             <string>匯入</string>
             </property>
             <property name="icon">
              <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
@@ -694,7 +694,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1123</width>
+     <width>1323</width>
      <height>25</height>
     </rect>
    </property>

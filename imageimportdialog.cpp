@@ -237,11 +237,14 @@ void ImageImportDialog::on_Openfile_pushButton_clicked()
     ui->lbl_FilePath->setText(filePath);
 
     QTextStream in(&file);
-    QString content = in.readAll();
+    m_currentFileContent = in.readAll();
+    //QString content = in.readAll();
     file.close();
 
     // 開始解析
-    parseFileContentToImage(content);
+    updateFilePreview();
+
+    //parseFileContentToImage(content);
 }
 
 
@@ -254,9 +257,9 @@ void ImageImportDialog::updateFilePreview()
     parseFileContentToImage(m_currentFileContent);
 }
 
-
 void ImageImportDialog::parseFileContentToImage(const QString &content)
 {
+
     // 1. 使用 Regex 提取 Hex
     QString dataContent = content;
     int startBrace = content.indexOf('{');
@@ -271,8 +274,6 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
     // 目標：從註解中抓出 "(22x8 region" 這樣的資訊
     // Regex 解說：尋找括號，接著數字(寬)，接著x，接著數字(高)
     QRegularExpression sizeRegex("(\\d+)\\s*[xX]\\s*(\\d+)");
-
-    //QRegularExpression sizeRegex("\\((\\d+)x(\\d+) region");
 
     auto sizeMatch = sizeRegex.match(content);
 
@@ -303,14 +304,18 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
         return;
     }
 
-    bool isHorizontal = content.contains("Horizontal", Qt::CaseInsensitive);
-
+    //bool isHorizontal = content.contains("Horizontal", Qt::CaseInsensitive);
+    bool isHorizontal = ui->V_H_swap->isChecked();
 
     if (targetW == 0 || targetH == 0) {
 
-        if (rawBuffer.size() == 1056) { targetW = 132; targetH = 64; isHorizontal = false; }
-        else if (rawBuffer.size() == 1024) { targetW = 128; targetH = 64; isHorizontal = false; }
-        else {
+        if (rawBuffer.size() == 1056) {
+            targetW = 132; targetH = 64; isHorizontal = false;
+        }
+        else if (rawBuffer.size() == 1024)
+            {
+                targetW = 128; targetH = 64; isHorizontal = false;
+        }else {
             // 預設假設 (例如 16x16)
             targetW = 16;
             targetH = (rawBuffer.size() * 8) / targetW;
@@ -365,7 +370,10 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
     }
 
     // 4. 儲存與預覽
-
+/*
+ * m_fileRawImage = importImg;
+ * if (ui->B_W_swap_H->isChecked()) {
+ * m_fileRawImage.invertPixels(QImage::InvertRgb); }*/
 
     m_fileRawImage =importImg;
 
@@ -374,8 +382,10 @@ void ImageImportDialog::parseFileContentToImage(const QString &content)
         m_fileRawImage.invertPixels(QImage::InvertRgb);
     }
 
+
     // 預覽放大 3 倍比較容易看
-    QPixmap px = QPixmap::fromImage(importImg);
+    QPixmap px = QPixmap::fromImage(m_fileRawImage);
+    //QPixmap px = QPixmap::fromImage(importImg);
 
     int displayScale = (targetW < 32) ? 10 : 4;
 
